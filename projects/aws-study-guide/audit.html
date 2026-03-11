@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AWS Monitoring & Audit — CloudWatch, CloudTrail, EventBridge, AWS Config</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <div class="container2">
+        <div class="header">
+            <h1>AWS Monitoring & Audit: CloudWatch, CloudTrail, EventBridge, AWS Config</h1>
+            <hr>
+        </div>
+
+        <h2>Overview</h2>
+        <p>This section covers AWS monitoring, logging, auditing, and compliance services critical for Solutions Architect exams. These services provide visibility into resource behavior, API activity, configuration changes, and compliance status. Understanding when to use CloudWatch vs CloudTrail vs AWS Config is essential for exam success.</p>
+
+        <hr class="soft-divide">
+        <h2>Amazon CloudWatch — Metrics, Logs & Alarms</h2>
+
+        <h3>Service Overview</h3>
+        <p>CloudWatch is AWS's central monitoring and observability service. It collects metrics (performance data), logs (application/system output), and enables alarms for automated responses. CloudWatch provides dashboards, insights, and integration with other AWS services for comprehensive visibility into your infrastructure and applications.</p>
+
+        <h3>CloudWatch Metrics</h3>
+        <p><strong>Metrics</strong> are measurements of resource performance over time (CPU usage, network throughput, request count, etc.). Each metric belongs to a namespace and has associated dimensions (attributes like instance ID, database name) and a timestamp.</p>
+        
+        <ul>
+            <li><strong>Namespace:</strong> Container for metrics. Examples: <code>AWS/EC2</code>, <code>AWS/RDS</code>, <code>AWS/Lambda</code>. Custom namespaces can be created for application-specific metrics.</li>
+            <li><strong>Dimension:</strong> Attribute of a metric. Example: metric "CPUUtilization" has dimension "InstanceId". Up to 30 dimensions per metric for uniqueness.</li>
+            <li><strong>Timestamps:</strong> Each data point timestamped; you can create dashboards and set alarms based on metric values over time.</li>
+            <li><strong>Custom Metrics:</strong> Application code can publish custom metrics to CloudWatch using PutMetricData API (or CloudWatch agent). Useful for application-level metrics (request latency, business transactions, custom application counters).</li>
+            <li><strong>Metric Resolution:</strong> Standard resolution = 60 seconds (default). High resolution = 1 second (higher cost).</li>
+        </ul>
+
+        <h4>Metric Streams</h4>
+        <p>CloudWatch Metric Streams continually stream CloudWatch metrics to a destination in near real-time. This enables integration with third-party monitoring platforms (Datadog, Splunk, New Relic, etc.) or AWS services (Amazon Kinesis Data Firehose).</p>
+        <ul>
+            <li><strong>Use Case:</strong> Stream metrics to Kinesis Firehose → S3 for data lake analytics. Or stream to Firehose → third-party SaaS for advanced monitoring.</li>
+            <li><strong>Benefit:</strong> Real-time access to metrics outside CloudWatch without polling or custom code.</li>
+        </ul>
+
+        <h3>CloudWatch Logs</h3>
+        <p>CloudWatch Logs collects log data from applications, services, and infrastructure. Logs are organized hierarchically: Log Group → Log Stream.</p>
+
+        <ul>
+            <li><strong>Log Group:</strong> Arbitrary name representing an application or service. Example: <code>/aws/lambda/my-function</code> or <code>/myapp/api</code>.</li>
+            <li><strong>Log Stream:</strong> Sequences of log events within a log group. Represents an instance, container, or log file. Example: <code>my-function-v1.0</code> or <code>container-id-12345</code>.</li>
+            <li><strong>Log Expiration:</strong> Define retention policies (1 day to 10 years) or never expire. Older logs automatically deleted based on policy.</li>
+            <li><strong>Encryption:</strong> Logs encrypted by default using AWS-managed keys; optionally use customer-managed KMS keys for additional security.</li>
+        </ul>
+
+        <h4>CloudWatch Logs Sources</h4>
+        <p>Logs can be sent from multiple sources:</p>
+        <ul>
+            <li><strong>SDK / Application Code:</strong> PutLogEvents API to push logs directly.</li>
+            <li><strong>CloudWatch Agent (v1) or Unified Agent (v2):</strong> Installed on EC2 instances or on-premises servers to collect system logs, application logs, and metrics.</li>
+            <li><strong>Elastic Beanstalk:</strong> Automatically collects logs from deployed applications.</li>
+            <li><strong>Amazon ECS:</strong> Container logs via awslogs driver in task definitions.</li>
+            <li><strong>AWS Lambda:</strong> Function stdout/stderr automatically sent to CloudWatch Logs.</li>
+            <li><strong>VPC Flow Logs:</strong> Network traffic logs for VPCs, subnets, and ENIs.</li>
+            <li><strong>API Gateway:</strong> Request/response logs and execution logs.</li>
+            <li><strong>AWS CloudTrail:</strong> API call history.</li>
+            <li><strong>Amazon Route 53:</strong> DNS query logs.</li>
+        </ul>
+
+        <h4>Querying CloudWatch Logs</h4>
+        <p>CloudWatch Logs Insights provides a SQL-like query language to search, analyze, and aggregate log data. This is essential for troubleshooting and operational analysis.</p>
+        <ul>
+            <li><strong>Query Capabilities:</strong> Filter based on conditions, calculate aggregation statistics (count, average, max, min), sort events, and limit results. Automatically discovers fields from AWS services and JSON log events.</li>
+            <li><strong>Use Case:</strong> Find all failed API calls in the last hour: <code>fields @timestamp, @message, @error | filter @error | stats count() by @message</code>. Or analyze Lambda cold starts: <code>fields @initDuration | filter @initDuration > 0 | stats avg(@initDuration), max(@initDuration)</code>.</li>
+            <li><strong>Query Engine vs Real-Time:</strong> Insights is a query engine (historical analysis), not a real-time streaming tool. Best for post-incident analysis and trend analysis.</li>
+            <li><strong>Saved Queries:</strong> Save frequently used queries and add them to CloudWatch dashboards for quick reference.</li>
+            <li><strong>Cross-Account / Cross-Region:</strong> Query multiple log groups in different AWS accounts and regions simultaneously.</li>
+            <li><strong>Exam Tip:</strong> When a scenario asks "analyze logs from multiple Lambda functions to find errors," CloudWatch Logs Insights is the answer.</li>
+        </ul>
+
+        <h4>CloudWatch Logs Subscriptions & Destinations</h4>
+        <p>CloudWatch Logs Subscriptions enable real-time processing of log events. When a log event matches a filter, it is delivered to a destination.</p>
+        <ul>
+            <li><strong>Real-Time Delivery:</strong> Log events delivered to destinations (Lambda, Kinesis, Firehose) as they occur.</li>
+            <li><strong>Destinations:</strong> Lambda (for custom processing), Amazon Kinesis Data Streams (for streaming analysis), Amazon Kinesis Data Firehose (for buffered delivery to S3, Redshift, etc.), Amazon OpenSearch (for full-text search and analytics).</li>
+            <li><strong>Filter Pattern:</strong> Specify which logs are delivered (optional; if omitted, all logs matched).</li>
+            <li><strong>Cross-Account Subscriptions:</strong> Send log events to resources in a different AWS account. Requires resource-based policies on the destination.</li>
+            <li><strong>Use Case:</strong> Real-time security monitoring: Lambda function triggered on specific error patterns (e.g., "AuthenticationFailure") → SNS notification. Or aggregate logs from multiple accounts to a central Firehose for centralized logging.</li>
+            <li><strong>Aggregation Pattern:</strong> Combine metrics/logs across multiple accounts and regions. For example, a central logging account receives logs from production, staging, and development accounts for unified visibility.</li>
+        </ul>
+
+        <h4>CloudWatch Logs → S3 Export</h4>
+        <ul>
+            <li><strong>CreateExportTask API:</strong> Export log data from CloudWatch Logs to S3. Data can take up to 12 hours to become available in S3 after the export is initiated.</li>
+            <li><strong>Use Case:</strong> Long-term archival of logs for compliance audits. Export logs monthly to S3, then transition to Glacier for cost-effective storage.</li>
+            <li><strong>Method:</strong> Must use CloudWatch Logs Subscriptions (real-time) or manual CreateExportTask (batch). Subscriptions deliver logs to Firehose continuously.</li>
+        </ul>
+
+        <h3>CloudWatch Agent Comparison Table</h3>
+        <p>Two versions of the CloudWatch Agent available for EC2 and on-premises servers:</p>
+        <table style="width:100%; border-collapse:collapse; margin:10px 0;">
+            <tr style="background:#f0f0f0;">
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Aspect</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">CloudWatch Agent (v1)</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Unified CloudWatch Agent (v2)</th>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Metrics Collected</td>
+                <td style="border:1px solid #ddd; padding:8px;">CPU, disk, network, memory</td>
+                <td style="border:1px solid #ddd; padding:8px;">CPU, disk, network, memory, processes, GPU (if available)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Log Collection</td>
+                <td style="border:1px solid #ddd; padding:8px;">Supports application and system logs</td>
+                <td style="border:1px solid #ddd; padding:8px;">Enhanced log collection; better structured logging support</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Configuration</td>
+                <td style="border:1px solid #ddd; padding:8px;">Configuration file or SSM Parameter Store</td>
+                <td style="border:1px solid #ddd; padding:8px;">Unified configuration with improved validation</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Performance</td>
+                <td style="border:1px solid #ddd; padding:8px;">Standard overhead</td>
+                <td style="border:1px solid #ddd; padding:8px;">Improved performance; lower CPU/memory footprint</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Status</td>
+                <td style="border:1px solid #ddd; padding:8px;">Older, still supported</td>
+                <td style="border:1px solid #ddd; padding:8px;">Recommended (newer, better features)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">On-Premises Support</td>
+                <td style="border:1px solid #ddd; padding:8px;">Yes</td>
+                <td style="border:1px solid #ddd; padding:8px;">Yes</td>
+            </tr>
+        </table>
+
+        <h4>EC2 Logs Setup Requirements</h4>
+        <p>By default, EC2 instances do not send CloudWatch Logs. To enable:</p>
+        <ul>
+            <li>Install CloudWatch Agent (v1 or v2) on the EC2 instance.</li>
+            <li>Verify IAM permissions: EC2 instance must have an IAM role with CloudWatch Logs permissions (<code>logs:PutLogEvents</code>, <code>logs:CreateLogStream</code>, <code>logs:CreateLogGroup</code>).</li>
+            <li>Configure the agent to collect desired logs (e.g., <code>/var/log/apache2/access.log</code>, application logs).</li>
+            <li>Unified Agent supports on-premises servers as well; download and install on bare metal or VMs outside AWS.</li>
+        </ul>
+
+        <h3>CloudWatch Alarms</h3>
+
+        <h4>Service Overview</h4>
+        <p>CloudWatch Alarms monitor metrics or logs and trigger actions when thresholds are breached. Alarms are fundamental to operational alerting and auto-remediation.</p>
+
+        <ul>
+            <li><strong>Alarm States:</strong>
+                <ul>
+                    <li><strong>OK:</strong> Metric is within the threshold.</li>
+                    <li><strong>ALARM:</strong> Metric has breached the threshold.</li>
+                    <li><strong>INSUFFICIENT_DATA:</strong> Not enough data to determine state (often during initial alarm creation).</li>
+                </ul>
+            </li>
+            <li><strong>Period:</strong> The length of time (60 seconds, 300 seconds, etc.) over which a metric is evaluated. Example: CPUUtilization > 80% for 2 minutes (period = 120 seconds, evaluations = 2).</li>
+            <li><strong>Threshold:</strong> The value that triggers the alarm (e.g., CPUUtilization > 80%).</li>
+            <li><strong>Datapoints to Alarm:</strong> Number of consecutive data points that must breach the threshold to trigger the alarm (prevents false positives from single anomalies).</li>
+        </ul>
+
+        <h4>Alarm Targets & Actions</h4>
+        <p>When an alarm state changes, CloudWatch can trigger actions:</p>
+        <ul>
+            <li><strong>Auto Scaling Actions:</strong> Scale EC2 Auto Scaling Group capacity up/down. Example: CPU alarm → trigger ASG to add 2 instances.</li>
+            <li><strong>EC2 Instance Actions:</strong> Reboot, stop, or terminate instances. Example: if instance becomes unhealthy, auto-reboot it.</li>
+            <li><strong>SNS Notifications:</strong> Send notification to SNS topic (email, SMS, Lambda, HTTP webhook). Most common for alerting.</li>
+            <li><strong>Systems Manager Automation:</strong> Trigger SSM automation runbooks for complex remediation (restart services, modify configurations).</li>
+        </ul>
+
+        <h4>Composite Alarms</h4>
+        <p>Composite Alarms monitor the state of multiple other alarms, reducing alert fatigue.</p>
+        <ul>
+            <li><strong>Purpose:</strong> Standard alarms are on a single metric. Composite alarms combine multiple alarm states using AND/OR logic.</li>
+            <li><strong>Use Case:</strong> Create a parent alarm that triggers only if multiple child alarms are breached. Example: "Database_Performance alarm" triggers if BOTH CPU AND DiskIO alarms are ALARM state.</li>
+            <li><strong>Benefit:</strong> Reduces alarm clutter and prevents escalation of minor issues. Only send notifications when critical conditions are met.</li>
+        </ul>
+
+        <h4>EC2 Instance Recovery Alarms</h4>
+        <p>AWS provides a system status alarm for EC2 instances to automatically recover unhealthy instances.</p>
+        <ul>
+            <li><strong>System Status Check:</strong> AWS monitors physical hardware and the hypervisor. If the system status check fails, the instance is likely on degraded hardware.</li>
+            <li><strong>EC2 Instance Recovery Action:</strong> Alarm can trigger an EC2 Recovery action that: (1) stops the instance, (2) starts it on different hardware, (3) preserves attached EBS volumes and Elastic IP. This typically takes a few minutes.</li>
+            <li><strong>Exam Pattern:</strong> Scenario asks "How to automatically recover a failed EC2 instance?" → Answer: Create a CloudWatch alarm on SystemStatusCheckFailed metric → action: Recover instance.</li>
+            <li><strong>Limitation:</strong> Recovery only works if the root volume is EBS (not instance store). Instance store data is lost.</li>
+        </ul>
+
+        <h4>Testing Alarms</h4>
+        <p>To verify that alarms and notifications work correctly, test by setting alarm state manually:</p>
+        <pre style="background:#f5f5f5; padding:10px; border-radius:5px; overflow-x:auto;">
+aws cloudwatch set-alarm-state --alarm-name "my-alarm" --state-value ALARM --state-reason "Testing alarm"
+        </pre>
+        <p>This immediately transitions the alarm to ALARM state and triggers any associated actions (SNS notifications, Auto Scaling actions) without waiting for metric thresholds to be breached. This is critical for validating alert workflows before going to production.</p>
+
+        <hr class="soft-divide">
+        <h2>Amazon EventBridge — Event-Driven Architecture</h2>
+
+        <h3>Service Overview</h3>
+        <p>EventBridge (formerly CloudWatch Events) is a serverless event bus that routes events from AWS services, third-party services, and custom applications to targets. It enables event-driven architecture patterns for real-time processing, scheduling, and integration.</p>
+
+        <h3>Core Concepts</h3>
+        <ul>
+            <li><strong>Event Bus:</strong> Named entry point for events. Default event bus receives AWS service events. Custom event buses for partner/third-party events.</li>
+            <li><strong>Event:</strong> JSON document describing a state change or occurrence. Example: EC2 instance state change, RDS database backup completion, S3 object creation.</li>
+            <li><strong>Rule:</strong> Specifies which events match certain criteria and which target(s) to send them to.</li>
+            <li><strong>Target:</strong> AWS service, Lambda function, HTTP endpoint, or third-party service that processes the event.</li>
+        </ul>
+
+        <h3>EventBridge Event Sources & Scheduling</h3>
+
+        <h4>Event Pattern Rules</h4>
+        <p>EventBridge can create rules that react when specific events occur. Event patterns use JSON matching to filter events.</p>
+        <ul>
+            <li><strong>AWS Service Events:</strong> Any AWS service can emit events. Example: EC2 instance launches, RDS backup completes, DynamoDB table auto-scaling triggered.</li>
+            <li><strong>Event Pattern Syntax:</strong> Define conditions on event fields. Example: <code>{ "source": ["aws.ec2"], "detail-type": ["EC2 Instance State-change Notification"], "detail": { "state": ["running"] } }</code> → triggers when EC2 instance enters running state.</li>
+            <li><strong>Event Flow:</strong> Service generates event → EventBridge evaluates rules → matching events sent to targets (Lambda, SNS, SQS, HTTP, etc.).</li>
+        </ul>
+
+        <h4>Scheduled Rules (Cron Jobs)</h4>
+        <p>EventBridge can schedule rules to trigger at specific times or intervals using cron expressions or rate expressions.</p>
+        <ul>
+            <li><strong>Cron Syntax:</strong> <code>cron(0 12 * * ? *)</code> → every day at 12:00 UTC.</li>
+            <li><strong>Rate Syntax:</strong> <code>rate(5 minutes)</code> → every 5 minutes. Supported units: minutes, hours, days.</li>
+            <li><strong>Use Case:</strong> Scheduled Lambda for backups, report generation, data cleanup. Example: trigger Lambda daily at 2 AM to clean up temporary S3 objects.</li>
+        </ul>
+
+        <h4>Solution Architect Use Cases & Patterns</h4>
+        <ul>
+            <li><strong>EC2 Instance Auto-Remediation:</strong> EventBridge rule matches EC2 SystemStatusCheckFailed → triggers Lambda → Lambda forces instance reboot or replacement.</li>
+            <li><strong>RDS Backup Notification:</strong> EventBridge rule matches RDS backup completion → SNS topic → email notification to DBA team.</li>
+            <li><strong>S3 Object Processing:</strong> EventBridge rule on S3:ObjectCreated → Lambda → process image (resize, transcribe), store result in DynamoDB, notify user.</li>
+            <li><strong>Cross-Account Event Delivery:</strong> Central security account receives EventBridge events from multiple AWS accounts for centralized monitoring and compliance.</li>
+            <li><strong>Real-Time Data Pipeline:</strong> EventBridge rule on DynamoDB Streams change → Firehose → S3 data lake. Enables real-time analytics without custom code.</li>
+            <li><strong>Exam Pattern:</strong> "Automatically trigger remediation when resource violates compliance policy" → AWS Config rule non-compliant → EventBridge rule → Lambda/SSM action.</li>
+        </ul>
+
+        <h3>EventBridge Rules & Events</h3>
+        <ul>
+            <li><strong>Rules Generate JSON Documents:</strong> Each rule generates a JSON document describing the event. This document is sent to all matched targets.</li>
+            <li><strong>Multiple Targets per Rule:</strong> Single rule can send events to multiple targets. Example: EC2 state change triggers Lambda AND SNS AND logs to CloudWatch simultaneously.</li>
+            <li><strong>Routing Flexibility:</strong> Different events can be routed to different targets, enabling complex integrations without central orchestration.</li>
+        </ul>
+
+        <h3>EventBridge Schema Registry</h3>
+        <p>Schema Registry analyzes events flowing through the event bus and infers the structure (schema) of events from various AWS services.</p>
+        <ul>
+            <li><strong>Purpose:</strong> Provides type-safe event definitions for application developers.</li>
+            <li><strong>Code Generation:</strong> Schema Registry can generate client code (Python, Java, TypeScript, etc.) that your application uses to generate events. This ensures events conform to the expected structure.</li>
+            <li><strong>Use Case:</strong> Developer writes application code that publishes events to EventBridge. Instead of manually writing JSON, they use generated SDK code that enforces schema compliance. Reduces bugs and improves developer experience.</li>
+            <li><strong>Discovery:</strong> Registry auto-discovers schemas from events already flowing through EventBridge, making it easy to understand event structures without documentation.</li>
+        </ul>
+
+        <h3>EventBridge Resource-Based Policies</h3>
+        <p>Resource-based policies manage permissions for specific event buses, enabling cross-account event delivery.</p>
+        <ul>
+            <li><strong>Use Case:</strong> Aggregate all events from AWS Organization accounts in a single central logging/monitoring account. Each member account publishes events to the central account's event bus.</li>
+            <li><strong>Implementation:</strong> Central account defines a resource policy on its event bus allowing member accounts to PutEvents. Member accounts call PutEvents on the central bus.</li>
+            <li><strong>Example:</strong> Security team has a central event bus in account 123456789. All production accounts (111111111, 222222222, 333333333) send security events (failed logins, policy violations, API anomalies) to the central bus for analysis.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>CloudWatch Insights & Operational Visibility</h2>
+
+        <h3>Container Insights</h3>
+        <p>Container Insights collects, aggregates, and summarizes metrics and logs from containers running on Amazon ECS, Amazon EKS, Kubernetes on EC2, and AWS Fargate.</p>
+        <ul>
+            <li><strong>Supported Platforms:</strong> ECS (EC2 & Fargate), EKS (managed nodes and Fargate), self-managed Kubernetes on EC2.</li>
+            <li><strong>Data Collection:</strong> CloudWatch Container Insights Agent (containerized) deployed as a DaemonSet in Kubernetes clusters or as a sidecar in ECS tasks.</li>
+            <li><strong>Metrics Collected:</strong> Pod/container CPU, memory, disk I/O, network throughput, and application-level metrics.</li>
+            <li><strong>Dashboards:</strong> Pre-built CloudWatch dashboards show container cluster health, node status, pod performance.</li>
+            <li><strong>Use Case:</strong> Monitor microservices health, identify resource-constrained pods, troubleshoot performance issues in containerized applications.</li>
+        </ul>
+
+        <h3>Lambda Insights</h3>
+        <p>Lambda Insights collects, aggregates, and summarizes system-level and diagnostic metrics for Lambda functions.</p>
+        <ul>
+            <li><strong>Metrics Collected:</strong> CPU time, memory utilization, disk usage, network activity, cold starts, worker shutdowns, timeouts.</li>
+            <li><strong>Delivery:</strong> Provided as a Lambda Layer (aws-lambda-insights-extension). Add to your function → automatic metric collection.</li>
+            <li><strong>Dashboards:</strong> Pre-built Lambda Insights dashboard shows function performance, errors, cold starts, duration trends.</li>
+            <li><strong>Cold Start Detection:</strong> Automatically identifies cold start events (first invocation after deployment or scaling). Critical for performance analysis.</li>
+            <li><strong>Use Case:</strong> Troubleshoot serverless application performance, identify functions with excessive cold starts or memory pressure, optimize function configuration.</li>
+        </ul>
+
+        <h3>Contributor Insights</h3>
+        <p>Contributor Insights analyzes CloudWatch Logs data and creates time series showing top N contributors.</p>
+        <ul>
+            <li><strong>Purpose:</strong> Identify which entities (IP addresses, user IDs, URLs, etc.) are generating the most activity or errors.</li>
+            <li><strong>Examples:</strong>
+                <ul>
+                    <li>Top 10 IP addresses making failed authentication attempts (security threat detection).</li>
+                    <li>Top 5 user IDs generating API errors (identify problematic users or integrations).</li>
+                    <li>Top 20 URLs consuming the most bandwidth (identify hot endpoints for optimization).</li>
+                    <li>Top N database queries by execution count or duration (identify heavy queries).</li>
+                </ul>
+            </li>
+            <li><strong>Use Case:</strong> Security teams use Contributor Insights to identify DDoS sources or brute-force attempts. Application teams identify resource-hungry endpoints or users.</li>
+        </ul>
+
+        <h3>Application Insights</h3>
+        <p>Application Insights automatically creates dashboards and provides intelligent insights for applications running on EC2 or hybrid infrastructure.</p>
+        <ul>
+            <li><strong>Supported Technologies:</strong> .NET, SQL Server, Java, IIS, Oracle, MySQL, on-premises servers.</li>
+            <li><strong>Intelligence Engine:</strong> Uses Amazon SageMaker to analyze application behavior and identify anomalies (deviations from normal).</li>
+            <li><strong>Automatic Dashboards:</strong> Creates dashboards showing application health, related AWS resources (RDS, load balancers), and detected problems.</li>
+            <li><strong>Problem Detection:</strong> Identifies potential issues: high latency, increased error rates, resource exhaustion. Reduces troubleshooting time.</li>
+            <li><strong>Use Case:</strong> Legacy .NET or Java application on EC2 connected to RDS database. Application Insights automatically monitors the app and database, detects when response times increase, correlates it with database query performance degradation, and alerts the team.</li>
+        </ul>
+
+        <h3>Insights Summary Table</h3>
+        <table style="width:100%; border-collapse:collapse; margin:10px 0;">
+            <tr style="background:#f0f0f0;">
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Insights Type</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Target</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Key Metrics</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">When to Use</th>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Container Insights</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">ECS, EKS, Kubernetes</td>
+                <td style="border:1px solid #ddd; padding:8px;">Pod/container CPU, memory, network I/O</td>
+                <td style="border:1px solid #ddd; padding:8px;">Monitor containerized microservices</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Lambda Insights</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">AWS Lambda functions</td>
+                <td style="border:1px solid #ddd; padding:8px;">CPU, memory, cold starts, duration, errors</td>
+                <td style="border:1px solid #ddd; padding:8px;">Troubleshoot serverless app performance</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Contributor Insights</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">CloudWatch Logs data</td>
+                <td style="border:1px solid #ddd; padding:8px;">Top N contributors (IPs, users, URLs, queries)</td>
+                <td style="border:1px solid #ddd; padding:8px;">Identify hot spots, DDoS sources, heavy users</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Application Insights</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">EC2 apps (.NET, Java, etc.)</td>
+                <td style="border:1px solid #ddd; padding:8px;">App health, related resources, anomalies</td>
+                <td style="border:1px solid #ddd; padding:8px;">Automated monitoring for legacy apps</td>
+            </tr>
+        </table>
+
+        <hr class="soft-divide">
+        <h2>AWS CloudTrail — API Call Auditing</h2>
+
+        <h3>Service Overview</h3>
+        <p>CloudTrail records AWS API calls made by users, services, and AWS console actions. It provides an audit trail of who did what, when, and from where. Essential for compliance, security analysis, and troubleshooting.</p>
+
+        <h3>Management Events</h3>
+        <p>Management Events record API operations that modify or read resources in your AWS account.</p>
+        <ul>
+            <li><strong>Examples (Write Events):</strong> CreateInstance, TerminateInstances, CreateBucket, PutBucketPolicy, CreateDBInstance, DeleteRole, AttachUserPolicy.</li>
+            <li><strong>Examples (Read Events):</strong> DescribeInstances, GetBucketPolicy, DescribeDBInstances, ListUsers.</li>
+            <li><strong>Enabled by Default:</strong> CloudTrail trails enabled by default in all AWS accounts to record management events.</li>
+            <li><strong>Retention:</strong> 90 days in CloudTrail. For longer retention, log to S3 and query with Athena.</li>
+        </ul>
+
+        <h3>Data Events</h3>
+        <p>Data Events record high-volume operations on resources (not enabled by default due to volume and cost).</p>
+        <ul>
+            <li><strong>Examples:</strong> S3 GetObject, PutObject, DeleteObject, DynamoDB GetItem, PutItem, Query, Lambda Invoke.</li>
+            <li><strong>Disabled by Default:</strong> Very high volume; enabling data events significantly increases CloudTrail costs and storage requirements.</li>
+            <li><strong>Read vs Write Events:</strong> Separate tracking for read operations (GetObject) and write operations (PutObject).</li>
+            <li><strong>Use Case:</strong> Enable selectively for security auditing (who accessed sensitive S3 buckets) or compliance requirements.</li>
+        </ul>
+
+        <h3>CloudTrail Insight Events</h3>
+        <p>CloudTrail Insights automatically detect unusual API activity and anomalies.</p>
+        <ul>
+            <li><strong>Anomaly Detection:</strong> CloudTrail analyzes typical API call patterns and flags deviations. Example: Suddenly 10,000 DeleteBucket calls from a user who typically makes 5 calls/day → anomaly detected.</li>
+            <li><strong>Use Case:</strong> Detect compromised credentials, insider threats, or misconfigured automation.</li>
+            <li><strong>Console Display:</strong> Anomalies appear in CloudTrail console under Insights tab with detailed context (unusual API call frequencies, error rates, etc.).</li>
+        </ul>
+
+        <h3>Event Retention & Long-Term Storage</h3>
+        <ul>
+            <li><strong>Default Retention:</strong> 90 days in CloudTrail console.</li>
+            <li><strong>Long-Term Storage:</strong> Configure CloudTrail to log to S3 bucket. Can apply S3 lifecycle policies (transition to Glacier after 1 year, delete after 7 years for compliance).</li>
+            <li><strong>Querying with Athena:</strong> Create CloudTrail logs table in Athena → SQL queries to find specific API calls, user actions, or suspicious activity over years of data.</li>
+        </ul>
+
+        <h3>CloudTrail & EventBridge Integration</h3>
+        <p>CloudTrail integrates with EventBridge to enable real-time response to API calls.</p>
+        <ul>
+            <li><strong>Intercept API Calls:</strong> Create EventBridge rule that matches CloudTrail events and triggers Lambda/SNS/other targets.</li>
+            <li><strong>Common Exam Scenarios:</strong>
+                <ul>
+                    <li><strong>Real-Time Security Alerting:</strong> EventBridge rule matches API calls to modify security groups → triggers Lambda → Lambda validates change against policy → if unauthorized, auto-reverts change and sends SNS alert. Exam tip: "How to prevent unauthorized security group modifications?" → CloudTrail + EventBridge + Lambda auto-remediation.</li>
+                    <li><strong>Compliance Monitoring:</strong> EventBridge rule matches DeleteBucket API call → triggers SNS → compliance team notified immediately. Or triggers Lambda to ensure bucket had proper backup before deletion.</li>
+                    <li><strong>Resource Tracking:</strong> EventBridge rule matches all EC2 instance modifications → logs to DynamoDB → real-time inventory of infrastructure changes.</li>
+                    <li><strong>Cost Optimization:</strong> EventBridge rule matches creation of expensive resources (RDS with large instance size) → triggers Lambda to send SNS alert for approval before resource fully launches.</li>
+                </ul>
+            </li>
+            <li><strong>Event Pattern:</strong> <code>{ "source": ["aws.ec2"], "detail-type": ["AWS API Call via CloudTrail"], "detail": { "eventName": ["ModifySecurityGroupRules"] } }</code></li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>AWS Config — Resource Configuration & Compliance</h2>
+
+        <h3>Service Overview</h3>
+        <p>AWS Config audits and records the configuration of AWS resources, tracks configuration changes over time, and evaluates compliance against desired configurations. It answers questions: "Is there unrestricted SSH access in any security group?" "Do all S3 buckets have public access blocked?" "Are all RDS instances encrypted?"</p>
+
+        <h3>Core Capabilities</h3>
+        <ul>
+            <li><strong>Configuration Recording:</strong> Captures the current configuration of resources (EC2 security group rules, S3 bucket policies, RDS encryption status, etc.).</li>
+            <li><strong>Change Tracking:</strong> Records when configurations change, who made the change (via CloudTrail integration), and the before/after state.</li>
+            <li><strong>Compliance Rules:</strong> Evaluate resources against rules to determine if they are compliant or non-compliant.</li>
+            <li><strong>Notifications:</strong> SNS notifications when configuration changes occur or resources become non-compliant.</li>
+        </ul>
+
+        <h3>AWS Config Rules</h3>
+        <p>Config Rules are conditions that evaluate whether resources meet compliance requirements.</p>
+        <ul>
+            <li><strong>Prebuilt Rules:</strong> AWS provides ~75 managed rules covering common compliance scenarios. Examples: <code>restricted-ssh</code>, <code>s3-bucket-public-read-prohibited</code>, <code>encrypted-volumes</code>, <code>iam-policy-no-statements-with-admin-access</code>.</li>
+            <li><strong>Custom Rules:</strong> Define custom rules in Lambda. Lambda function receives config item (resource configuration) and returns COMPLIANT or NON_COMPLIANT. Useful for organization-specific policies (e.g., "all EC2 instances must have specific tags").</li>
+            <li><strong>Evaluation Modes:</strong>
+                <ul>
+                    <li><strong>Triggered:</strong> Rule evaluates when resource configuration changes (reactive).</li>
+                    <li><strong>Periodic:</strong> Rule evaluates on a schedule (default: every 24 hours, or custom).</li>
+                </ul>
+            </li>
+            <li><strong>Important Limitation:</strong> Config Rules evaluate and report compliance; they do NOT prevent non-compliant actions. Example: Rule says "SSH access must not be 0.0.0.0/0" but if someone modifies the security group, Config detects it's non-compliant but doesn't block the change. Use EventBridge + Lambda for prevention/auto-remediation.</li>
+        </ul>
+
+        <h3>AWS Config Remediations</h3>
+        <p>Auto-Remediation automatically fixes non-compliant resources using Systems Manager Automation Documents.</p>
+        <ul>
+            <li><strong>Remediation Actions:</strong> Defined in Systems Manager Automation Documents. Executed automatically when resources become non-compliant or on-demand.</li>
+            <li><strong>Managed Automation Documents:</strong> AWS provides pre-built remediation docs (e.g., "Enable encryption on RDS instance," "Revoke overly permissive security group rules").</li>
+            <li><strong>Custom Automation Documents:</strong> Create custom docs using YAML/JSON. Can invoke Lambda functions for complex remediation logic. Example: "If EC2 instance is non-compliant because it doesn't have required tags, Lambda function adds tags based on organization policy."</li>
+            <li><strong>Retry Logic:</strong> If auto-remediation fails or resource remains non-compliant, Config can retry (configurable retry attempts and intervals).</li>
+            <li><strong>Use Case:</strong> Non-compliant EC2 security group allows SSH from 0.0.0.0/0 → Config rule detects → triggers remediation → Lambda/SSM automation revokes overly permissive rule → sends SNS notification to security team.</li>
+        </ul>
+
+        <h3>AWS Config Pricing</h3>
+        <ul>
+            <li><strong>No Free Tier:</strong> Config is paid service.</li>
+            <li><strong>Costs:</strong>
+                <ul>
+                    <li>$0.003 per configuration item per month (charged for each AWS resource AWS Config tracks).</li>
+                    <li>$0.001 per Config rule evaluation per month (multiplied by number of resources the rule evaluates against).</li>
+                </ul>
+            </li>
+            <li><strong>Example Cost:</strong> 1000 EC2 instances + 100 S3 buckets + 50 RDS instances = 1150 config items × $0.003 = $3.45/month. Plus 5 rules × 1150 items × $0.001 = $5.75/month. Total ~$9/month per region.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Comparison Table: CloudWatch vs CloudTrail vs AWS Config</h2>
+        <table style="width:100%; border-collapse:collapse; margin:10px 0;">
+            <tr style="background:#f0f0f0;">
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Aspect</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">CloudWatch</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">CloudTrail</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">AWS Config</th>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Primary Purpose</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Monitor performance & health (metrics, logs)</td>
+                <td style="border:1px solid #ddd; padding:8px;">Audit API calls (who did what)</td>
+                <td style="border:1px solid #ddd; padding:8px;">Track resource configuration & compliance</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Data Type</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Metrics (numeric) & Logs (text)</td>
+                <td style="border:1px solid #ddd; padding:8px;">API call events (who, what, when, where)</td>
+                <td style="border:1px solid #ddd; padding:8px;">Resource configuration snapshots & changes</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Scope</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Performance + operational data</td>
+                <td style="border:1px solid #ddd; padding:8px;">All API calls (management + data events)</td>
+                <td style="border:1px solid #ddd; padding:8px;">Resource state & compliance status</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Retention</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Metrics: 15 months (can extend via export); Logs: configurable (1 day to never)</td>
+                <td style="border:1px solid #ddd; padding:8px;">90 days in console; long-term in S3</td>
+                <td style="border:1px solid #ddd; padding:8px;">Current state always available; change history in S3</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Use Case Example</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">CPU > 80% alarm triggers ASG scale-up</td>
+                <td style="border:1px solid #ddd; padding:8px;">Who deleted the RDS database instance at 3 AM?</td>
+                <td style="border:1px solid #ddd; padding:8px;">Is S3 bucket public? Is EC2 security group overly permissive?</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Key Feature</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Alarms, Dashboards, Logs Insights</td>
+                <td style="border:1px solid #ddd; padding:8px;">API audit trail, Insights anomaly detection</td>
+                <td style="border:1px solid #ddd; padding:8px;">Rules, Compliance evaluation, Auto-remediation</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Exam Pattern</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">"Performance issue" → CloudWatch metrics/logs/alarms</td>
+                <td style="border:1px solid #ddd; padding:8px;">"Audit API calls" or "who deleted resource" → CloudTrail</td>
+                <td style="border:1px solid #ddd; padding:8px;">"Compliance" or "configuration drift" → AWS Config</td>
+            </tr>
+        </table>
+
+        <hr class="soft-divide">
+        <h2>Exam-Style Questions & Answers</h2>
+
+        <ol>
+            <li>
+                <strong>Q: Your organization needs to ensure all EC2 security groups never allow SSH access from the entire internet (0.0.0.0/0). How would you design a solution to automatically remediate any non-compliant security groups?</strong>
+                <br><br>
+                <strong>A:</strong> Use AWS Config with a custom rule that evaluates security groups. When a security group has an inbound SSH rule from 0.0.0.0/0, it's marked non-compliant. Configure AWS Config auto-remediation using Systems Manager Automation Document: SSM Doc invokes Lambda → Lambda revokes the overly permissive rule → SNS notifies security team. Additionally, use CloudTrail + EventBridge rule to intercept ModifySecurityGroupRules API calls in real-time and trigger immediate remediation before Config evaluation runs.
+            </li>
+
+            <li>
+                <strong>Q: You're implementing real-time monitoring for a critical application running on EC2. Users report sudden performance degradation. Where should you look first to understand what changed?</strong>
+                <br><br>
+                <strong>A:</strong> Three places: (1) CloudWatch Metrics to see if CPU/memory/disk spiked. (2) CloudWatch Logs Insights to search application logs for errors or warnings. (3) CloudTrail to check if someone made configuration changes (scaled down instance, modified security group, added network ACL rule). If investigating root cause of a performance issue → CloudWatch. If investigating who made a configuration change → CloudTrail. If investigating resource compliance state → AWS Config.
+            </li>
+
+            <li>
+                <strong>Q: Your organization's compliance requirement mandates that all S3 buckets must have versioning enabled and public read access blocked. How do you continuously enforce this?</strong>
+                <br><br>
+                <strong>A:</strong> Use AWS Config with two managed rules: (1) s3-bucket-versioning-enabled, (2) s3-bucket-public-read-prohibited. Enable Config auto-remediation: if a bucket violates the rule, SSM automation document enables versioning or blocks public access. Set up SNS notifications for non-compliance. Use Config rules evaluation (triggered on bucket creation/modification and periodic) to continuously monitor all buckets.
+            </li>
+
+            <li>
+                <strong>Q: You need to analyze CloudWatch Logs from 10,000 Lambda functions to find which functions have the highest error rate and which users are triggering the most errors. What's the most efficient approach?</strong>
+                <br><br>
+                <strong>A:</strong> Use CloudWatch Logs Insights for historical analysis: query all function logs with filter for errors, aggregate by function and user ID, calculate error rates. For real-time alerting on high error rates, create CloudWatch Logs Subscription that sends error events to Lambda or Firehose for processing. For identifying top error-triggering users over time, use Contributor Insights to create a time series of top contributors.
+            </li>
+
+            <li>
+                <strong>Q: A developer accidentally deleted a critical DynamoDB table. Your manager asks how long you can investigate to restore it. What are your options?</strong>
+                <br><br>
+                <strong>A:</strong> Three recovery paths: (1) Point-in-Time Recovery (PITR): if enabled, can restore to any point in last 35 days. No downtime, new table created. (2) On-Demand Backups: if manual backups exist, can restore from those. (3) DynamoDB Streams + Lambda: if streams were enabled, can replay stream events to reconstruct data (requires application/code). Exam pattern: "How long to recover table?" → PITR is 35 days. First thing: check if PITR was enabled. If not, check if manual backups exist. If neither → data may be lost.
+            </li>
+
+            <li>
+                <strong>Q: Your organization has multiple AWS accounts (dev, staging, production). You want to aggregate security events from all accounts into a central security account for analysis. What's the architecture?</strong>
+                <br><br>
+                <strong>A:</strong> (1) Each account sends CloudTrail logs to central S3 bucket in security account. (2) Central account creates EventBridge rule that matches CloudTrail events (via S3 source or EventBridge cross-account), (3) Rule triggers Lambda in central account to process events → store in DynamoDB → create dashboards. Alternatively, use CloudWatch Logs Subscriptions across accounts to aggregate logs to central account. For real-time response, use EventBridge rules in central account with resource-based policy allowing events from member accounts.
+            </li>
+
+            <li>
+                <strong>Q: You're designing monitoring for a microservices application with ECS containers. You need to track container-level metrics (CPU, memory per task) and also see cold starts and Lambda function performance for serverless components. What CloudWatch features do you use?</strong>
+                <br><br>
+                <strong>A:</strong> For ECS containers: enable Container Insights on ECS cluster. For Lambda functions: add Lambda Insights layer to functions. Container Insights → metrics per task/container. Lambda Insights → detailed function metrics including cold starts. Both generate pre-built dashboards in CloudWatch for quick visibility into microservices health.
+            </li>
+
+            <li>
+                <strong>Q: An EC2 instance fails the system status check. You want to automatically recover it without manual intervention. Describe the solution.</strong>
+                <br><br>
+                <strong>A:</strong> Create a CloudWatch alarm on SystemStatusCheckFailed metric (or Status Check Failed (System)) → set threshold to 1 (failed check) → set period to 60-120 seconds → set datapoints to alarm to 2 (to avoid false positives). Alarm action: EC2 Recover. When alarm state becomes ALARM, AWS automatically stops the instance, starts it on different hardware (preserving EBS and EIP). Instance back online in 2-3 minutes. This is different from reboot (warm restart) — recovery moves instance to healthy hardware.
+            </li>
+
+            <li>
+                <strong>Q: You want to send a daily report showing the top 10 most frequently accessed S3 objects by user. Which CloudWatch feature helps?</strong>
+                <br><br>
+                <strong>A:</strong> Contributor Insights. Enable S3 data events in CloudTrail (S3 GetObject events) → CloudWatch Logs → Contributor Insights rule that parses logs and extracts userIdentity and S3 object key → creates time series showing top 10 contributors (users accessing objects). Schedule daily report generation or add to dashboard.
+            </li>
+
+            <li>
+                <strong>Q: Your application needs to trigger a Lambda function every day at 2 AM UTC to perform database backups. What AWS service and configuration?</strong>
+                <br><br>
+                <strong>A:</strong> EventBridge. Create rule with schedule expression: <code>cron(0 2 * * ? *)</code> → target: Lambda function. EventBridge manages the scheduling (serverless, no infrastructure). When the cron time matches, EventBridge invokes the Lambda function with an event payload. No need for separate scheduling service like CloudWatch Events (EventBridge is the newer, more capable version of CloudWatch Events).
+            </li>
+        </ol>
+
+        <hr class="soft-divide">
+        <h2>Best Practices & Design Checklist</h2>
+        <ul>
+            <li><strong>Multi-Account Monitoring:</strong> Set up central logging account with aggregated CloudWatch Logs, CloudTrail trails, and AWS Config. Use resource-based policies and cross-account subscriptions.</li>
+            <li><strong>Real-Time Alerting:</strong> Use CloudWatch alarms for threshold-based alerts (performance). Use EventBridge for event-based triggers (resource state changes). Use CloudTrail + EventBridge for API-based security alerts.</li>
+            <li><strong>Log Retention Planning:</strong> CloudWatch Logs: set expiration policy to avoid storage bloat. CloudTrail: log to S3 with lifecycle transitions to Glacier. AWS Config: use S3 for historical snapshots.</li>
+            <li><strong>Compliance Automation:</strong> AWS Config + auto-remediation for repetitive compliance fixes. Manual approvals for destructive actions (deletions). CloudTrail integration for audit trail.</li>
+            <li><strong>Performance Troubleshooting:</strong> CloudWatch metrics first (identify what changed). CloudWatch Logs Insights for correlation (when did errors start?). CloudTrail for configuration changes (who changed security groups?).</li>
+            <li><strong>Cost Optimization:</strong> CloudWatch Logs: compress old data, archive to S3. CloudTrail data events: enable selectively (high cost). AWS Config: optimize rule evaluation frequency (not always needed to run every hour).</li>
+            <li><strong>Security Monitoring:</strong> Combine CloudTrail (API audit), EventBridge (real-time response), and AWS Config (compliance state) for comprehensive visibility. Auto-remediate where safe; alert for manual review of sensitive changes.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Closing Notes</h2>
+        <p>Monitoring and auditing are critical for exam success. Remember: CloudWatch = performance and logs, CloudTrail = API audit, AWS Config = compliance and configuration tracking, EventBridge = event-driven automation. Exam questions often test your ability to select the right tool for the scenario: performance issue → CloudWatch, who changed something → CloudTrail, is resource compliant → AWS Config, automate response to event → EventBridge. Master the combination patterns: CloudTrail + EventBridge for real-time security response, CloudWatch + CloudTrail for troubleshooting, AWS Config + EventBridge for auto-remediation. These combinations form the foundation of modern AWS operations.</p>
+
+    </div>
+</body>
+</html>

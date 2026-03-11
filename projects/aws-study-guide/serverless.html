@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Serverless on AWS — Lambda, DynamoDB, API Gateway, Step Functions</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <div class="container2">
+        <div class="header">
+            <h1>Serverless Architecture on AWS</h1>
+            <hr>
+        </div>
+
+        <h2>Overview: What is Serverless?</h2>
+        <p><strong>Serverless</strong> computing means writing and deploying applications without managing infrastructure. You focus on code; AWS handles provisioning, scaling, patching, and operations. You pay only for what you use (pay-per-execution model). No servers to manage, patch, or monitor. Serverless services automatically scale from zero to handle any load, making them ideal for unpredictable workloads, event-driven architectures, and rapid prototyping.</p>
+
+        <h3>Core Serverless Services on AWS</h3>
+        <ul>
+            <li><strong>Lambda:</strong> Compute engine for running code without provisioning servers. Execute functions in response to events.</li>
+            <li><strong>DynamoDB:</strong> Fully managed NoSQL database with on-demand or provisioned capacity. Scales automatically.</li>
+            <li><strong>API Gateway:</strong> Managed REST API service. Route HTTP requests to Lambda or other backends.</li>
+            <li><strong>Step Functions:</strong> Visual workflow orchestration. Chain Lambda functions and AWS services together.</li>
+            <li><strong>S3:</strong> Object storage with event notifications. Trigger workflows on object creation/deletion.</li>
+            <li><strong>SNS & SQS:</strong> Messaging services for decoupling applications. Event sources for Lambda.</li>
+            <li><strong>Cognito:</strong> User identity and access management. Authenticate users for serverless apps.</li>
+            <li><strong>Kinesis Data Firehose:</strong> Managed data delivery to S3, Redshift, ElastiCache. Automatic scaling.</li>
+            <li><strong>Aurora Serverless:</strong> Auto-scaling relational database. Scales connections and capacity on demand.</li>
+            <li><strong>Fargate:</strong> Serverless container compute. Run Docker containers without managing EC2 instances.</li>
+        </ul>
+
+        <h3>Benefits of Serverless Architecture</h3>
+        <ul>
+            <li><strong>No Infrastructure Management:</strong> Focus on business logic, not ops.</li>
+            <li><strong>Auto-Scaling:</strong> Automatically handles traffic spikes without manual intervention.</li>
+            <li><strong>Pay-Per-Use:</strong> Only charged for compute time and data stored, not idle resources.</li>
+            <li><strong>High Availability:</strong> Built-in redundancy across multiple AZs.</li>
+            <li><strong>Rapid Development:</strong> Deploy code in minutes, iterate quickly.</li>
+            <li><strong>Decoupled Architecture:</strong> Services communicate via events and queues, reducing dependencies.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>AWS Lambda — Function Compute</h2>
+
+        <h3>Lambda Fundamentals</h3>
+        <p><strong>Lambda</strong> is a serverless compute service that runs your code in response to events. Upload your code, define the event trigger (API call, S3 upload, DynamoDB stream, etc.), and Lambda executes your function automatically. You pay only for the compute time your code consumes.</p>
+
+        <h4>Key Characteristics</h4>
+        <ul>
+            <li><strong>Virtual Functions:</strong> Lambda invokes your code without you managing the underlying compute infrastructure.</li>
+            <li><strong>Short-Lived Executions:</strong> Maximum execution time is 15 minutes. Designed for short, event-driven tasks (not long-running batch jobs).</li>
+            <li><strong>On-Demand Scaling:</strong> Automatically scales from zero to thousands of concurrent executions.</li>
+            <li><strong>Pay-Per-Request Model:</strong> Billed per invocation and compute time (per 100ms).</li>
+            <li><strong>Free Tier:</strong> 1 million requests and 400,000 GB-seconds of compute time per month.</li>
+            <li><strong>Easy Monitoring:</strong> Integrated with CloudWatch for logs, metrics, and alarms.</li>
+            <li><strong>Resource Flexibility:</strong> Increase RAM (128 MB to 10 GB) to improve CPU, network bandwidth, and ephemeral storage proportionally.</li>
+        </ul>
+
+        <h3>Lambda Supported Runtimes & Languages</h3>
+        <table style="width:100%; border-collapse:collapse; margin:10px 0;">
+            <tr style="background:#f0f0f0;">
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Language</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Runtimes (Examples)</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Common Use Cases</th>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Python</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">3.8, 3.9, 3.10, 3.11, 3.12</td>
+                <td style="border:1px solid #ddd; padding:8px;">Data processing, ML, automation, API backends</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Node.js</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">14.x, 16.x, 18.x, 20.x</td>
+                <td style="border:1px solid #ddd; padding:8px;">API backends, real-time processing, webhooks</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Java</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">8, 11, 17, 21</td>
+                <td style="border:1px solid #ddd; padding:8px;">Enterprise apps, microservices, data processing</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Go</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">1.x</td>
+                <td style="border:1px solid #ddd; padding:8px;">High-performance APIs, system tools</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>.NET</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">6, 7, 8</td>
+                <td style="border:1px solid #ddd; padding:8px;">Windows app migration, enterprise backends</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Ruby</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">2.7, 3.2</td>
+                <td style="border:1px solid #ddd; padding:8px;">Web APIs, scripting, automation</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Custom Runtime</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Any language via container image</td>
+                <td style="border:1px solid #ddd; padding:8px;">Legacy languages, custom dependencies</td>
+            </tr>
+        </table>
+
+        <h3>Lambda Container Images</h3>
+        <ul>
+            <li><strong>Lambda Runtime API:</strong> Instead of using native runtimes, you can package your function in a container image and upload to ECR.</li>
+            <li><strong>Image Requirements:</strong> Container image must implement the Lambda runtime API (allows Lambda to invoke your code).</li>
+            <li><strong>Use Cases:</strong> When you need custom dependencies, large libraries (up to 10 GB), or specific OS-level requirements.</li>
+            <li><strong>When Not to Use:</strong> If you only need Python/Node/Java, use native runtimes (simpler, faster startup).</li>
+            <li><strong>Note:</strong> For container workloads that run longer than 15 minutes, use ECS/Fargate instead of Lambda.</li>
+        </ul>
+
+        <h3>Lambda Limits (Per Region)</h3>
+        <table style="width:100%; border-collapse:collapse; margin:10px 0;">
+            <tr style="background:#f0f0f0;">
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Limit Category</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Constraint</th>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Memory Allocation</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">128 MB minimum, 10 GB maximum (1 MB increments)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Timeout (Max Execution Time)</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">15 minutes (900 seconds)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Environment Variables</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">4 KB total size</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Ephemeral Storage (/tmp)</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">512 MB minimum, 10 GB maximum. Temporary storage accessible during execution.</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Concurrent Executions (Soft Limit)</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">1,000 per region per account (can request increase)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Deployment Package (Compressed .zip)</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">50 MB</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Uncompressed Code + Dependencies</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">250 MB</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Lambda Layers</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Up to 5 layers per function (shared dependencies)</td>
+            </tr>
+        </table>
+
+        <h4>Exam Tip: Memory and CPU Relationship</h4>
+        <p style="font-weight: bold; color: red;">Increasing Lambda RAM automatically increases CPU, network bandwidth, and /tmp storage. If your function times out, increase RAM to improve CPU performance. AWS bills on memory × duration, so higher RAM might reduce execution time and lower overall cost.</p>
+
+        <hr class="soft-divide">
+        <h2>Lambda Concurrency & Throttling</h2>
+
+        <h3>Understanding Concurrency</h3>
+        <p><strong>Concurrency</strong> is the number of Lambda function executions running simultaneously. For example, if 100 requests arrive at the same time, Lambda spins up 100 concurrent executions (if available). AWS has a soft limit of 1,000 concurrent executions per region per account (can be increased).</p>
+
+        <h4>Reserved Concurrency</h4>
+        <ul>
+            <li><strong>What It Is:</strong> Reserve a specific number of concurrent executions for a single Lambda function, ensuring they're always available.</li>
+            <li><strong>How It Works:</strong> If you reserve 100 concurrency for Function A, AWS guarantees 100 concurrent executions are reserved for Function A. Other functions can use up to the remaining account limit.</li>
+            <li><strong>Use Case:</strong> Critical functions that must never be throttled (payment processing, real-time alerts). Prevents one noisy function from consuming all account concurrency.</li>
+            <li><strong>Cost:</strong> You pay for reserved concurrency even if unused (slight monthly charge per unit).</li>
+            <li><strong>Throttling Behavior:</strong> If Function A reaches its reserved limit and more requests arrive, they're throttled and fail with 429 (Too Many Requests) error.</li>
+        </ul>
+
+        <h4>Provisioned Concurrency</h4>
+        <ul>
+            <li><strong>What It Is:</strong> Pre-initialize Lambda execution environments before invocations arrive. Eliminates cold starts for latency-sensitive workloads.</li>
+            <li><strong>How It Works:</strong> AWS maintains warm execution environments ready to execute your function immediately. When invocation arrives, it runs instantly without initialization delay.</li>
+            <li><strong>Cost:</strong> Higher than reserved concurrency (you pay per provisioned unit per hour, similar to reserved capacity in RDS).</li>
+            <li><strong>Use Case:</strong> Ultra-low latency requirements (mobile apps, real-time dashboards, interactive APIs). When cold start delay is unacceptable.</li>
+            <li><strong>Auto Scaling:</strong> Application Auto Scaling can automatically adjust provisioned concurrency based on traffic patterns (target tracking metric).</li>
+        </ul>
+
+        <h3>Reserved vs Provisioned Concurrency — Key Differences</h3>
+        <table style="width:100%; border-collapse:collapse; margin:10px 0;">
+            <tr style="background:#f0f0f0;">
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Aspect</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Reserved Concurrency</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Provisioned Concurrency</th>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Primary Purpose</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Prevent throttling; ensure capacity is always available</td>
+                <td style="border:1px solid #ddd; padding:8px;">Eliminate cold starts; optimize latency</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Behavior</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Guarantees concurrency pool. Excess requests are throttled.</td>
+                <td style="border:1px solid #ddd; padding:8px;">Pre-warms execution environments. Ready to execute instantly.</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Cost Model</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Per-unit monthly charge (smaller, only reservation cost)</td>
+                <td style="border:1px solid #ddd; padding:8px;">Per-unit per-hour charge (higher, includes initialization)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Cold Start Impact</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Still has cold starts if utilization exceeds reserved pool</td>
+                <td style="border:1px solid #ddd; padding:8px;">Zero cold start; function starts immediately</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Use Case</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Critical batch jobs, data processing, internal APIs</td>
+                <td style="border:1px solid #ddd; padding:8px;">Customer-facing APIs, mobile apps, real-time dashboards</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Scaling</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Manual adjustment via console or API</td>
+                <td style="border:1px solid #ddd; padding:8px;">Can use Application Auto Scaling for automatic adjustment</td>
+            </tr>
+        </table>
+
+        <h3>Concurrency with Asynchronous Invocations</h3>
+        <ul>
+            <li><strong>Synchronous Invocation:</strong> Caller waits for function result. If Lambda is throttled, caller receives error immediately.</li>
+            <li><strong>Asynchronous Invocation:</strong> Lambda accepts the invocation, returns immediately. Function executes later. Requests are queued internally.</li>
+            <li><strong>Retry Behavior for Throttling:</strong> If async invocation hits throttling (concurrency exceeded), Lambda automatically retries with exponential backoff: 1 second after first attempt, then up to 5 minutes maximum between retries.</li>
+            <li><strong>Dead-Letter Queue (DLQ):</strong> If retries exhaust (typically after 2 hours), the event is sent to a configured SQS queue or SNS topic for later analysis.</li>
+            <li><strong>Exam Tip:</strong> Async functions are resilient to throttling because they retry automatically. Use async invocation for event-driven workflows; sync for APIs.</li>
+        </ul>
+
+        <h3>Cold Starts Explained</h3>
+        <p><strong>Cold Start:</strong> First invocation of a Lambda function (or after a period of inactivity) requires initializing the execution environment: downloading code, loading runtime, initializing dependencies. This adds 100ms - 1000ms latency depending on code size and runtime.</p>
+
+        <h4>Cold Start Timeline</h4>
+        <ul>
+            <li><strong>Initialization Phase (~100-500ms):</strong> Download code, load runtime, initialize global variables, connect to resources (DB, cache).</li>
+            <li><strong>Handler Invocation (~immediate):</strong> Your function code executes.</li>
+            <li><strong>Warm Execution (~1-10ms):</strong> Subsequent invocations within 15 minutes reuse the same environment. No initialization needed.</li>
+        </ul>
+
+        <h4>Strategies to Minimize Cold Starts</h4>
+        <ul>
+            <li><strong>Provisioned Concurrency:</strong> Pre-warm execution environments. Eliminates cold start delay.</li>
+            <li><strong>Keep Functions Lightweight:</strong> Reduce code size, bundle only necessary dependencies. Smaller packages initialize faster.</li>
+            <li><strong>Optimize Runtime:</strong> Go, Node.js, and Python are faster to initialize than Java or .NET.</li>
+            <li><strong>Lambda SnapStart (Java):</strong> (See section below) Pre-initialize function state and restore instantly.</li>
+            <li><strong>CloudWatch Events or API Gateway Keep-Alive:</strong> Send periodic requests to keep function warm (not recommended for scale).</li>
+            <li><strong>Layers:</strong> Use Lambda Layers to share code efficiently without increasing function package size.</li>
+        </ul>
+
+        <h3>Lambda SnapStart — Performance Optimization</h3>
+        <p><strong>SnapStart</strong> (available for Java runtime) improves Lambda startup performance up to 10x at no extra cost. When enabled, Lambda snapshots the function's initialized state (after dependencies loaded, global variables set), then restores that snapshot on every invocation.</p>
+
+        <h4>How It Works</h4>
+        <ul>
+            <li><strong>First Invocation:</strong> Normal initialization (download code, load runtime, initialize globals).</li>
+            <li><strong>Snapshot Taken:</strong> AWS captures the entire runtime state after handler initialization completes but before first request processed.</li>
+            <li><strong>Subsequent Invocations:</strong> Runtime state is restored from snapshot instantly (microseconds). No re-initialization.</li>
+            <li><strong>Supported Runtimes:</strong> Java 11, Java 17, Java 21. Python and .NET support coming.</li>
+            <li><strong>Cost:</strong> No additional charge. Same pay-per-execution model.</li>
+        </ul>
+
+        <h4>Exam Tip: SnapStart vs Provisioned Concurrency</h4>
+        <p style="font-weight: bold; color: red;"><strong>SnapStart:</strong> Reduces cold start latency (free, for Java only). <strong>Provisioned Concurrency:</strong> Eliminates cold starts by keeping warm environments ready (paid, all runtimes). For Java functions, combine both for best results.</p>
+
+        <hr class="soft-divide">
+        <h2>Lambda VPC Access & RDS Integration</h2>
+
+        <h3>Lambda Outside VPC (Default)</h3>
+        <p>By default, Lambda functions are launched in AWS-managed VPC (not your VPC). Lambda can access public internet endpoints, S3, DynamoDB, SNS, etc. But Lambda cannot directly access resources in your private VPC (EC2 instances, RDS in private subnet, ElastiCache, etc.).</p>
+
+        <h3>Enabling Lambda in Your VPC</h3>
+        <ul>
+            <li><strong>Configuration:</strong> In Lambda function configuration, specify VPC ID, subnets, and security groups.</li>
+            <li><strong>What Happens:</strong> Lambda creates an Elastic Network Interface (ENI) in your specified subnets. This ENI attaches to your VPC, allowing Lambda to access private resources.</li>
+            <li><strong>Trade-off:</strong> Adding to VPC increases cold start latency (ENI creation takes ~100ms additional). Plan accordingly with Provisioned Concurrency if latency-critical.</li>
+            <li><strong>Networking:</strong> Configure security groups to allow outbound traffic from Lambda to target resources (RDS, ElastiCache, etc.).</li>
+            <li><strong>NAT Gateway:</strong> If Lambda needs internet access while in VPC, route traffic through NAT Gateway in public subnet.</li>
+        </ul>
+
+        <h3>Lambda + RDS Proxy — Connection Pooling</h3>
+        <p><strong>Problem:</strong> When Lambda functions directly connect to RDS database under high load, each function opens a new database connection. RDS has a max connection limit (e.g., 100 for small instances). When limit is reached, connections fail.</p>
+
+        <p><strong>Solution:</strong> Deploy RDS Proxy between Lambda and RDS database. RDS Proxy manages connection pooling and shares DB connections across Lambda functions.</p>
+
+        <h4>Benefits of RDS Proxy</h4>
+        <ul>
+            <li><strong>Connection Pooling:</strong> Proxy maintains persistent connections to RDS. Lambda reuses connections instead of creating new ones. Reduces connection overhead.</li>
+            <li><strong>Scalability:</strong> Handle 1000s of Lambda concurrent executions with only 10-20 database connections. Massive reduction in connection churn.</li>
+            <li><strong>Availability:</strong> Reduces failover time by 66% (proxy reconnects to standby replica faster than applications would).</li>
+            <li><strong>Security:</strong> Enforce IAM authentication. Store database credentials in AWS Secrets Manager (not in Lambda code).</li>
+            <li><strong>Connection Limits:</strong> Never hit database connection limits.</li>
+        </ul>
+
+        <h4>Architecture Notes</h4>
+        <ul>
+            <li><strong>Deployment:</strong> RDS Proxy must be deployed in your VPC (cannot be public).</li>
+            <li><strong>Lambda Requirement:</strong> Lambda function must also be deployed in the same VPC to access RDS Proxy.</li>
+            <li><strong>Endpoint:</strong> Lambda connects to RDS Proxy endpoint (not directly to RDS endpoint).</li>
+            <li><strong>Use Case:</strong> Any Lambda-driven application accessing relational databases (web APIs, data processing, ETL).</li>
+        </ul>
+
+        <h3>Lambda Invoking from RDS & Aurora</h3>
+        <ul>
+            <li><strong>Native Integration:</strong> RDS for PostgreSQL and Aurora MySQL can invoke Lambda functions directly from within the database.</li>
+            <li><strong>Use Case:</strong> React to data changes in real-time. Example: When new row is inserted into `orders` table, trigger Lambda to send notification email, update analytics, etc.</li>
+            <li><strong>How It Works:</strong> Database has outbound permissions to invoke Lambda. Use stored procedures or triggers to call Lambda endpoints.</li>
+            <li><strong>Vs Event Notifications:</strong> RDS Event Notifications inform about database events (instance reboot, failover), not data events. Lambda from within DB reacts to data changes (INSERT, UPDATE, DELETE).</li>
+            <li><strong>Advantage:</strong> Real-time data-driven workflows without external polling or change data capture.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Amazon DynamoDB — Serverless NoSQL Database</h2>
+
+        <h3>DynamoDB Overview</h3>
+        <p><strong>DynamoDB</strong> is a fully managed, serverless NoSQL database with millisecond latency at scale. Data is replicated across multiple AZs for high availability. Integrates with IAM for security and automatically scales to handle any traffic patterns.</p>
+
+        <h4>Key Characteristics</h4>
+        <ul>
+            <li><strong>NoSQL:</strong> Flexible schema. Add attributes to items anytime without schema migrations.</li>
+            <li><strong>Highly Available:</strong> Replicated across 3 AZs by default. Automatic failover.</li>
+            <li><strong>Single-Digit Millisecond Performance:</strong> Optimized for fast reads/writes at scale.</li>
+            <li><strong>Transaction Support:</strong> ACID transactions for multi-item operations (important for exam).</li>
+            <li><strong>Global Tables:</strong> Multi-region replication for low-latency global access.</li>
+            <li><strong>Fully Integrated:</strong> IAM for access control, CloudWatch for monitoring, CloudTrail for auditing, Kinesis streams for change data capture.</li>
+        </ul>
+
+        <h3>DynamoDB Data Model</h3>
+        <ul>
+            <li><strong>Tables:</strong> Container for items (like a SQL table, but flexible schema).</li>
+            <li><strong>Primary Key:</strong> Uniquely identifies each item. Two types:</li>
+            <ul>
+                <li><strong>Simple Primary Key (Partition Key only):</strong> One attribute. DynamoDB distributes items across partitions based on this key.</li>
+                <li><strong>Composite Primary Key (Partition Key + Sort Key):</strong> Partition key distributes items; sort key orders them within partition. Enables query ranges.</li>
+            </ul>
+            <li><strong>Attributes:</strong> Key-value pairs in each item. Can add/remove anytime.</li>
+            <li><strong>Item Size:</strong> Max 400 KB per item.</li>
+            <li><strong>Data Types Supported:</strong> Scalar (String, Number, Binary), Documents (Map, List), Sets (String Set, Number Set, Binary Set).</li>
+        </ul>
+
+        <h3>Read/Write Capacity Modes</h3>
+
+        <h4>Provisioned Capacity (Default)</h4>
+        <ul>
+            <li><strong>What You Specify:</strong> Read Capacity Units (RCU) and Write Capacity Units (WCU) per second.</li>
+            <li><strong>1 RCU:</strong> 1 strongly consistent read of 4 KB item per second, or 2 eventually consistent reads.</li>
+            <li><strong>1 WCU:</strong> 1 write of 1 KB item per second.</li>
+            <li><strong>Billing:</strong> You pay for provisioned capacity whether you use it or not (hourly).</li>
+            <li><strong>Throttling:</strong> If you exceed provisioned capacity, requests fail with throttle error (400/429).</li>
+            <li><strong>Auto Scaling:</strong> Automatically adjust capacity based on CloudWatch metrics (target utilization %).</li>
+            <li><strong>Use Case:</strong> Predictable traffic, cost optimization, long-running services where capacity is known.</li>
+        </ul>
+
+        <h4>On-Demand Capacity</h4>
+        <ul>
+            <li><strong>Flexibility:</strong> No capacity planning. DynamoDB automatically scales to handle any request volume.</li>
+            <li><strong>Billing:</strong> Pay per request (1 RCU = 1 strongly consistent read, 1 WCU = 1 write). ~5x more expensive than provisioned (per unit).</li>
+            <li><strong>Throttling:</strong> No throttling. Requests always succeed (up to account limits).</li>
+            <li><strong>Use Case:</strong> Unpredictable traffic, bursty workloads, startup scenarios, or when you can't forecast capacity.</li>
+            <li><strong>Exam Tip:</strong> If question mentions "sudden traffic spike" or "unpredictable load," choose on-demand.</li>
+        </ul>
+
+        <h3>DynamoDB Accelerator (DAX) — In-Memory Cache</h3>
+        <p><strong>DAX</strong> is a fully managed, in-memory cache layer for DynamoDB. Caches individual items and query/scan results. Reduces read latency from milliseconds to microseconds.</p>
+
+        <h4>Key Features</h4>
+        <ul>
+            <li><strong>Microsecond Latency:</strong> Data retrieved from cache (in-memory) instead of disk.</li>
+            <li><strong>No App Changes:</strong> Use same DynamoDB API. DAX is transparent to application code.</li>
+            <li><strong>Cache TTL:</strong> Default 5 minutes. Items automatically removed after expiry.</li>
+            <li><strong>Write-Through Cache:</strong> Writes go to DAX first, then to DynamoDB. Ensures cache consistency.</li>
+            <li><strong>High Availability:</strong> Multi-AZ DAX cluster with automatic failover.</li>
+        </ul>
+
+        <h4>DAX vs ElastiCache — When to Use Each</h4>
+        <ul>
+            <li><strong>DAX:</strong> Use when you need item-level caching, single-item lookups, and query/scan result caching. Native DynamoDB integration.</li>
+            <li><strong>ElastiCache (Redis):</strong> Use when you need aggregated data caching (computed results, sessions, leaderboards). More flexible data structure support. Can cache data from multiple sources (RDS, DynamoDB, APIs).</li>
+        </ul>
+
+        <h3>DynamoDB Streams — Change Data Capture</h3>
+        <p><strong>Streams</strong> are ordered logs of item-level modifications (INSERT, UPDATE, DELETE) in a DynamoDB table. Use streams to react to data changes in real-time.</p>
+
+        <h4>Stream Characteristics</h4>
+        <ul>
+            <li><strong>24-Hour Retention:</strong> Records kept for 24 hours. After that, they expire.</li>
+            <li><strong>Multiple Consumers:</strong> Lambda functions, Kinesis consumer applications, or EC2 instances can process stream records.</li>
+            <li><strong>Exactly-Once Delivery:</strong> Each record is delivered at least once per consumer. Idempotent processing recommended.</li>
+            <li><strong>Processing:</strong> Use Lambda triggers (automatic) or Kinesis Adapter (manual control).</li>
+        </ul>
+
+        <h4>DynamoDB Streams — Use Cases</h4>
+        <ul>
+            <li><strong>Real-Time Analytics:</strong> Stream order changes to analytics pipeline. Update dashboards in real-time.</li>
+            <li><strong>Cross-Service Sync:</strong> Update Elasticsearch, RDS, or data warehouse when DynamoDB data changes.</li>
+            <li><strong>Audit Logging:</strong> Log all changes to compliance table or external system.</li>
+            <li><strong>Notification Triggers:</strong> Send email/SMS when specific data changes (e.g., new support ticket → trigger SNS notification).</li>
+            <li><strong>Machine Learning Pipeline:</strong> Stream labeled data to training pipeline. Retrain models on new data.</li>
+        </ul>
+
+        <h3>DynamoDB Global Tables — Multi-Region</h3>
+        <p><strong>Global Tables</strong> replicate DynamoDB table across multiple regions with active-active replication. Reads and writes in any region propagate to all other regions within milliseconds.</p>
+
+        <h4>Benefits</h4>
+        <ul>
+            <li><strong>Low Latency:</strong> Users read/write from the nearest region.</li>
+            <li><strong>Disaster Recovery:</strong> Automatic failover if primary region goes down.</li>
+            <li><strong>Active-Active:</strong> Multiple regions can accept writes simultaneously. Conflicts resolved via last-writer-wins.</li>
+            <li><strong>Prerequisite:</strong> DynamoDB Streams must be enabled (required for replication).</li>
+        </ul>
+
+        <h3>DynamoDB TTL — Automatic Expiration</h3>
+        <p><strong>TTL (Time-To-Live)</strong> automatically deletes items after a specified expiry timestamp. Useful for cleaning up temporary data without manual intervention.</p>
+
+        <h4>How It Works</h4>
+        <ul>
+            <li><strong>TTL Attribute:</strong> Add a number attribute (unix timestamp) to items. DynamoDB checks this attribute.</li>
+            <li><strong>Automatic Deletion:</strong> When current time exceeds TTL value, item is automatically deleted (typically within 48 hours, but can take up to 24 hours in production).</li>
+            <li><strong>No Charges:</strong> Deletion via TTL doesn't consume write capacity.</li>
+            <li><strong>Note:</strong> Not guaranteed to be immediate. Don't rely on exact deletion time.</li>
+        </ul>
+
+        <h4>DynamoDB TTL — Use Cases</h4>
+        <ul>
+            <li><strong>Session Data:</strong> Expire user sessions after inactivity (1-hour TTL for web session tokens).</li>
+            <li><strong>Temporary Cache:</strong> Store computed results with 24-hour expiry. Reduces storage costs.</li>
+            <li><strong>Event Log Retention:</strong> Auto-delete events older than 90 days for GDPR compliance.</li>
+            <li><strong>OAuth Tokens:</strong> Expire refresh tokens after 30 days. Force re-authentication for security.</li>
+            <li><strong>IoT Sensor Data:</strong> Delete old sensor readings automatically. Keep only recent data for analytics.</li>
+        </ul>
+
+        <h3>DynamoDB Backup & Disaster Recovery</h3>
+
+        <h4>Point-in-Time Recovery (PITR)</h4>
+        <ul>
+            <li><strong>Continuous Backups:</strong> AWS maintains continuous backups automatically (no manual action).</li>
+            <li><strong>Retention Window:</strong> 35 days. Can restore to any point within last 35 days.</li>
+            <li><strong>Recovery Process:</strong> Create new table from backup. Doesn't affect current table or read capacity.</li>
+            <li><strong>Use Case:</strong> Accidental data deletion, logic errors, rollback to previous state.</li>
+        </ul>
+
+        <h4>On-Demand Backups</h4>
+        <ul>
+            <li><strong>Full Backup:</strong> Manual snapshot of entire table at specific point in time.</li>
+            <li><strong>Long-Term Retention:</strong> Kept indefinitely until explicitly deleted. Perfect for archival and compliance.</li>
+            <li><strong>Zero Impact:</strong> Doesn't affect read/write capacity or performance.</li>
+            <li><strong>AWS Backup Integration:</strong> Automate backup scheduling and retention policies via AWS Backup service.</li>
+            <li><strong>Recovery:</strong> Creates new table from backup (takes minutes depending on table size).</li>
+        </ul>
+
+        <h3>DynamoDB Export to S3</h3>
+        <ul>
+            <li><strong>Export Data:</strong> Export DynamoDB table to S3 in DynamoDB JSON or ION format.</li>
+            <li><strong>Point-in-Time Export:</strong> Works for any timestamp within last 35 days (if PITR enabled).</li>
+            <li><strong>Zero Impact:</strong> Doesn't consume read capacity or affect table performance.</li>
+            <li><strong>Use Cases:</strong> Data analysis using Athena/Redshift, ETL processes, compliance snapshots, long-term data retention.</li>
+        </ul>
+
+        <h3>DynamoDB Import from S3</h3>
+        <ul>
+            <li><strong>Supported Formats:</strong> CSV, DynamoDB JSON, ION.</li>
+            <li><strong>Zero Capacity Consumption:</strong> Doesn't consume read or write capacity during import.</li>
+            <li><strong>New Table:</strong> Import creates a new table (can't import into existing table).</li>
+            <li><strong>Error Handling:</strong> Records with errors are logged to CloudWatch Logs. Can retry or manually fix.</li>
+            <li><strong>Use Case:</strong> Data migration, seeding table with historical data, restoring from backups.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>API Gateway — REST API Management</h2>
+
+        <h3>API Gateway Overview</h3>
+        <p><strong>API Gateway</strong> is a fully managed service for creating, deploying, and managing REST APIs. Acts as a "front door" for applications, routing HTTP requests to backend services (Lambda, HTTP endpoints, AWS services). Handles authentication, throttling, request transformation, and response caching.</p>
+
+        <h4>Key Features</h4>
+        <ul>
+            <li><strong>REST API Definition:</strong> Define resources, methods (GET, POST, etc.), and integrations via console or Swagger/OpenAPI.</li>
+            <li><strong>Multiple Integrations:</strong> Lambda, HTTP endpoints, AWS services (DynamoDB, SNS, SQS, Kinesis), mock responses.</li>
+            <li><strong>Authentication & Authorization:</strong> IAM, Cognito, Lambda authorizers, or API keys.</li>
+            <li><strong>Request/Response Transformation:</strong> Transform incoming requests and outgoing responses (header manipulation, body mapping).</li>
+            <li><strong>API Versioning:</strong> Manage multiple API versions (v1, v2) simultaneously.</li>
+            <li><strong>Environments:</strong> dev, test, prod stages with separate configurations, throttling, and caching.</li>
+            <li><strong>WebSocket Support:</strong> Real-time bidirectional communication (publish-subscribe patterns).</li>
+            <li><strong>Caching:</strong> Cache API responses to reduce backend load and improve response time.</li>
+            <li><strong>Rate Limiting & Throttling:</strong> API keys and usage plans to limit clients.</li>
+            <li><strong>SDK & Documentation Generation:</strong> Auto-generate client SDKs and API documentation.</li>
+        </ul>
+
+        <h3>WebSocket Protocol (for Exam)</h3>
+        <p><strong>WebSocket</strong> is a communication protocol that provides full-duplex (bidirectional) channels over TCP. Unlike HTTP (request-response), WebSocket maintains a persistent connection, allowing server to push messages to clients.</p>
+
+        <h4>WebSocket vs HTTP</h4>
+        <ul>
+            <li><strong>HTTP:</strong> Client initiates request, server responds. Stateless. New connection per request (or connection reuse). Latency includes connection overhead.</li>
+            <li><strong>WebSocket:</strong> Persistent connection. Either side can send messages anytime. Ideal for real-time applications (chat, live updates, multiplayer games).</li>
+            <li><strong>API Gateway WebSocket:</strong> Managed WebSocket API endpoint. Lambda functions handle connection, messages, and disconnection events.</li>
+        </ul>
+
+        <h3>API Gateway Integrations</h3>
+
+        <h4>Lambda Integration</h4>
+        <ul>
+            <li><strong>Use Case:</strong> Build serverless REST APIs. API Gateway routes HTTP requests to Lambda functions.</li>
+            <li><strong>Request Flow:</strong> Client → HTTP Request → API Gateway → Lambda Invocation → Lambda returns response → API Gateway formats response → Client receives HTTP Response.</li>
+            <li><strong>Advantages:</strong> Serverless (no server management), auto-scaling, pay-per-request.</li>
+            <li><strong>Example:</strong> `/users/{id}` GET → Lambda function queries DynamoDB → returns user data as JSON.</li>
+        </ul>
+
+        <h4>HTTP Endpoint Integration</h4>
+        <ul>
+            <li><strong>Use Case:</strong> Route requests to external HTTP endpoints (on-premises, third-party APIs, EC2 instances).</li>
+            <li><strong>Request Flow:</strong> API Gateway proxies request to HTTP endpoint and returns response.</li>
+            <li><strong>Advantages:</strong> Centralized API gateway for legacy systems. Add authentication, caching, throttling to existing APIs.</li>
+            <li><strong>Example:</strong> `/legacy-service/*` → HTTP proxy to on-premises server running on port 8080.</li>
+        </ul>
+
+        <h4>AWS Service Integration</h4>
+        <ul>
+            <li><strong>Use Case:</strong> Directly invoke AWS services without Lambda. Reduce latency and complexity.</li>
+            <li><strong>Supported Services:</strong> DynamoDB (Query/Scan/PutItem), SQS (SendMessage), SNS (Publish), Kinesis (PutRecord), and many others.</li>
+            <li><strong>Request Mapping:</strong> Transform API request into service-specific request format (e.g., API request → DynamoDB JSON → PutItem).</li>
+            <li><strong>Advantages:</strong> Lower latency, no Lambda cold starts, reduced cost (no compute).</li>
+            <li><strong>Example:</strong> POST `/orders` → DynamoDB PutItem → Create order directly in database.</li>
+        </ul>
+
+        <h3>API Gateway — Kinesis Data Stream Architecture Example</h3>
+        <p><strong>Scenario:</strong> Real-time data ingestion API. Multiple clients send events to API Gateway. Events are streamed to Kinesis for real-time analytics.</p>
+
+        <pre style="background:#f5f5f5; padding:10px; border-left:3px solid #006d77; overflow-x:auto;">
+<strong>Architecture:</strong>
+[IoT Devices / Web Clients]
+         ↓ (HTTP POST /events)
+    [API Gateway]
+         ↓ (Request Mapping: extract event data)
+    [Kinesis Data Stream]
+         ↓ (Real-time records)
+    [Lambda Consumer] → Process and store to DynamoDB / S3
+         ↓
+    [CloudWatch Metrics] → Real-time dashboard
+
+<strong>Request Flow:</strong>
+1. Client sends JSON event: {"sensor_id": "A1", "temp": 72.5, "timestamp": "2024-12-06T10:00:00Z"}
+2. API Gateway receives POST /events
+3. Request Mapping template extracts JSON → transforms to Kinesis format
+4. Kinesis Data Stream receives record with PartitionKey=sensor_id
+5. Lambda triggered on stream record
+6. Lambda stores processed event to DynamoDB + sends alert if temp anomaly
+
+<strong>Why this Architecture:</strong>
+- Scalable ingestion: Kinesis buffers spikes, Lambda scales as needed
+- Real-time processing: Analytics updated within milliseconds
+- Decoupled: Devices only know API endpoint, not backend implementation
+- Cost-effective: Serverless (no idle compute)
+        </pre>
+
+        <h3>API Gateway Endpoints</h3>
+
+        <h4>Edge-Optimized (Default)</h4>
+        <ul>
+            <li><strong>How It Works:</strong> Requests routed through nearest CloudFront edge location globally. Reduces latency for geographically distributed clients.</li>
+            <li><strong>Internal Architecture:</strong> Edge location receives request, forwards to API Gateway in single AWS region.</li>
+            <li><strong>Use Case:</strong> Global audience (mobile apps, public APIs).</li>
+            <li><strong>Certificate:</strong> Must be in us-east-1 region for HTTPS/TLS.</li>
+        </ul>
+
+        <h4>Regional</h4>
+        <ul>
+            <li><strong>How It Works:</strong> API Gateway deployed in specific region. Requests route directly to that region (no CloudFront by default).</li>
+            <li><strong>Latency:</strong> Slightly higher than edge-optimized for distant clients. Lower than edge-optimized for clients in same region.</li>
+            <li><strong>Use Case:</strong> Regional applications, private APIs within VPC, reduce cross-region costs.</li>
+            <li><strong>Optional CloudFront:</strong> Can manually add CloudFront in front for caching and edge distribution.</li>
+            <li><strong>Certificate:</strong> Must be in the same region as API Gateway.</li>
+        </ul>
+
+        <h4>Private</h4>
+        <ul>
+            <li><strong>How It Works:</strong> API Gateway deployed inside your VPC. Only accessible from within VPC or via VPN/Direct Connect.</li>
+            <li><strong>Access Methods:</strong> VPC Endpoint (Interface Endpoint) to reach private API Gateway.</li>
+            <li><strong>Use Case:</strong> Internal APIs, backend-to-backend communication, data processing pipelines (no internet exposure).</li>
+            <li><strong>Security:</strong> Not accessible from internet. Complete network isolation.</li>
+        </ul>
+
+        <h3>API Gateway Security</h3>
+
+        <h4>User Authentication & Authorization</h4>
+        <ul>
+            <li><strong>IAM Authentication:</strong> API requests signed with AWS SigV4. Clients use AWS credentials (access key, secret key).</li>
+            <li><strong>Cognito User Pools:</strong> Third-party user authentication. Users authenticate with Cognito, receive JWT token, use token to call API.</li>
+            <li><strong>Lambda Authorizer (Custom):</strong> Lambda function validates tokens/credentials. Implement custom auth logic.</li>
+            <li><strong>API Keys:</strong> Simple key-based access. Suitable for basic rate limiting or dev environments (not production authentication).</li>
+        </ul>
+
+        <h4>HTTPS & TLS (Custom Domain)</h4>
+        <ul>
+            <li><strong>Custom Domain Names:</strong> Use custom domain (e.g., api.example.com) instead of AWS-provided URL (e.g., abc123.execute-api.us-east-1.amazonaws.com).</li>
+            <li><strong>SSL/TLS Certificate:</strong> Obtain from AWS Certificate Manager (ACM).</li>
+            <li><strong>Certificate Region Requirements:</strong></li>
+            <ul>
+                <li><strong>Edge-Optimized Endpoint:</strong> Certificate must be in us-east-1 (CloudFront requirement).</li>
+                <li><strong>Regional Endpoint:</strong> Certificate must be in the same region as API Gateway.</li>
+            </ul>
+            <li><strong>Route 53 DNS:</strong> Create CNAME or Alias record to map custom domain to API Gateway endpoint.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>AWS Step Functions — Serverless Workflow Orchestration</h2>
+
+        <h3>Step Functions Overview</h3>
+        <p><strong>Step Functions</strong> is a managed service for building serverless workflows that chain together Lambda functions, AWS services, and manual approval steps. Define workflow as a state machine (JSON), and Step Functions orchestrates execution, error handling, and retries automatically.</p>
+
+        <h4>Key Features</h4>
+        <ul>
+            <li><strong>Visual Workflow Definition:</strong> Define states and transitions in JSON or using visual editor.</li>
+            <li><strong>State Types:</strong> Task, Parallel, Choice (conditional), Wait, Pass, Fail, Succeed.</li>
+            <li><strong>Error Handling & Retries:</strong> Automatic retry with exponential backoff. Catch-and-handle specific errors.</li>
+            <li><strong>Timeout Support:</strong> Set timeouts on individual steps or entire execution.</li>
+            <li><strong>Parallel Execution:</strong> Execute multiple branches concurrently. Merge results.</li>
+            <li><strong>Human Approval:</strong> Pause workflow, wait for manual approval, then continue.</li>
+            <li><strong>Service Integrations:</strong> Call Lambda, SNS, SQS, DynamoDB, SageMaker, Batch, ECS, and 200+ AWS services.</li>
+            <li><strong>Execution History:</strong> Full history of each execution for debugging and compliance.</li>
+        </ul>
+
+        <h3>State Machine Execution Model</h3>
+        <ul>
+            <li><strong>Workflow Definition:</strong> JSON document defining states and transitions.</li>
+            <li><strong>Execution:</strong> Running instance of state machine. Each execution gets unique ID for tracking.</li>
+            <li><strong>Input/Output:</strong> JSON passed between states. Each state receives input, processes, outputs JSON for next state.</li>
+            <li><strong>State Transitions:</strong> Based on state result or explicit Next field. Can branch with Choice states.</li>
+        </ul>
+
+        <h3>Step Functions — Common Use Cases for Exam</h3>
+        <ul>
+            <li><strong>ETL Pipelines:</strong> Extract data from S3 → Lambda processes → validate → load to database. Retry on failure.</li>
+            <li><strong>Machine Learning Workflows:</strong> Preprocess data → train model → evaluate → deploy. Parallel data preprocessing on multiple datasets.</li>
+            <li><strong>Approval Processes:</strong> Submit request → send SNS approval notification → wait for human approval → process approved request.</li>
+            <li><strong>Multi-Step Order Processing:</strong> Validate order → Reserve inventory → Process payment → Create shipment. Error handling for payment failures.</li>
+            <li><strong>Batch Data Processing:</strong> Process thousands of images: Lambda for image transformation, parallel execution across 10 workers, aggregate results.</li>
+            <li><strong>Scheduled Tasks with Conditions:</strong> Fetch data from API → check if changed → if changed, update DB and send notification.</li>
+            <li><strong>Microservice Orchestration:</strong> Coordinate multiple Lambda functions (user service, order service, inventory service) with transaction semantics.</li>
+            <li><strong>Distributed Transactions:</strong> Orchestrate SAGA pattern across multiple services with automatic rollback on failure.</li>
+        </ul>
+
+        <h3>Step Functions vs Simpler Approaches</h3>
+        <table style="width:100%; border-collapse:collapse; margin:10px 0;">
+            <tr style="background:#f0f0f0;">
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Aspect</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Lambda + EventBridge</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Step Functions</th>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Complexity</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Simple event-driven workflows</td>
+                <td style="border:1px solid #ddd; padding:8px;">Complex multi-step workflows with conditional logic</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Error Handling</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Manual retry logic in Lambda</td>
+                <td style="border:1px solid #ddd; padding:8px;">Automatic retry, catch, and fallback states</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Approval Steps</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Not easy; requires custom logic</td>
+                <td style="border:1px solid #ddd; padding:8px;">Native support with Task state + SNS notification</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Execution History</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Log to CloudWatch (manual)</td>
+                <td style="border:1px solid #ddd; padding:8px;">Full execution history with visual timeline</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Parallel Execution</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Possible but orchestration complex</td>
+                <td style="border:1px solid #ddd; padding:8px;">Parallel state natively supported</td>
+            </tr>
+        </table>
+
+        <hr class="soft-divide">
+        <h2>Exam-Style Questions & Answers</h2>
+
+        <ol>
+            <li>
+                <strong>Q: A company wants to build a real-time data processing pipeline that accepts millions of events per second from IoT devices. Events must be validated, filtered, and stored. The pipeline must auto-scale based on event volume. What's the best serverless architecture?</strong>
+                <br/><br/>
+                <strong>A:</strong> API Gateway (endpoint for devices) → Kinesis Data Stream (buffer and scale) → Lambda consumer (validate + filter) → DynamoDB (store events). API Gateway scales to millions of requests. Kinesis buffers spikes. Lambda scales with stream shards. DynamoDB on-demand auto-scales with write volume. Cost only when data flows. ✓ <span style="font-weight: bold; color: red;">EXAM TIP:</span> Kinesis Data Firehose (not Streams) if you don't need real-time Lambda processing; Firehose automatically buffers to S3/Redshift.
+            </li>
+
+            <li>
+                <strong>Q: A Lambda function queries RDS frequently from a Fargate container. Under peak load, the database connection limit is reached (function fails). How do you fix this without increasing DB connection limit?</strong>
+                <br/><br/>
+                <strong>A:</strong> Deploy RDS Proxy in the VPC. Lambda (also in VPC) connects to RDS Proxy instead of database. RDS Proxy pools 1000s of client connections into 10-20 DB connections. Solves connection exhaustion. Reduces failover time. Enables IAM authentication. ✓ <span style="font-weight: bold; color: red;">KEY POINT:</span> RDS Proxy must be in VPC; Lambda must be in same VPC to access it.
+            </li>
+
+            <li>
+                <strong>Q: A mobile app experiences 100ms cold start latency when calling an API Gateway + Lambda function. Users complain about slow app performance. What's the fastest fix?</strong>
+                <br/><br/>
+                <strong>A:</strong> Enable Provisioned Concurrency on the Lambda function. Keeps execution environments warm and ready to execute instantly (~1-5ms). Eliminates cold starts. For Java functions, also consider Lambda SnapStart (additional 10x speedup). Trade-off: Provisioned Concurrency costs more than on-demand. ✓ <span style="font-weight: bold; color: red;">EXAM TIP:</span> If latency is the concern, use Provisioned Concurrency. If cost is the concern, use Reserved Concurrency (prevents throttling but doesn't warm environments).
+            </li>
+
+            <li>
+                <strong>Q: You're building a multi-step approval workflow: Submit order → Validate inventory → Manager approval → Process payment → Send notification. If payment fails, roll back and notify user. Which service is best suited?</strong>
+                <br/><br/>
+                <strong>A:</strong> AWS Step Functions. Define state machine with Task states (Validate, Process Payment), Choice state (decision logic), Catch state (error handling), and parallel email notifications. Automatic retry on transient failures. Full execution history. ✓ <span style="font-weight: bold; color: red;">KEY POINT:</span> Step Functions handles complex error handling, retries, and human approvals. Don't build this manually with Lambda + SQS.
+            </li>
+
+            <li>
+                <strong>Q: Your DynamoDB table has highly variable traffic (idle for hours, then 10K requests in seconds). You want to minimize costs. Capacity mode?</strong>
+                <br/><br/>
+                <strong>A:</strong> On-demand capacity. Pay per request instead of provisioning ahead. Auto-scales from zero to any traffic level. No throttling. Perfect for unpredictable workloads. ✓ <span style="font-weight: bold; color: red;">EXAM TIP:</span> On-demand is 5x more expensive per unit but avoids over-provisioning. If baseline is predictable, use provisioned + auto-scaling for cost savings.
+            </li>
+
+            <li>
+                <strong>Q: You need to cache individual DynamoDB items to reduce database hits. Same API Gateway endpoint called thousands of times per second. Which caching solution: API Gateway cache, DAX, or ElastiCache?</strong>
+                <br/><br/>
+                <strong>A:</strong> DAX. It's a managed cache layer specifically for DynamoDB. Microecond latency for cached items. Transparent to application (same DynamoDB API). Handles item-level caching and query result caching. No application code changes. ✓ <span style="font-weight: bold; color: red;">KEY POINT:</span> API Gateway caching caches HTTP responses (useful for GET /items endpoint). DAX caches individual items (useful for high-frequency reads of same items).
+            </li>
+
+            <li>
+                <strong>Q: A Lambda function needs to access resources in your private VPC (RDS, ElastiCache) and also needs to call external APIs (stripe.com). How should you configure Lambda?</strong>
+                <br/><br/>
+                <strong>A:</strong> Deploy Lambda in VPC (specify subnets, security groups). Create NAT Gateway in public subnet. Route outbound traffic through NAT Gateway for external API calls. Within VPC, Lambda can directly reach RDS/ElastiCache via security group rules. ✓ <span style="font-weight: bold; color: red;">TRADE-OFF:</span> Lambda in VPC adds cold start latency (~100ms). Use Provisioned Concurrency if latency is critical.
+            </li>
+
+            <li>
+                <strong>Q: You're storing user session data in DynamoDB (expires after 1 hour). Currently, you manually delete expired sessions via batch job (costly). Better approach?</strong>
+                <br/><br/>
+                <strong>A:</strong> Enable TTL on DynamoDB with a timestamp attribute. Set expiry to 1 hour in future (current time + 3600 seconds). DynamoDB automatically deletes expired items (no write capacity consumed). No manual batch job needed. ✓ <span style="font-weight: bold; color: red;">KEY POINT:</span> TTL deletion is asynchronous (can take up to 48 hours). Don't rely on exact deletion time. Query should filter out TTL-expired items just in case.
+            </li>
+
+            <li>
+                <strong>Q: A Cognito-protected API receives 1000 requests/second. What's the Lambda concurrency limit risk?</strong>
+                <br/><br/>
+                <strong>A:</strong> If Lambda has default 1K concurrency limit and each request is sync, you can handle ~1K concurrent executions. Beyond that, requests throttle (429 error). Solution: Reserve concurrency for this critical API (e.g., 5K), or set soft limit increase. Monitor with CloudWatch. ✓ <span style="font-weight: bold; color: red;">EXAM TIP:</span> Concurrency limits apply per region per account, not per function. Multiple functions compete for same pool unless explicitly reserved.
+            </li>
+
+            <li>
+                <strong>Q: You're migrating a legacy on-premises Java application to Lambda. The app has 500 MB of dependencies. Deployment package (.zip) size is 80 MB (compressed). Should you containerize it or use native Lambda runtime?</strong>
+                <br/><br/>
+                <strong>A:</strong> Containerize and upload to ECR. Lambda .zip max is 50 MB; your 80 MB exceeds limit. Container image can be up to 10 GB. Push image to ECR, then point Lambda to the image. Cold starts will be slower (container init + runtime), but it works. Alternatively, use Lambda Layers to split dependencies. ✓ <span style="font-weight: bold; color: red;">EXAM TIP:</span> If deployment package > 50 MB, use container images or Lambda Layers.
+            </li>
+        </ol>                                              
+    </div>
+</body>
+</html>

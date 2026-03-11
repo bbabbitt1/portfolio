@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SQL MERGE: Staging-to-Production Pipeline | Barry Babbitt</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../public/styles.css">
+  <style>
+    .walkthrough {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 0 20px 60px;
+    }
+
+    .step {
+      margin-bottom: 36px;
+    }
+
+    .step-header {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: rgba(79,163,209,0.15);
+      color: var(--accent);
+      font-size: 0.72rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .step-title {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .step-desc {
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.65;
+      margin-bottom: 12px;
+      padding-left: 36px;
+    }
+
+    .code-block {
+      background: #0d1117;
+      border: 1px solid rgba(111,183,173,0.12);
+      border-radius: 8px;
+      padding: 16px 20px;
+      overflow-x: auto;
+      margin-left: 36px;
+    }
+
+    .code-block code {
+      font-family: 'Courier New', monospace;
+      font-size: 0.78rem;
+      line-height: 1.7;
+      color: #e6edf3;
+      white-space: pre;
+    }
+
+    .code-block .comment { color: #8b949e; }
+    .code-block .keyword { color: #ff7b72; }
+    .code-block .func { color: #d2a8ff; }
+    .code-block .string { color: #a5d6ff; }
+    .code-block .type { color: #79c0ff; }
+    .code-block .table-name { color: #7ee787; }
+
+    .callout {
+      background: rgba(79,163,209,0.08);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 6px 6px 0;
+      padding: 12px 16px;
+      margin: 16px 0 16px 36px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .callout strong { color: var(--text); }
+
+    .flow-diagram {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin: 28px 0;
+      flex-wrap: wrap;
+    }
+
+    .flow-box {
+      background: rgba(47,75,79,0.3);
+      border: 1px solid rgba(111,183,173,0.15);
+      border-radius: 8px;
+      padding: 14px 20px;
+      text-align: center;
+    }
+
+    .flow-box .flow-label {
+      font-size: 0.68rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .flow-box .flow-name {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text);
+      font-family: 'Courier New', monospace;
+    }
+
+    .flow-arrow {
+      color: var(--accent);
+      font-size: 1.2rem;
+    }
+
+    .full-query {
+      margin-top: 40px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(111,183,173,0.1);
+    }
+
+    .full-query h3 {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 16px;
+    }
+
+    .section-break {
+      margin: 40px 0 32px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(111,183,173,0.1);
+    }
+
+    .section-break h3 {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    @media (max-width: 600px) {
+      .code-block { margin-left: 0; padding: 12px 14px; }
+      .code-block code { font-size: 0.7rem; line-height: 1.6; }
+      .step-desc { padding-left: 0; }
+      .callout { margin-left: 0; }
+      .flow-diagram { flex-direction: column; }
+      .flow-arrow { transform: rotate(90deg); }
+      .walkthrough { padding: 0 4px 40px; }
+      .step-title { font-size: 0.84rem; }
+      .step-desc { font-size: 0.76rem; }
+      .flow-box { padding: 10px 16px; width: 100%; }
+      .flow-box .flow-name { font-size: 0.78rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="case-study">
+
+  <a href="../index.html#projects" class="back-link">
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    Back to Portfolio
+  </a>
+
+  <div class="project-hero">
+    <h1>SQL MERGE: Staging-to-Production Pipeline</h1>
+    <p class="hero-desc">
+      A two-script SQL pipeline for loading Replicon timesheet data from a staging table into production.
+      The first script cleanses malformed activity codes, then both scripts use the <code>MERGE</code> statement
+      to perform atomic upserts — updating existing records and inserting new ones in a single pass.
+    </p>
+    <div class="hero-tags">
+      <span class="tag">SQL Server</span>
+      <span class="tag">MERGE</span>
+      <span class="tag">ETL</span>
+      <span class="tag">Data Pipeline</span>
+      <span class="tag">Upsert</span>
+    </div>
+  </div>
+
+  <div class="walkthrough">
+
+    <!-- FLOW DIAGRAM -->
+    <div class="flow-diagram">
+      <div class="flow-box">
+        <div class="flow-label">Source</div>
+        <div class="flow-name">Replicon API</div>
+      </div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-box">
+        <div class="flow-label">Stage</div>
+        <div class="flow-name">stg_replicon_data</div>
+      </div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-box" style="border-color:rgba(79,163,209,0.3)">
+        <div class="flow-label">Cleanse + MERGE</div>
+        <div class="flow-name">SQL Scripts</div>
+      </div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-box" style="border-color:rgba(111,183,173,0.3)">
+        <div class="flow-label">Production</div>
+        <div class="flow-name">replicon_timesheet_prod</div>
+      </div>
+    </div>
+
+    <h3 style="color:var(--text);font-size:0.92rem;margin-bottom:6px;">The Scenario</h3>
+    <p style="font-size:0.8rem;color:var(--muted);line-height:1.65;margin-bottom:28px;">
+      Replicon timesheet data lands in a staging table via an API integration. The data needs to be
+      cleansed (malformed activity codes), type-cast (date fields), and merged into the production table.
+      Records that already exist should be updated; new records should be inserted. The <code>MERGE</code>
+      statement handles both in a single atomic operation, keyed on <code>TimeEntryId</code>.
+    </p>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- SCRIPT 1: CLEANSE + MERGE                              -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="section-break">
+      <h3>Script 1 — Cleanse &amp; Load</h3>
+      <p style="font-size:0.8rem;color:var(--muted);line-height:1.65;">
+        This script handles dirty data before merging. Activity codes sourced from the API
+        sometimes contain full activity names instead of short codes.
+      </p>
+    </div>
+
+    <!-- STEP 1 -->
+    <div class="step">
+      <div class="step-header">
+        <span class="step-num">1</span>
+        <span class="step-title">Fix malformed ActivityCode values</span>
+      </div>
+      <p class="step-desc">
+        Valid activity codes are 4–5 characters. When the code is outside that range,
+        extract the first word from <code>ActivityName</code> as a fallback. The
+        <code>CHARINDEX</code> trick appends a space so single-word names don't break.
+      </p>
+      <div class="code-block"><code><span class="comment">-- Fix activity codes that are too short or too long</span>
+<span class="keyword">UPDATE</span> <span class="table-name">staged_replicon_data</span>
+<span class="keyword">SET</span> ActivityCode = <span class="func">LEFT</span>(ActivityName,
+                        <span class="func">CHARINDEX</span>(<span class="string">' '</span>, ActivityName + <span class="string">' '</span>) - 1)
+<span class="keyword">WHERE</span> <span class="func">LEN</span>(ActivityCode) <span class="keyword">NOT BETWEEN</span> 4 <span class="keyword">AND</span> 5;</code></div>
+
+      <div class="callout">
+        <strong>Why not CASE?</strong> A targeted <code>UPDATE...WHERE</code> only touches rows with
+        bad codes. A <code>CASE</code> expression inside the MERGE would evaluate on every row —
+        even the ones with valid codes — adding unnecessary computation to the merge operation.
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="step">
+      <div class="step-header">
+        <span class="step-num">2</span>
+        <span class="step-title">MERGE — match on TimeEntryId</span>
+      </div>
+      <p class="step-desc">
+        The <code>MERGE</code> statement joins staging to production on the natural key.
+        <code>WHEN MATCHED</code> updates existing records;
+        <code>WHEN NOT MATCHED BY TARGET</code> inserts new ones.
+        This is a single atomic operation — no risk of partial loads.
+      </p>
+      <div class="code-block"><code><span class="keyword">MERGE</span> <span class="table-name">dbo.replicon_timesheet_prod</span> <span class="keyword">AS</span> target
+<span class="keyword">USING</span> <span class="table-name">dbo.staged_replicon_data</span>  <span class="keyword">AS</span> source
+<span class="keyword">ON</span>    target.TimeEntryId = source.TimeEntryId</code></div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="step">
+      <div class="step-header">
+        <span class="step-num">3</span>
+        <span class="step-title">WHEN MATCHED — update existing records</span>
+      </div>
+      <p class="step-desc">
+        When a <code>TimeEntryId</code> already exists in production, overwrite every attribute
+        with the latest staged values. <code>LastUpdatedOn = GETDATE()</code> stamps when the
+        record was last refreshed — useful for debugging and freshness checks downstream.
+      </p>
+      <div class="code-block"><code><span class="keyword">WHEN MATCHED THEN</span>
+    <span class="keyword">UPDATE SET</span>
+        TimeEntryType    = source.TimeEntryType,
+        UserId           = source.UserId,
+        UserName         = source.UserName,
+        EntryDate        = source.EntryDate,
+        DurationHours    = source.DurationHours,
+        WorkTimeDurationHours    = source.WorkTimeDurationHours,
+        BreakTimeDurationHours   = source.BreakTimeDurationHours,
+        TimeOffTimeDurationHours = source.TimeOffTimeDurationHours,
+        ActivityId       = source.ActivityId,
+        ActivityName     = source.ActivityName,
+        ActivityCode     = source.ActivityCode,
+        TimesheetId      = source.TimesheetId,
+        TimesheetStartDate = source.TimesheetStartDate,
+        TimesheetEndDate   = source.TimesheetEndDate,
+        <span class="comment">-- ... remaining columns</span>
+        LastUpdatedOn    = <span class="func">GETDATE</span>()</code></div>
+    </div>
+
+    <!-- STEP 4 -->
+    <div class="step">
+      <div class="step-header">
+        <span class="step-num">4</span>
+        <span class="step-title">WHEN NOT MATCHED — insert new records</span>
+      </div>
+      <p class="step-desc">
+        New time entries that don't exist in production are inserted with all columns
+        plus a <code>LastUpdatedOn</code> timestamp. The <code>BY TARGET</code> qualifier
+        makes the intent explicit — only rows missing from the target are inserted.
+      </p>
+      <div class="code-block"><code><span class="keyword">WHEN NOT MATCHED BY TARGET THEN</span>
+    <span class="keyword">INSERT</span> (
+        TimeEntryId, TimeEntryType, UserId, UserName,
+        EntryDate, DurationHours, WorkTimeDurationHours,
+        BreakTimeDurationHours, TimeOffTimeDurationHours,
+        ActivityId, ActivityName, ActivityCode,
+        TimesheetId, TimesheetStartDate, TimesheetEndDate,
+        <span class="comment">-- ... remaining columns</span>
+        LastUpdatedOn
+    )
+    <span class="keyword">VALUES</span> (
+        source.TimeEntryId, source.TimeEntryType,
+        source.UserId, source.UserName,
+        source.EntryDate, source.DurationHours,
+        source.WorkTimeDurationHours,
+        source.BreakTimeDurationHours,
+        source.TimeOffTimeDurationHours,
+        source.ActivityId, source.ActivityName,
+        source.ActivityCode, source.TimesheetId,
+        source.TimesheetStartDate, source.TimesheetEndDate,
+        <span class="comment">-- ... remaining columns</span>
+        <span class="func">GETDATE</span>()
+    );</code></div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- SCRIPT 2: TYPE-SAFE MERGE                              -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="section-break">
+      <h3>Script 2 — Type-Safe MERGE</h3>
+      <p style="font-size:0.8rem;color:var(--muted);line-height:1.65;">
+        A second version of the merge that adds defensive type casting for date fields
+        sourced from the API as strings.
+      </p>
+    </div>
+
+    <!-- STEP 5 -->
+    <div class="step">
+      <div class="step-header">
+        <span class="step-num">5</span>
+        <span class="step-title">TRY_CAST for safe date conversion</span>
+      </div>
+      <p class="step-desc">
+        The Replicon API sometimes returns date fields as strings. <code>TRY_CAST</code>
+        safely converts them — returning <code>NULL</code> instead of failing the entire
+        merge on a bad value. Applied to <code>EntryDate</code>, <code>TimesheetStartDate</code>,
+        and <code>TimesheetEndDate</code> in both the UPDATE and INSERT clauses.
+      </p>
+      <div class="code-block"><code><span class="keyword">MERGE</span> <span class="table-name">dbo.replicon_timesheet_prod</span> <span class="keyword">AS</span> target
+<span class="keyword">USING</span> <span class="table-name">dbo.stg_replicon_data</span> <span class="keyword">AS</span> source
+<span class="keyword">ON</span>    target.TimeEntryId = source.TimeEntryId
+
+<span class="keyword">WHEN MATCHED THEN</span>
+    <span class="keyword">UPDATE SET</span>
+        <span class="comment">-- Date fields use TRY_CAST for safe conversion</span>
+        target.EntryDate          = <span class="func">TRY_CAST</span>(source.EntryDate <span class="keyword">AS</span> <span class="type">DATE</span>),
+        target.TimesheetStartDate = <span class="func">TRY_CAST</span>(source.TimesheetStartDate <span class="keyword">AS</span> <span class="type">DATE</span>),
+        target.TimesheetEndDate   = <span class="func">TRY_CAST</span>(source.TimesheetEndDate <span class="keyword">AS</span> <span class="type">DATE</span>),
+        <span class="comment">-- Non-date fields pass through directly</span>
+        target.UserName           = source.UserName,
+        target.DurationHours      = source.DurationHours,
+        target.ActivityCode       = source.ActivityCode,
+        <span class="comment">-- ...</span>
+        target.LastUpdatedOn      = <span class="func">GETDATE</span>()
+
+<span class="keyword">WHEN NOT MATCHED THEN</span>
+    <span class="keyword">INSERT</span> (TimeEntryId, EntryDate, TimesheetStartDate, ...)
+    <span class="keyword">VALUES</span> (
+        source.TimeEntryId,
+        <span class="func">TRY_CAST</span>(source.EntryDate <span class="keyword">AS</span> <span class="type">DATE</span>),
+        <span class="func">TRY_CAST</span>(source.TimesheetStartDate <span class="keyword">AS</span> <span class="type">DATE</span>),
+        ...
+    );</code></div>
+
+      <div class="callout">
+        <strong>TRY_CAST vs CAST:</strong> <code>CAST</code> will throw an error and abort the
+        entire MERGE if a single date value is malformed. <code>TRY_CAST</code> returns
+        <code>NULL</code> for bad values, letting the merge complete. You can then
+        identify and fix the nulls downstream.
+      </div>
+    </div>
+
+    <!-- KEY TAKEAWAYS -->
+    <div class="section-break">
+      <h3>Key Patterns</h3>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <span class="step-num">&check;</span>
+        <span class="step-title">Cleanse before merge</span>
+      </div>
+      <p class="step-desc">
+        Fix data quality issues in the staging table <em>before</em> the MERGE runs.
+        This keeps the MERGE statement focused on its job (upsert logic) and makes
+        cleansing rules independently testable.
+      </p>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <span class="step-num">&check;</span>
+        <span class="step-title">Atomic upsert with MERGE</span>
+      </div>
+      <p class="step-desc">
+        A single <code>MERGE</code> replaces a multi-step pattern of
+        <code>IF EXISTS → UPDATE ELSE INSERT</code>. It's atomic — if any part fails,
+        the whole operation rolls back. No partial loads, no orphaned inserts.
+      </p>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <span class="step-num">&check;</span>
+        <span class="step-title">Defensive typing at the boundary</span>
+      </div>
+      <p class="step-desc">
+        Use <code>TRY_CAST</code> at the system boundary (API → database) where data types
+        aren't guaranteed. Internal queries between typed tables don't need this overhead.
+      </p>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <span class="step-num">&check;</span>
+        <span class="step-title">Audit column (LastUpdatedOn)</span>
+      </div>
+      <p class="step-desc">
+        <code>GETDATE()</code> on every upsert provides a built-in freshness indicator.
+        Downstream consumers can filter to recent loads, and stale records surface immediately
+        in monitoring queries.
+      </p>
+    </div>
+
+  </div>
+
+</div>
+
+</body>
+</html>

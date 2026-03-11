@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>M-Query: PDF Folder ETL | Barry Babbitt</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../public/styles.css">
+  <style>
+    .walkthrough {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 0 20px 60px;
+    }
+
+    .step {
+      margin-bottom: 36px;
+    }
+
+    .step-header {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: rgba(79,163,209,0.15);
+      color: var(--accent);
+      font-size: 0.72rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .step-title {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .step-desc {
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.65;
+      margin-bottom: 12px;
+      padding-left: 36px;
+    }
+
+    .code-block {
+      background: #0d1117;
+      border: 1px solid rgba(111,183,173,0.12);
+      border-radius: 8px;
+      padding: 16px 20px;
+      overflow-x: auto;
+      margin-left: 36px;
+    }
+
+    .code-block code {
+      font-family: 'Courier New', monospace;
+      font-size: 0.78rem;
+      line-height: 1.7;
+      color: #e6edf3;
+      white-space: pre;
+    }
+
+    .code-block .comment { color: #8b949e; }
+    .code-block .keyword { color: #ff7b72; }
+    .code-block .func { color: #d2a8ff; }
+    .code-block .string { color: #a5d6ff; }
+    .code-block .type { color: #79c0ff; }
+
+    .callout {
+      background: rgba(79,163,209,0.08);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 6px 6px 0;
+      padding: 12px 16px;
+      margin: 16px 0 16px 36px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .callout strong { color: var(--text); }
+
+    .comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 24px 0;
+    }
+
+    .comparison-col {
+      background: rgba(47,75,79,0.2);
+      border: 1px solid rgba(111,183,173,0.1);
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .comparison-col h4 {
+      font-size: 0.78rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .comparison-col.before h4 { color: #8c4a4a; }
+    .comparison-col.after h4 { color: #6FB7AD; }
+
+    .comparison-col ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .comparison-col li {
+      font-size: 0.75rem;
+      color: var(--muted);
+      padding: 3px 0;
+      padding-left: 14px;
+      position: relative;
+    }
+
+    .comparison-col.before li::before { content: '✗'; position: absolute; left: 0; color: #8c4a4a; }
+    .comparison-col.after li::before { content: '✓'; position: absolute; left: 0; color: #6FB7AD; }
+
+    .full-query {
+      margin-top: 40px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(111,183,173,0.1);
+    }
+
+    .full-query h3 {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 600px) {
+      .comparison { grid-template-columns: 1fr; }
+      .code-block { margin-left: 0; padding: 12px 14px; }
+      .code-block code { font-size: 0.7rem; line-height: 1.6; }
+      .step-desc { padding-left: 0; }
+      .callout { margin-left: 0; }
+      .walkthrough { padding: 0 4px 40px; }
+      .step-title { font-size: 0.84rem; }
+      .step-desc { font-size: 0.76rem; }
+      .comparison-col li { font-size: 0.7rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="case-study">
+
+  <a href="../index.html#projects" class="back-link">
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    Back to Portfolio
+  </a>
+
+  <div class="project-hero">
+    <h1>M-Query: PDF Folder ETL</h1>
+    <p class="hero-desc">
+      A common Power Query scenario — ingesting a folder of PDF pay stubs, extracting structured tables,
+      and cleaning them into an analysis-ready dataset. This walkthrough starts with a naive approach
+      and refactors it into an optimized query using engineering best practices.
+    </p>
+    <div class="hero-tags">
+      <span class="tag">Power Query</span>
+      <span class="tag">M Language</span>
+      <span class="tag">PDF Ingestion</span>
+      <span class="tag">ETL</span>
+      <span class="tag">Performance</span>
+    </div>
+  </div>
+
+  <!-- SCENARIO -->
+  <div class="walkthrough">
+
+    <h3 style="color:var(--text);font-size:0.92rem;margin-bottom:6px;">The Scenario</h3>
+    <p style="font-size:0.8rem;color:var(--muted);line-height:1.65;margin-bottom:28px;">
+      You have a folder of PDF pay stubs (<code style="color:var(--accent)">PaySlip25/</code>).
+      Each file contains multiple pages of tables. You need to extract the data from Page 1 of every PDF,
+      filter out header/summary rows, parse the pay-period date from the filename, and type the numeric columns.
+    </p>
+
+    <!-- BEFORE/AFTER -->
+    <div class="comparison">
+      <div class="comparison-col before">
+        <h4>Naive Approach</h4>
+        <ul>
+          <li>Expand all PDF pages, then filter to Page001</li>
+          <li>Expand data columns in a second pass</li>
+          <li>Carry binary Content through 5+ steps</li>
+          <li>Add an Index column that's never used downstream</li>
+          <li>Filter rows after full expansion</li>
+        </ul>
+      </div>
+      <div class="comparison-col after">
+        <h4>Optimized Approach</h4>
+        <ul>
+          <li>Direct record access — no expand for page selection</li>
+          <li>Row-level filtering inside transform — before combine</li>
+          <li>Binary Content dropped immediately</li>
+          <li>No unnecessary columns carried through the pipeline</li>
+          <li>Single Table.Combine at the end</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- STEP 1 -->
+    <div class="step">
+      <div class="step-header">
+        <span class="step-num">1</span>
+        <span class="step-title">Read the folder — drop binaries immediately</span>
+      </div>
+      <p class="step-desc">
+        <code>Folder.Files</code> returns every column including the heavy binary <code>Content</code>.
+        Select only <code>Content</code> and <code>Name</code> right away so the engine doesn't carry
+        file attributes and metadata through every downstream step.
+      </p>
+      <div class="code-block"><code><span class="keyword">let</span>
+    <span class="comment">// 1. Read folder — keep only what we need</span>
+    Source = <span class="func">Folder.Files</span>(<span class="string">"C:\PaySlips"</span>),
+    Files  = <span class="func">Table.SelectColumns</span>(Source, {<span class="string">"Content"</span>, <span class="string">"Name"</span>}),</code></div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="step">
+      <div class="step-header">
+        <span class="step-num">2</span>
+        <span class="step-title">Extract metadata from the filename first</span>
+      </div>
+      <p class="step-desc">
+        Parse the pay-period date from the filename <strong>before</strong> touching PDF content.
+        This is a cheap string operation — do it while the table is still one row per file.
+      </p>
+      <div class="code-block"><code>    <span class="comment">// 2. Extract week-end date from filename (cheap — do it early)</span>
+    AddDate = <span class="func">Table.AddColumn</span>(
+        Files, <span class="string">"WeekEndDate"</span>,
+        <span class="keyword">each</span> <span class="func">Text.BetweenDelimiters</span>([Name], <span class="string">"tt_"</span>, <span class="string">".pdf"</span>),
+        <span class="type">type text</span>
+    ),</code></div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="step">
+      <div class="step-header">
+        <span class="step-num">3</span>
+        <span class="step-title">Parse PDFs &amp; filter in one transform — no expand</span>
+      </div>
+      <p class="step-desc">
+        This is the key optimization. Instead of expanding <code>Pdf.Tables</code> into rows and then filtering
+        to <code>Page001</code>, use <strong>direct record access</strong> with <code>{[Id="Page001"]}</code>
+        to grab the exact page. Then filter out unwanted rows <em>inside the same transform</em> —
+        before any data leaves the per-file scope.
+      </p>
+      <div class="code-block"><code>    <span class="comment">// 3. Parse each PDF → grab Page001 → filter rows (no expand)</span>
+    Parsed = <span class="func">Table.AddColumn</span>(AddDate, <span class="string">"Data"</span>, <span class="keyword">each</span>
+        <span class="keyword">let</span>
+            pages    = <span class="func">Pdf.Tables</span>([Content]),
+            page1    = pages{[Id=<span class="string">"Page001"</span>]}[Data],
+            excluded = {<span class="string">"Employee Name"</span>, <span class="string">"Employee Taxes"</span>,
+                        <span class="string">"Employer Taxes"</span>, <span class="string">"Tax"</span>, <span class="string">"Total"</span>},
+            cleaned  = <span class="func">Table.SelectRows</span>(page1, <span class="keyword">each</span>
+                [Column1] &lt;&gt; <span class="keyword">null</span> <span class="keyword">and</span>
+                <span class="keyword">not</span> <span class="func">List.Contains</span>(excluded, [Column1])
+            )
+        <span class="keyword">in</span>
+            cleaned
+    ),</code></div>
+
+      <div class="callout">
+        <strong>Why this matters:</strong> The naive approach expands every page of every PDF into rows,
+        then filters down. With 50 PDFs × 3 pages each, that's 150 rows before filtering.
+        Direct access means 50 rows — one per file — and zero wasted page expansions.
+      </div>
+    </div>
+
+    <!-- STEP 4 -->
+    <div class="step">
+      <div class="step-header">
+        <span class="step-num">4</span>
+        <span class="step-title">Drop binaries, then expand the cleaned data</span>
+      </div>
+      <p class="step-desc">
+        Remove <code>Content</code> and <code>Name</code> before expanding — the binary column is no longer needed
+        and <code>Name</code> has been replaced by <code>WeekEndDate</code>. Now the only expand is the
+        pre-filtered, pre-cleaned page data.
+      </p>
+      <div class="code-block"><code>    <span class="comment">// 4. Drop heavy columns, expand only cleaned data</span>
+    Trimmed = <span class="func">Table.SelectColumns</span>(Parsed, {<span class="string">"Data"</span>, <span class="string">"WeekEndDate"</span>}),
+    Expanded = <span class="func">Table.ExpandTableColumn</span>(
+        Trimmed, <span class="string">"Data"</span>,
+        {<span class="string">"Column1"</span>, <span class="string">"Column2"</span>, <span class="string">"Column3"</span>}
+    ),</code></div>
+    </div>
+
+    <!-- STEP 5 -->
+    <div class="step">
+      <div class="step-header">
+        <span class="step-num">5</span>
+        <span class="step-title">Type columns in a single step</span>
+      </div>
+      <p class="step-desc">
+        Apply all type conversions in one <code>Table.TransformColumnTypes</code> call at the end.
+        Multiple type-change steps force the engine to re-scan the table each time.
+      </p>
+      <div class="code-block"><code>    <span class="comment">// 5. Type all columns in one pass</span>
+    Typed = <span class="func">Table.TransformColumnTypes</span>(Expanded, {
+        {<span class="string">"Column1"</span>,     <span class="type">type text</span>},
+        {<span class="string">"Column2"</span>,     <span class="type">type number</span>},
+        {<span class="string">"Column3"</span>,     <span class="type">type number</span>},
+        {<span class="string">"WeekEndDate"</span>, <span class="type">type date</span>}
+    })
+<span class="keyword">in</span>
+    Typed</code></div>
+    </div>
+
+    <!-- FULL QUERY -->
+    <div class="full-query">
+      <h3>Complete Optimized Query</h3>
+      <div class="code-block"><code><span class="keyword">let</span>
+    <span class="comment">// Read folder — keep only Content + Name</span>
+    Source = <span class="func">Folder.Files</span>(<span class="string">"C:\PaySlips"</span>),
+    Files  = <span class="func">Table.SelectColumns</span>(Source, {<span class="string">"Content"</span>, <span class="string">"Name"</span>}),
+
+    <span class="comment">// Extract pay-period date from filename before heavy work</span>
+    AddDate = <span class="func">Table.AddColumn</span>(
+        Files, <span class="string">"WeekEndDate"</span>,
+        <span class="keyword">each</span> <span class="func">Text.BetweenDelimiters</span>([Name], <span class="string">"tt_"</span>, <span class="string">".pdf"</span>),
+        <span class="type">type text</span>
+    ),
+
+    <span class="comment">// Parse each PDF → direct access to Page001 → row-level filter</span>
+    Parsed = <span class="func">Table.AddColumn</span>(AddDate, <span class="string">"Data"</span>, <span class="keyword">each</span>
+        <span class="keyword">let</span>
+            pages    = <span class="func">Pdf.Tables</span>([Content]),
+            page1    = pages{[Id=<span class="string">"Page001"</span>]}[Data],
+            excluded = {<span class="string">"Employee Name"</span>, <span class="string">"Employee Taxes"</span>,
+                        <span class="string">"Employer Taxes"</span>, <span class="string">"Tax"</span>, <span class="string">"Total"</span>},
+            cleaned  = <span class="func">Table.SelectRows</span>(page1, <span class="keyword">each</span>
+                [Column1] &lt;&gt; <span class="keyword">null</span> <span class="keyword">and</span>
+                <span class="keyword">not</span> <span class="func">List.Contains</span>(excluded, [Column1])
+            )
+        <span class="keyword">in</span>
+            cleaned
+    ),
+
+    <span class="comment">// Drop binary + filename, expand only cleaned page data</span>
+    Trimmed  = <span class="func">Table.SelectColumns</span>(Parsed, {<span class="string">"Data"</span>, <span class="string">"WeekEndDate"</span>}),
+    Expanded = <span class="func">Table.ExpandTableColumn</span>(
+        Trimmed, <span class="string">"Data"</span>,
+        {<span class="string">"Column1"</span>, <span class="string">"Column2"</span>, <span class="string">"Column3"</span>}
+    ),
+
+    <span class="comment">// Type all columns in a single pass</span>
+    Typed = <span class="func">Table.TransformColumnTypes</span>(Expanded, {
+        {<span class="string">"Column1"</span>,     <span class="type">type text</span>},
+        {<span class="string">"Column2"</span>,     <span class="type">type number</span>},
+        {<span class="string">"Column3"</span>,     <span class="type">type number</span>},
+        {<span class="string">"WeekEndDate"</span>, <span class="type">type date</span>}
+    })
+<span class="keyword">in</span>
+    Typed</code></div>
+    </div>
+
+  </div>
+
+</div>
+
+</body>
+</html>

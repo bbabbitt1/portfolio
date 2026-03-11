@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Amazon S3 - Storage, Security & Best Practices</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <div class="container2">
+        <div class="header">
+            <h1>Amazon S3</h1>
+            <hr>
+        </div>
+
+        <h2>Overview & Primary Use Cases</h2>
+        <p>Amazon Simple Storage Service (S3) is an object storage service designed for scalability, durability, and availability. S3 is a foundational service used across many AWS architectures.</p>
+        <ul>
+            <li><strong>Common Use Cases:</strong> Backup & restore, disaster recovery, archive, hybrid cloud storage, static website hosting, media hosting & streaming, big data lakes and analytics, software distribution, data lake ingestion, data export/import.</li>
+            <li><strong>Exam Tip:</strong> S3 is object storage (not a filesystem). Use EBS/EFS for block/file needs; use S3 for large-scale object workloads and archives.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Buckets & Objects</h2>
+        <ul>
+            <li><strong>Buckets:</strong> Namespace for objects. Bucket names are globally unique across all AWS accounts and regions. Created in a region.</li>
+            <li><strong>Naming rules:</strong> Lowercase, no underscores, no uppercase letters; follow AWS naming constraints and prefix restrictions. There are no true directories—keys represent object paths.</li>
+            <li><strong>Objects:</strong> Each object has a key (full path), metadata (system & user), and optional tags (up to 10 key/value pairs). Max object size 5 TB; use multipart upload for large objects (>5 GB recommended, mandatory for >5 GB uploads).</li>
+            <li><strong>Metadata & Tags:</strong> Use tags for lifecycle, billing and access controls. Use metadata to store object-specific info.</li>
+            <li><strong>Exam Tip:</strong> "Key" = prefix + filename; e.g., `s3://my-bucket/photos/2025/pic.jpg` key is `photos/2025/pic.jpg`.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Access Control: IAM, Bucket Policy & ACLs</h2>
+        <ul>
+            <li><strong>IAM Policies:</strong> User-based policies that grant or deny API actions for principals (users/roles).</li>
+            <li><strong>Bucket Policies:</strong> Resource-based JSON policies attached to buckets; can grant cross-account access, enforce encryption at upload, or allow public read.</li>
+            <li><strong>ACLs:</strong> Legacy, coarse-grained access control for buckets/objects. Prefer IAM + bucket policies over ACLs.</li>
+            <li><strong>Decision Logic:</strong> An IAM principal can access S3 when IAM policy OR resource policy allows it and no explicit DENY exists.</li>
+            <li><strong>Block Public Access:</strong> Use account & bucket Block Public Access settings to prevent accidental public exposures. For buckets that must never be public, leave block public access ON.</li>
+            <li><strong>Exam Tip:</strong> For cross-account access, prefer bucket policies and IAM roles with least privilege.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>S3 Static Website Hosting</h2>
+        <ul>
+            <li>S3 can host static websites (HTML/CSS/JS). Bucket must allow public GET (or use CloudFront + OAI/Origin Access Control for secure hosting).</li>
+            <li>Use index and error document settings. Static websites use HTTP (no native HTTPS unless behind CloudFront).</li>
+            <li><strong>Best Practice:</strong> Use CloudFront in front for HTTPS, caching, WAF integration and lower latency.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Versioning</h2>
+        <ul>
+            <li>Versioning is enabled at the bucket level. It preserves, stores, and retrieves all versions of an object.</li>
+            <li>Objects existing prior to enabling versioning have a null version ID. Suspending versioning doesn't delete prior versions.</li>
+            <li><strong>Use Cases:</strong> Protect against accidental deletes/overwrites, retain history for audit or rollback.</li>
+            <li><strong>Exam Tip:</strong> When enabled, deletes create delete markers; to permanently remove versions you must delete specific version IDs.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Replication (CRR & SRR)</h2>
+        <ul>
+            <li>Cross-Region Replication (CRR) and Same-Region Replication (SRR) copy new objects from a source bucket to a destination bucket. Requires versioning enabled on both source and destination.</li>
+            <li>Supports cross-account replication. Replication is asynchronous; only new objects (after config) are replicated unless you use S3 Batch Operations to copy existing objects.</li>
+            <li>Delete markers can be replicated (configurable). Individual version deletions are not replicated (protects against malicious deletes).</li>
+            <li>No replication chaining (source -> target -> target2 does not carry original object's replication automatically).</li>
+            <li><strong>Use Cases:</strong> Compliance, DR, lower latency reads from another region, cross-account copies of logs.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Storage Classes & Cost/Access Tradeoffs</h2>
+        <ul>
+            <li><strong>S3 Standard:</strong> Frequent access, 99.99% availability, 11 9s durability. Use for active data.</li>
+            <li><strong>Standard-Infrequent Access (Standard-IA):</strong> Lower cost for infrequent access; retrieval charges apply.</li>
+            <li><strong>One Zone-IA:</strong> Single AZ storage — cheaper, less resilient. Use for recreatable secondary copies or non-critical data.</li>
+            <li><strong>Intelligent-Tiering:</strong> Automatic tiering between frequent/infrequent tiers; small monitoring fee, good for unknown access patterns.</li>
+            <li><strong>Glacier Instant/ Flexible Retrieval / Deep Archive:</strong> Archive classes with different retrieval latencies and minimum storage durations (Glacier Deep Archive has a 180-day minimum).</li>
+            <li><strong>Express One Zone:</strong> High-performance one-AZ storage (low-latency workloads, co-located compute intensive workloads). Use cases: ML training, media processing (ensure you accept single-AZ risk).</li>
+            <li><strong>Exam Tip:</strong> Durability is consistent across classes (11 9s), availability and cost differ. Use lifecycle rules to transition objects to cheaper classes.</li>
+        </ul>
+
+        <img src="./images/s3.png" style="max-width:75%; margin-top:10px; margin-bottom:10px;" alt="S3 availability & durability">
+
+        <hr class="soft-divide">
+        <h2>Lifecycle, Storage Class Analytics & Transition Rules</h2>
+        <ul>
+            <li>Lifecycle rules automatically transition or expire objects based on prefix or tags.</li>
+            <li>Use Storage Class Analytics to understand access patterns and make informed lifecycle policies (best for Standard/Standard-IA decisions).</li>
+            <li>Example scenario: Keep original images in Standard for 60 days, then move to Glacier; thumbnails in One Zone-IA with expiration after 60 days.</li>
+            <li><strong>Exam Tip:</strong> Lifecycle rules are evaluated daily; transitions to Glacier classes may have minimum retention requirements.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Performance & Data Transfer</h2>
+        <ul>
+            <li>S3 scales automatically. Per-prefix performance guidance: default supports thousands of requests; AWS recommends modern prefixes (no longer strict randomization requirement).</li>
+            <li><strong>Multipart Upload:</strong> Recommended for files >100 MB; required for >5 GB. Improves resiliency and allows parallel upload parts.</li>
+            <li><strong>Transfer Acceleration:</strong> Uploads via the nearest edge location (useful for large transfers over long distances).</li>
+            <li><strong>Byte-range GETs:</strong> Parallelize downloads by requesting byte ranges (useful for resuming and partial fetches).</li>
+            <li><strong>Exam Tip:</strong> Use multipart upload + transfer acceleration when moving large datasets across the globe.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Batch Operations & Inventory</h2>
+        <ul>
+            <li>S3 Batch Operations perform bulk actions on objects such as copying, modifying metadata, encrypting, invoking a Lambda per object, or restoring Glacier objects.</li>
+            <li>Use S3 Inventory to create object lists that can be queried with Athena to form Batch Operation job manifests.</li>
+            <li><strong>Use Case:</strong> Bulk migrate unencrypted objects to encrypted copy, mass tag updates, large restores.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Storage Lens</h2>
+        <ul>
+            <li>S3 Storage Lens provides organization-wide storage visibility and recommendations (cost, activity, data protection metrics). It can export metrics and dashboards.</li>
+            <li>Use Storage Lens (Advanced) for sensitive data detection, anomaly detection, and cross-account aggregation.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>S3 Security — Encryption & Keys</h2>
+        <ul>
+            <li><strong>Encryption In Transit:</strong> Use SSL/TLS for network encryption (HTTPS endpoints). Always use HTTPS for sensitive transfers.</li>
+
+            <li><strong>Server-Side Encryption (SSE):</strong>
+                <ul>
+                    <li><strong>SSE-S3:</strong> Server-side encryption with S3-managed keys. Easy to use; good default.</li>
+                    <li><strong>SSE-KMS:</strong> Server-side encryption with AWS KMS-managed keys. Provides per-object KMS API calls (Encrypt/Decrypt) and fine-grained access control via KMS Key Policies and IAM. Supports audit of key usage in CloudTrail and IAM grants for cross-account use.</li>
+                    <li><strong>Exam Tip:</strong> SSE-KMS provides extra control and auditability; choose SSE-KMS when you need key access control or cross-account CMK usage.</li>
+                    <li><strong>SSE-C:</strong> Server-side encryption with customer-provided keys. AWS does not store the key. Less common; responsibility for key management stays with customer.</li>
+                </ul>
+            </li>
+
+            <li><strong>Client-Side Encryption:</strong> Encrypt data client-side before sending to S3; AWS never sees plaintext. Use when customers must hold keys locally.</li>
+
+            <li><strong>KMS Quota & Performance Note:</strong> SSE-KMS requires KMS API calls per encryption/decryption; KMS has regional request quotas. High throughput workloads should consider KMS quotas and possibly use envelope encryption (data keys) to reduce calls.</li>
+
+            <li><strong>Default Encryption & Enforcement:</strong> Enable bucket default encryption (SSE-S3 or SSE-KMS) and optionally add a bucket policy to deny uploads that are not encrypted. This prevents accidental unencrypted uploads.</li>
+
+            <li><strong>Exam Tip:</strong> If asked about auditability of key use, choose SSE-KMS (CloudTrail logs KMS API usage). If asked about costs and simplicity, SSE-S3 is simpler/cheaper.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Advanced Security Features & Access Controls</h2>
+        <ul>
+            <li><strong>Object Lock (WORM):</strong> Retain objects for regulatory compliance. Two modes: Governance and Compliance (Compliance cannot be bypassed).</li>
+            <li><strong>MFA Delete:</strong> Adds protection for versioned buckets by requiring MFA for changing the versioning state or permanently deleting versions. Only supported via the AWS CLI (not the console) and requires root account credentials to enable/disable.</li>
+            <li><strong>Glacier Vault Lock:</strong> Provides write-once-read-many (WORM) policy enforcement for Glacier vaults (used for regulatory retention policies). Configure an immutable policy and lock it.</li>
+            <li><strong>Exam Tip:</strong> MFA Delete is rarely used in production but is an exam topic — remember it requires root account and CLI to manage.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Access Monitoring & Logging</h2>
+        <ul>
+            <li><strong>Server Access Logging:</strong> Logs requests to an S3 bucket (target bucket). Useful for audit and forensic analysis. Delivery is eventual and may take time.</li>
+            <li><strong>CloudTrail Data Events:</strong> Track object-level API calls (GetObject, PutObject) for specific buckets — useful for security monitoring and forensics. Data Events are charged separately.</li>
+            <li><strong>Access Analyzer for S3:</strong> Identify buckets shared with external principals.</li>
+            <li><strong>Exam Tip:</strong> Use CloudTrail Data Events to capture object-level access; use S3 Server Access Logs for basic request logs to a bucket.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Presigned URLs & Temporary Access</h2>
+        <ul>
+            <li><strong>Presigned URLs:</strong> A presigned URL allows temporary, pre-authorized access to specific S3 objects without exposing credentials. Useful for time-limited downloads/uploads from clients.</li>
+            <li><strong>Use Cases:</strong> Secure file downloads for unauthenticated clients, browser-based uploads to S3 using presigned PUT URLs.</li>
+            <li><strong>Best Practices:</strong> Keep expiration short and limit the HTTP method (GET/PUT). Consider using CloudFront signed URLs for larger scale/advanced controls.</li>
+            <li><strong>Exam Tip:</strong> Presigned URLs use the security principal that created them — revoking access requires rotating/invalidating credentials or changing object ACL/policy (no direct revoke API for an already issued presigned URL).</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>S3 CORS</h2>
+        <ul>
+            <li>S3 supports Cross-Origin Resource Sharing (CORS) configuration to allow browser-based requests from other domains. Configure allowed origins, methods, headers and expose headers.</li>
+            <li><strong>Use Cases:</strong> Static website uploads from browser directly to S3, AJAX requests to objects hosted in S3.</li>
+            <li><strong>Best Practices:</strong> Keep CORS rules minimal and allow only required origins and methods.</li>
+            <li><strong>Exam Tip:</strong> CORS issues are browser-side problems — server-side S3 access (via SDK/CLI) is unaffected by CORS.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>S3 Access Points & Network Controls</h2>
+        <ul>
+            <li><strong>S3 Access Points:</strong> Create custom endpoints for shared datasets with their own policies and network controls (VPC-only restrictions). Simplifies permissions for many applications accessing the same bucket.</li>
+            <li><strong>Use Cases:</strong> Multi-tenant analytics, granting teams scoped access to a portion of a large bucket (prefix-based), VPC-restricted access.</li>
+            <li><strong>S3 Object Lambda:</strong> Allows you to process objects on-the-fly via Lambda when an application requests them (modify content, redact data, transform formats) without changing the stored object.</li>
+            <li><strong>Use Cases for Object Lambda:</strong> Real-time transformations (image resizing), masking PII, converting file formats on read.</li>
+            <li><strong>Best Practices:</strong> Use access points for simplified, least-privilege access; use Object Lambda when transformation at read-time is required but consider cost and latency implications.</li>
+            <li><strong>Exam Tip:</strong> Access Points can restrict access to a VPC — useful in exam scenarios that require private access without opening the bucket.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Glacier Vault Lock</h2>
+        <ul>
+            <li>Glacier Vault Lock enforces a WORM policy on a Glacier vault. Once locked, the policy cannot be changed and retention rules become immutable — used for regulatory compliance.</li>
+            <li><strong>Use Case:</strong> Legal/regulatory retention of archives.</li>
+            <li><strong>Exam Tip:</strong> Vault Lock is for Glacier vaults, not S3 buckets; S3 Object Lock provides WORM on S3 objects.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Costs & Optimization</h2>
+        <ul>
+            <li>Costs include storage, requests (GET/PUT/LIST), data retrieval (for IA/Glacier), data transfer, lifecycle transitions, and features (Inventory, Analytics, Object Lock retention). Plan lifecycle policies to minimize costs.</li>
+            <li>Use Intelligent-Tiering when access patterns are unknown; use lifecycle rules for long-term cost savings.</li>
+            <li><strong>Exam Tip:</strong> Frequent access patterns = S3 Standard; infrequent = Standard-IA; archive = Glacier classes. Also remember retrieval time/cost tradeoffs and minimum storage durations (Glacier Deep Archive 180 days).</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Common Exam Scenarios & Solutions</h2>
+        <ul>
+            <li><strong>Scenario: Host a secure static website with HTTPS and restricted backend access</strong>
+                <ul>
+                    <li><strong>Solution:</strong> S3 static hosting + CloudFront with OAC/OAI (Origin Access Control) for private S3 access, CloudFront provides HTTPS and WAF for protection.</li>
+                </ul>
+            </li>
+
+            <li><strong>Scenario: Protect data at rest and audit key usage</strong>
+                <ul>
+                    <li><strong>Solution:</strong> Use SSE-KMS for encryption, enable CloudTrail for KMS API logs, enable bucket default encryption and enforce via bucket policy.</li>
+                </ul>
+            </li>
+
+            <li><strong>Scenario: Large dataset ingestion from global clients with low latency</strong>
+                <ul>
+                    <li><strong>Solution:</strong> Use S3 Transfer Acceleration or edge ingestion via CloudFront + multipart upload.</li>
+                </ul>
+            </li>
+
+            <li><strong>Scenario: Provide temporary download links to users</strong>
+                <ul>
+                    <li><strong>Solution:</strong> Generate presigned URLs with short expiry. If scale or signed-policy features needed, consider CloudFront signed URLs.</li>
+                </ul>
+            </li>
+
+            <li><strong>Scenario: Apply a transformation to objects on read without duplicating data</strong>
+                <ul>
+                    <li><strong>Solution:</strong> Use S3 Object Lambda to invoke Lambda to transform objects at read time.</li>
+                </ul>
+            </li>
+
+            <li><strong>Scenario: Need to retain data immutably for compliance</strong>
+                <ul>
+                    <li><strong>Solution:</strong> Use S3 Object Lock (WORM) in compliance mode or Glacier Vault Lock for Glacier.</li>
+                </ul>
+            </li>
+
+            <li><strong>Scenario: Multiple teams need restricted access to different prefixes of a single bucket</strong>
+                <ul>
+                    <li><strong>Solution:</strong> Use S3 Access Points with prefix/policy restrictions and VPC-only access if needed.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Best Practices Summary</h2>
+        <ul>
+            <li>Enable bucket-level encryption (SSE-S3 or SSE-KMS) and enforce encryption via bucket policy.</li>
+            <li>Block public access by default and only allow public buckets when required (and audit them frequently).</li>
+            <li>Enable versioning for production buckets to protect against accidental deletes/overwrites; combine with lifecycle to control costs.</li>
+            <li>Use replication (CRR/SRR) for cross-region redundancy, compliance, or cross-account aggregation; ensure versioning enabled.</li>
+            <li>Use IAM least privilege and resource policies; prefer bucket policies and roles over ACLs.</li>
+            <li>Use lifecycle rules and Storage Class Analytics to reduce storage costs.</li>
+            <li>Use CloudTrail Data Events and Server Access Logs for audit & forensics; enable S3 Access Analyzer for exposure detection.</li>
+            <li>For high-volume uploads/downloads, use multipart uploads and transfer acceleration where appropriate.</li>
+            <li>Use Access Points for large shared datasets and S3 Object Lambda when read-time transforms are required.</li>
+            <li>Test disaster recovery (restore from Glacier), practice failover, and verify retention policies.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Exam Tips (Associate → Professional)</h2>
+        <ul>
+            - Remember the difference between durability (11 9s) and availability (varies by class).<br>
+            - Versioning vs. Replication: Versioning is a prerequisite for replication. Replication copies new versions only. <br>
+            - SSE-S3 = simple, SSE-KMS = control/audit, SSE-C = customer-managed key, client-side encryption = client-managed. <br>
+            - MFA Delete requires root user and CLI to enable and provides extra protection for deletes. <br>
+            - Presigned URLs cannot be revoked centrally once issued (unless you rotate the credentials or change the object's policy). <br>
+            - Use CloudFront + OAC for secure static website hosting with HTTPS. <br>
+            - Glacier classes have minimum storage durations—moving objects too soon can incur early delete charges. <br>
+            - S3 Access Points simplify permission management at scale and can restrict access to a VPC. <br>
+            - For high throughput encryption scenarios, be aware of KMS API quotas; use envelope encryption/prefetching data keys. <br>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Useful CLI / SDK Notes</h2>
+        <ul>
+            <li>Enable versioning via CLI: <code>aws s3api put-bucket-versioning --bucket my-bucket --versioning-configuration Status=Enabled</code></li>
+            <li>Enable default encryption via CLI: <code>aws s3api put-bucket-encryption --bucket my-bucket --server-side-encryption-configuration file://config.json</code></li>
+            <li>Generate presigned URL (Python boto3 example): <code>url = s3_client.generate_presigned_url('get_object', Params={'Bucket':bucket,'Key':key}, ExpiresIn=3600)</code></li>
+            <li>Enable MFA Delete (requires root & CLI): <code>aws s3api put-bucket-versioning --bucket my-bucket --versioning-configuration Status=Enabled,MFADelete=Enabled --mfa "serial-number token"</code></li>
+        </ul>
+
+    </div>
+</body>
+</html>

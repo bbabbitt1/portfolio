@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AWS Integration & Messaging — SQS, SNS, Kinesis, Amazon MQ</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <div class="container2">
+        <div class="header">
+            <h1>Decoupling Applications - AWS Integration & Messaging Services</h1>
+            <hr>
+        </div>
+
+        <h2>Overview</h2>
+        <p>This page covers AWS messaging and integration services that enable asynchronous communication between applications. Multiple applications often need to communicate either synchronously (request-response) or asynchronously (event-based). These services decouple applications, allowing them to scale independently and handle traffic spikes gracefully.</p>
+
+        <hr class="soft-divide">
+        <h2>Problem & Solution: Synchronous vs Asynchronous Communication</h2>
+        <ul>
+            <li><strong>Synchronous Communication:</strong> Direct request-response. If one service is slow or overwhelmed, all calling services wait. Can cascade failures.</li>
+            <li><strong>Asynchronous Communication:</strong> Sender sends message to a queue/topic; receiver processes when ready. Sender doesn't wait. Scales independently.</li>
+            <li><strong>Decoupling Benefits:</strong> Services can fail independently, scale independently, and handle traffic spikes via queues and brokers.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Amazon SQS (Simple Queue Service)</h2>
+
+        <h3>What is a Queue?</h3>
+        <p>A queue is a temporary message storage that holds messages from producers until consumers retrieve and process them. FIFO (First-In-First-Out) ordering is optional; standard queues prioritize throughput over ordering.</p>
+
+        <h3>Standard Queue (Default)</h3>
+        <ul>
+            <li><strong>Message Flow:</strong> Producers send messages via SendMessage API → messages persist in queue → consumers poll up to 10 messages at a time → consumer processes → consumer deletes message via DeleteMessage API.</li>
+            <li><strong>Throughput:</strong> Unlimited messages, unlimited throughput.</li>
+            <li><strong>Retention:</strong> Default 4 days, configurable up to 14 days.</li>
+            <li><strong>Message Size:</strong> Max 256 KB per message (1 KB for attributes).</li>
+            <li><strong>Latency:</strong> Very low latency.</li>
+            <li><strong>Delivery Guarantee:</strong> At-least-once delivery (duplicates possible). Messages can arrive out of order.</li>
+            <li><strong>Parallel Processing:</strong> Multiple consumers can poll and process messages concurrently for horizontal scaling.</li>
+        </ul>
+
+        <h3>FIFO Queue</h3>
+        <ul>
+            <li><strong>Throughput:</strong> Limited to 300 messages/second (or 3000 with batch API).</li>
+            <li><strong>Deduplication:</strong> Exactly-once delivery using deduplication ID. Prevents duplicate processing within a 5-minute window.</li>
+            <li><strong>Ordering:</strong> Guaranteed FIFO within a message group (specified by MessageGroupId).</li>
+            <li><strong>Naming:</strong> Queue name must end with `.fifo`.</li>
+            <li><strong>Use Case:</strong> When ordering and exactly-once semantics matter (payment processing, order fulfillment).</li>
+        </ul>
+
+        <h3>Message Visibility Timeout</h3>
+        <ul>
+            <li>After a consumer polls a message, it becomes invisible to other consumers for a configurable duration (default 30 seconds).</li>
+            <li>If the consumer doesn't delete the message within this window, it reappears in the queue for another consumer to process (possible duplicate).</li>
+            <li><strong>ChangeMessageVisibility API:</strong> Consumer can request more time if processing takes longer. Must balance: too long → locks message if consumer crashes; too short → duplicate processing.</li>
+            <li><strong>Exam Tip:</strong> If you see "message processed twice," consider visibility timeout too short; if you see "hung message," consider it too long.</li>
+        </ul>
+
+        <h3>Long Polling</h3>
+        <ul>
+            <li><strong>Standard Polling:</strong> Consumer requests messages; if empty, returns immediately (empty response). Wastes API calls and increases latency.</li>
+            <li><strong>Long Polling:</strong> Consumer waits up to 20 seconds for messages to arrive. If messages arrive, returns immediately. Otherwise, returns after timeout.</li>
+            <li><strong>Benefits:</strong> Reduces number of API calls (lower cost), decreases latency, increases efficiency.</li>
+            <li><strong>Configuration:</strong> Set `WaitTimeSeconds` parameter (0-20 seconds). Values > 0 enable long polling.</li>
+            <li><strong>Exam Tip:</strong> Long polling is preferred for production workloads to reduce API costs and improve responsiveness.</li>
+        </ul>
+
+        <h3>SQS Use Cases & Scenarios</h3>
+
+        <h4>Decoupling Application Tiers</h4>
+        <p><strong>Scenario:</strong> Web front-end receives image uploads. Image processing service is slow and causes bottlenecks. Solution: Insert SQS between front-end and processor. Front-end sends upload notifications to SQS → image processor polls queue independently → can scale horizontally. Front-end remains responsive; processor handles load asynchronously.</p>
+
+        <h4>SQS with Auto Scaling Groups</h4>
+        <p><strong>Scenario:</strong> Your application needs to process orders from an SQS queue. Traffic varies (high on weekends, low mid-week). Solution: Create an ASG that launches EC2 instances with SQS consumer applications. Create a CloudWatch alarm on queue length (ApproximateNumberOfMessagesVisible). When queue length > threshold, ASG scales up. When queue empties, ASG scales down. This achieves cost-effective, demand-driven processing.</p>
+
+        <h4>SQS as a Database Buffer</h4>
+        <p><strong>Scenario:</strong> Your application receives rapid write requests to a database (e.g., billing transactions). Database can't keep up → transactions lost or errors. Solution: Insert SQS queue between application and database. Application writes to SQS (infinitely scalable) → worker processes reads from SQS and writes to database at sustainable rate. SQS acts as a buffer, allowing application to handle spikes without data loss. Database experiences smooth, manageable write load.</p>
+
+        <h3>SQS Security</h3>
+        <ul>
+            <li><strong>Encryption in Transit:</strong> HTTPS API calls.</li>
+            <li><strong>Encryption at Rest:</strong> Server-side encryption using AWS KMS keys (optional but recommended).</li>
+            <li><strong>Client-Side Encryption:</strong> Application can encrypt messages before sending; SQS stores encrypted blobs. Consumer decrypts locally.</li>
+            <li><strong>Access Control:</strong> IAM policies regulate which principals can call SQS APIs (SendMessage, ReceiveMessage, DeleteMessage, etc.).</li>
+            <li><strong>SQS Queue Policies:</strong> Resource-based policies (similar to S3 bucket policies) allowing cross-account access or services to write to the queue.</li>
+            <li><strong>Exam Tip:</strong> Use KMS encryption for sensitive data; use queue policies for cross-account integrations.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Amazon SNS (Simple Notification Service)</h2>
+
+        <h3>Pub/Sub Model</h3>
+        <p><strong>SNS</strong> implements a publish-subscribe pattern. Event producer publishes a message to one SNS topic. Multiple subscribers (SQS queues, Lambda functions, email, HTTP endpoints, etc.) receive copies of that message.</p>
+
+        <ul>
+            <li><strong>Publisher:</strong> Sends message to SNS topic once.</li>
+            <li><strong>Subscribers:</strong> Multiple services listen to the topic and receive all published messages (subject to filtering).</li>
+            <li><strong>Fan-Out:</strong> One message → multiple destinations (true pub/sub).</li>
+            <li><strong>Limits:</strong> Up to 12.5 million subscribers per topic; up to 100,000 topics per account (can be increased).</li>
+            <li><strong>Integrations:</strong> SQS, Lambda, Kinesis Firehose, HTTP(s) endpoints, email, SMS, mobile push.</li>
+        </ul>
+
+        <h3>SNS Publishing Modes</h3>
+
+        <h4>Topic-Based Publishing</h4>
+        <ul>
+            <li>Create a topic (e.g., "OrderProcessing").</li>
+            <li>Create subscriptions (e.g., SQS queue, Lambda, email).</li>
+            <li>Publish message to topic; all subscribers receive it.</li>
+        </ul>
+
+        <h4>Direct Publishing</h4>
+        <ul>
+            <li>Create platform app (e.g., mobile app).</li>
+            <li>Create app endpoint for each device/user.</li>
+            <li>Publish directly to endpoint (for mobile push notifications).</li>
+        </ul>
+
+        <h3>SNS & SQS Fan-Out Pattern</h3>
+        <p><strong>Pattern:</strong> SNS topic + multiple SQS queues as subscribers. One message published to SNS → all SQS queues receive copy → each queue has independent consumers.</p>
+
+        <ul>
+            <li><strong>Benefits:</strong> Fully decoupled, SQS provides persistence and delayed processing, can add SQS subscribers dynamically, cross-region delivery supported.</li>
+            <li><strong>Setup Requirement:</strong> SQS queue policy must allow SNS to send messages (Principal: sns, Action: SendMessage).</li>
+        </ul>
+
+        <h4>Fan-Out Scenario 1: S3 Events to Multiple Queues</h4>
+        <p><strong>Use Case:</strong> Image uploads to S3 need to be processed by multiple systems (thumbnail generator, metadata extractor, virus scanner). Solution: S3 sends ObjectCreated events to SNS topic → SNS publishes to 3 SQS queues (one per processor) → each processor polls its queue independently. If you add a 4th processor later, just add another SQS subscriber to the topic. Original S3 and SNS config unchanged.</p>
+
+        <h4>Fan-Out Scenario 2: SNS to S3 via Kinesis Data Firehose</h4>
+        <p><strong>Use Case:</strong> Real-time clickstream data needs to be archived to S3 for batch analytics AND sent to Lambda for real-time alerting. Solution: Application publishes to SNS topic → SNS fans out to Kinesis Data Firehose (batch writes to S3) + Lambda (real-time processing). Firehose handles batching, buffering, and S3 write; Lambda handles immediate alerts. Both work in parallel without interfering.</p>
+
+        <h3>SNS FIFO</h3>
+        <ul>
+            <li>Combines SNS pub/sub with FIFO ordering and deduplication (like SQS FIFO).</li>
+            <li>Both standard and FIFO SQS queues can subscribe to SNS FIFO topic.</li>
+            <li>Use case: When you need guaranteed ordering and exactly-once delivery in a fan-out pattern.</li>
+        </ul>
+
+        <h3>Message Filtering</h3>
+        <ul>
+            <li>SNS subscriptions can use JSON message filtering policies to receive only relevant messages.</li>
+            <li>Example: Only subscribe to orders > $100 by filtering on order amount attribute.</li>
+            <li>Reduces noise, saves processing on unnecessary messages.</li>
+        </ul>
+
+        <h3>SNS Security</h3>
+        <ul>
+            <li><strong>Encryption in Transit:</strong> HTTPS API.</li>
+            <li><strong>Encryption at Rest:</strong> AWS KMS (optional).</li>
+            <li><strong>Access Control:</strong> IAM policies for who can publish/subscribe.</li>
+            <li><strong>Topic Policies:</strong> Resource-based policies for cross-account access or service integrations.</li>
+            <li><strong>Dead-Letter Queue:</strong> Configure for subscriptions to handle failed deliveries.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Amazon Kinesis Data Streams</h2>
+        <p>Real-time data streaming service for collecting, processing, and analyzing streaming data at scale.</p>
+
+        <h3>Key Characteristics</h3>
+        <ul>
+            <li><strong>Data Retention:</strong> 24 hours by default, up to 365 days (extended retention for advanced analytics).</li>
+            <li><strong>Data Reprocessing:</strong> Consumers can replay data within retention window.</li>
+            <li><strong>Data Immutability:</strong> Data cannot be deleted, only expired after retention period.</li>
+            <li><strong>Throughput:</strong> 1 MB per record (but typical streaming data is much smaller).</li>
+            <li><strong>Encryption:</strong> At-rest KMS encryption, in-flight HTTPS encryption.</li>
+            <li><strong>Producer Library:</strong> KPL (Kinesis Producer Library) for optimized writing.</li>
+            <li><strong>Consumer Library:</strong> KCL (Kinesis Client Library) for optimized reading.</li>
+        </ul>
+
+        <h3>Capacity Modes</h3>
+
+        <h4>Provisioned Mode</h4>
+        <ul>
+            <li>You choose number of shards. Each shard: 1 MB/sec input, 2 MB/sec output.</li>
+            <li>Manual or auto-scaling to change shard count.</li>
+            <li>Pricing: Per shard provisioned per hour.</li>
+            <li>Use when: Predictable throughput, cost-sensitive.</li>
+        </ul>
+
+        <h4>On-Demand Mode</h4>
+        <ul>
+            <li>No shard provisioning. Automatically scales based on last 30 days' throughput (default 4 MB/sec input).</li>
+            <li>Pricing: Per stream per hour + data in/out per GB.</li>
+            <li>Use when: Variable/unpredictable throughput, comfort with higher costs for flexibility.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Amazon Kinesis Data Firehose</h2>
+        <p>Fully managed service for delivering streaming data to destinations (S3, Redshift, Splunk, DataDog, etc.). Handles batching, buffering, and transformations.</p>
+
+        <h3>Key Features</h3>
+        <ul>
+            <li><strong>Producers:</strong> Applications, IoT devices, Kinesis Streams, CloudWatch Logs, etc.</li>
+            <li><strong>Transformations:</strong> Optional Lambda functions to transform records in-flight (e.g., enrich, filter, convert formats).</li>
+            <li><strong>Batching:</strong> Buffers records by size (up to 128 MB) and time (up to 60 sec), then writes to destination.</li>
+            <li><strong>Auto-Scaling:</strong> Automatically scales throughput based on incoming data.</li>
+            <li><strong>Backup:</strong> Optional S3 backup bucket for failed/skipped records.</li>
+            <li><strong>Formats Supported:</strong> JSON, CSV, Parquet, Avro, raw text, binary.</li>
+            <li><strong>Serverless & Pay-Per-Use:</strong> No provisioning, pay for data delivered.</li>
+            <li><strong>Near Real-Time:</strong> Buffering adds slight delay (1-60 seconds) compared to real-time streaming.</li>
+        </ul>
+
+        <h3>Firehose vs Kinesis Streams — Comparison Table</h3>
+        <table style="width:100%; border-collapse:collapse; margin:10px 0;">
+            <tr style="background:#f0f0f0;">
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Feature</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Kinesis Data Streams</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Kinesis Data Firehose</th>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Real-Time vs Near Real-Time</td>
+                <td style="border:1px solid #ddd; padding:8px;">Real-time</td>
+                <td style="border:1px solid #ddd; padding:8px;">Near real-time (buffering)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Provisioning</td>
+                <td style="border:1px solid #ddd; padding:8px;">Shards (provisioned or on-demand)</td>
+                <td style="border:1px solid #ddd; padding:8px;">Fully managed, serverless</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Data Retention</td>
+                <td style="border:1px solid #ddd; padding:8px;">24 hrs–365 days</td>
+                <td style="border:1px solid #ddd; padding:8px;">No retention (immediate delivery)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Reprocessing</td>
+                <td style="border:1px solid #ddd; padding:8px;">Yes (within retention)</td>
+                <td style="border:1px solid #ddd; padding:8px;">No built-in reprocessing</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Destinations</td>
+                <td style="border:1px solid #ddd; padding:8px;">Lambda, DynamoDB, S3, etc.</td>
+                <td style="border:1px solid #ddd; padding:8px;">S3, Redshift, Splunk, DataDog, etc.</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Cost Model</td>
+                <td style="border:1px solid #ddd; padding:8px;">Per shard hour + PUT requests</td>
+                <td style="border:1px solid #ddd; padding:8px;">Per GB delivered</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Scaling</td>
+                <td style="border:1px solid #ddd; padding:8px;">Manual or auto (shards)</td>
+                <td style="border:1px solid #ddd; padding:8px;">Automatic</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Use Case</td>
+                <td style="border:1px solid #ddd; padding:8px;">Real-time analytics, stream processing</td>
+                <td style="border:1px solid #ddd; padding:8px;">Data pipeline, archival, warehouse loading</td>
+            </tr>
+        </table>
+
+        <hr class="soft-divide">
+        <h2>SQS vs SNS vs Kinesis — Comparison Table</h2>
+        <table style="width:100%; border-collapse:collapse; margin:10px 0;">
+            <tr style="background:#f0f0f0;">
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Aspect</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">SQS</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">SNS</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Kinesis</th>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Pattern</td>
+                <td style="border:1px solid #ddd; padding:8px;">Pull (polling)</td>
+                <td style="border:1px solid #ddd; padding:8px;">Push (pub/sub)</td>
+                <td style="border:1px solid #ddd; padding:8px;">Pull (streaming)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Use Case</td>
+                <td style="border:1px solid #ddd; padding:8px;">Task queues, decouple services</td>
+                <td style="border:1px solid #ddd; padding:8px;">Event notifications, fan-out</td>
+                <td style="border:1px solid #ddd; padding:8px;">Real-time analytics, streaming</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Ordering</td>
+                <td style="border:1px solid #ddd; padding:8px;">Standard: no, FIFO: yes</td>
+                <td style="border:1px solid #ddd; padding:8px;">Standard: no, FIFO: yes</td>
+                <td style="border:1px solid #ddd; padding:8px;">Per shard (shards = partitions)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Message Retention</td>
+                <td style="border:1px solid #ddd; padding:8px;">4–14 days</td>
+                <td style="border:1px solid #ddd; padding:8px;">None (immediate)</td>
+                <td style="border:1px solid #ddd; padding:8px;">24 hrs–365 days</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Reprocessing</td>
+                <td style="border:1px solid #ddd; padding:8px;">Limited (replay via batch)</td>
+                <td style="border:1px solid #ddd; padding:8px;">No</td>
+                <td style="border:1px solid #ddd; padding:8px;">Yes (within retention)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Throughput</td>
+                <td style="border:1px solid #ddd; padding:8px;">Unlimited</td>
+                <td style="border:1px solid #ddd; padding:8px;">Unlimited</td>
+                <td style="border:1px solid #ddd; padding:8px;">Per-shard limited or on-demand</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Real-Time</td>
+                <td style="border:1px solid #ddd; padding:8px;">Near real-time (polling delay)</td>
+                <td style="border:1px solid #ddd; padding:8px;">Near real-time (push delay)</td>
+                <td style="border:1px solid #ddd; padding:8px;">True real-time</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Ideal Latency</td>
+                <td style="border:1px solid #ddd; padding:8px;">100s ms–seconds</td>
+                <td style="border:1px solid #ddd; padding:8px;">100s ms</td>
+                <td style="border:1px solid #ddd; padding:8px;">~100 ms (sub-second)</td>
+            </tr>
+        </table>
+
+        <hr class="soft-divide">
+        <h2>Amazon MQ (Message Queue)</h2>
+        <p>Managed message broker for traditional, open-protocol messaging. Bridges legacy applications to AWS without re-engineering.</p>
+
+        <h3>Context: Cloud-Native vs Traditional Messaging</h3>
+        <ul>
+            <li><strong>AWS Cloud-Native:</strong> SQS (proprietary AWS protocol), SNS (proprietary AWS protocol).</li>
+            <li><strong>Traditional/Open-Source:</strong> Applications often use standard messaging protocols that are not AWS-specific.</li>
+        </ul>
+
+        <h3>Supported Protocols</h3>
+        <table style="width:100%; border-collapse:collapse; margin:10px 0;">
+            <tr style="background:#f0f0f0;">
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Protocol</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Full Name</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Use Case</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Common Brokers</th>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>MQTT</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Message Queuing Telemetry Transport</td>
+                <td style="border:1px solid #ddd; padding:8px;">Lightweight, IoT devices, pub/sub messaging over unreliable networks</td>
+                <td style="border:1px solid #ddd; padding:8px;">Mosquitto, HiveMQ</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>AMQP</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Advanced Message Queuing Protocol</td>
+                <td style="border:1px solid #ddd; padding:8px;">Enterprise messaging, reliable queuing, request-reply patterns</td>
+                <td style="border:1px solid #ddd; padding:8px;">RabbitMQ, Apache Qpid</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>STOMP</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Simple Text Oriented Messaging Protocol</td>
+                <td style="border:1px solid #ddd; padding:8px;">Simple, text-based messaging, many language libraries</td>
+                <td style="border:1px solid #ddd; padding:8px;">Apache ActiveMQ, RabbitMQ</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>OpenWire</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Apache ActiveMQ proprietary wire protocol</td>
+                <td style="border:1px solid #ddd; padding:8px;">High-performance, efficient binary protocol for ActiveMQ</td>
+                <td style="border:1px solid #ddd; padding:8px;">Apache ActiveMQ</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>WSS</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">WebSocket Secure</td>
+                <td style="border:1px solid #ddd; padding:8px;">Browser-based clients, real-time bidirectional communication</td>
+                <td style="border:1px solid #ddd; padding:8px;">Any MQTT/AMQP broker with WSS support</td>
+            </tr>
+        </table>
+
+        <h3>When to Use Amazon MQ</h3>
+        <ul>
+            <li><strong>Migration Scenario:</strong> Existing on-premises application using RabbitMQ (AMQP) or ActiveMQ (OpenWire, STOMP). To migrate to AWS without re-engineering, deploy Amazon MQ and use same protocol/connection strings.</li>
+            <li><strong>Multi-Protocol Needs:</strong> Some integrations require MQTT (IoT), others need AMQP (enterprise). MQ supports multiple protocols simultaneously.</li>
+            <li><strong>Limitation:</strong> MQ doesn't scale as dynamically as SQS. MQ is "traditional" (broker-based) vs SQS (cloud-native, serverless).</li>
+        </ul>
+
+        <h3>Amazon MQ Deployment Options</h3>
+
+        <h4>Single-AZ</h4>
+        <ul>
+            <li>Broker deployed in one AZ. If AZ fails, broker is unavailable.</li>
+            <li>Cost-effective but not HA.</li>
+        </ul>
+
+        <h4>Multi-AZ with High Availability</h4>
+        <ul>
+            <li>Active-standby setup: Primary broker in one AZ, standby broker in another AZ.</li>
+            <li>Requires <strong>Amazon EFS</strong> for shared storage (broker state/data).</li>
+            <li>Automatic failover if primary fails. Standby takes over within seconds.</li>
+            <li>High availability for critical messaging workloads.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Exam-Style Questions & Answers</h2>
+
+        <ol>
+            <li>
+                <strong>Q:</strong> Your application experiences traffic spikes that overwhelm the backend database. Transactions are lost during peaks. How do you solve this with minimal code changes?
+                <br><strong>A:</strong> Place SQS queue between application and database worker. Application writes to SQS (unlimited throughput) → workers read from SQS and write to database at sustainable rate. SQS buffers spikes, preventing data loss. Workers can auto-scale based on queue length using CloudWatch alarms.
+            </li>
+
+            <li>
+                <strong>Q:</strong> You need to process image uploads asynchronously. Each image must be processed by a thumbnail generator, metadata extractor, and virus scanner—three independent services. What pattern allows one upload event to trigger all three?
+                <br><strong>A:</strong> SNS & SQS fan-out: S3 publishes ObjectCreated to SNS topic → SNS publishes to 3 SQS queues (one per service) → each service polls its queue independently. Fully decoupled.
+            </li>
+
+            <li>
+                <strong>Q:</strong> You require exactly-once message delivery and strict FIFO ordering. Performance requirement is moderate. Which queue service?
+                <br><strong>A:</strong> SQS FIFO. Guarantees exactly-once delivery via deduplication ID and FIFO ordering via MessageGroupId. Trade-off: throughput limited to 300 msgs/sec (vs unlimited in standard).
+            </li>
+
+            <li>
+                <strong>Q:</strong> Your application must consume streaming data at scale, process it in real-time (< 100 ms latency), and allow consumers to replay data from 24 hours ago. Which service?
+                <br><strong>A:</strong> Kinesis Data Streams. Provides true real-time processing, data retention for reprocessing, and partitioning for parallel consumption. Firehose is not suitable (no retention, near real-time only).
+            </li>
+
+            <li>
+                <strong>Q:</strong> You're migrating a legacy RabbitMQ application (uses AMQP) to AWS. You want minimal code changes. Which service?
+                <br><strong>A:</strong> Amazon MQ with AMQP support. Managed broker supporting AMQP protocol. Deploy in multi-AZ with EFS for HA. Same connection strings, minimal changes.
+            </li>
+
+            <li>
+                <strong>Q:</strong> You want to deliver streaming data to S3 for archival and simultaneously to Splunk for real-time analytics. Which service handles batching to S3 and routing to Splunk?
+                <br><strong>A:</strong> Kinesis Data Firehose. Supports multiple destinations, batches to S3 automatically, and can route to Splunk. Simpler than manual S3 writes + Kinesis Streams setup.
+            </li>
+
+            <li>
+                <strong>Q:</strong> Your SQS consumers crash frequently. Messages are being processed twice. What's likely the issue?
+                <br><strong>A:</strong> Message visibility timeout is too short. When consumer crashes without deleting the message, it reappears before default 30-second timeout and another consumer processes it. Increase visibility timeout or implement idempotent processing.
+            </li>
+
+            <li>
+                <strong>Q:</strong> Your SQS consumers have high latency waiting for messages. How can you reduce API calls and improve responsiveness with minimal code change?
+                <br><strong>A:</strong> Enable long polling by setting WaitTimeSeconds to 20. Consumers wait up to 20 seconds for messages. Reduces API calls and latency compared to tight polling loops.
+            </li>
+        </ol>
+
+        <hr class="soft-divide">
+        <h2>Design & Best Practices Checklist</h2>
+        <ul>
+            <li><strong>Decouple Applications:</strong> Use SQS/SNS to decouple tightly coupled services. Add queue between producer and consumer.</li>
+            <li><strong>Choose Right Queue Type:</strong> Standard for high throughput, FIFO for ordering/exactly-once.</li>
+            <li><strong>Auto-Scaling:</strong> Use CloudWatch queue length alarms to trigger ASG scaling for consumers.</li>
+            <li><strong>Fan-Out Pattern:</strong> SNS + SQS for one-to-many distribution with persistence.</li>
+            <li><strong>Real-Time vs Near Real-Time:</strong> Kinesis for true real-time (< 100ms); Firehose for near real-time batching.</li>
+            <li><strong>Legacy Applications:</strong> Use Amazon MQ to migrate RabbitMQ, ActiveMQ, etc. without re-engineering.</li>
+            <li><strong>Visibility Timeout:</strong> Set appropriately for processing time; balance to avoid duplicates or hung messages.</li>
+            <li><strong>Long Polling:</strong> Use for consumers; reduces costs and latency.</li>
+            <li><strong>Encryption:</strong> Use KMS for sensitive data in SQS, SNS, and Kinesis.</li>
+            <li><strong>DLQ (Dead-Letter Queue):</strong> Configure for SNS subscriptions and SQS consumers to capture failed messages.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Closing Notes</h2>
+        <p>Messaging and integration services are foundational for modern AWS architectures. Exam scenarios often test your ability to choose the right service (SQS vs SNS vs Kinesis), design decoupled systems, and troubleshoot common issues (visibility timeout, long polling, ordering guarantees). Master the patterns: task queues (SQS), fan-out (SNS + SQS), streaming analytics (Kinesis), and legacy migration (MQ).</p>
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EC2</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <div class="container2">
+        <div class="header">
+          <h1>EC2 - Elastic Cloud Compute</h1>
+          <hr>  
+        </div>
+        <h2>EC2 Fundamentals</h2>
+        <p>Elastic Cloud Compute, or <strong>EC2</strong>, is one of AWS most popular offerings. EC2 is an IaaS solution <span style="font-style: italic;">(Infrastructure as a Service)</span>. Knowing EC2 is fundamental to understand how the cloud and AWS works.</p>
+        <ul>
+            <li>Main Features:</li>
+            <ul>
+                <li><Strong>Instances</Strong></li>
+                    <ul><li>Virtual Servers.</li></ul>
+                <li><strong>Amazon Machine Images (AMIs)</strong></li>
+                    <ul><li>Preconfigured templates for your instances that package the components you need for your server - including the OS and additional software.</li></ul>
+                <li><strong>Instance Types</strong></li>
+                    <ul><li>Various configurations of CPU, memory, storage, networking capacity, and graphics hardware for instances.</li></ul>
+                <li><strong>Amazon EBS Volumes</strong></li>
+                    <ul>
+                        <li>Persistent storage volumes for data using Amazon Elastic Block Store (Amazon EBS)</li>
+                        <ul>
+                            <li><span style = "font-style: italic;"><strong>Persistent**</strong></span> data survives even if the EC2 instance stops, terminates, reboots, or crashes.</li>
+                        </ul>
+                    </ul>                    
+                <li><strong>Instance Store Volumes</strong></li>
+                <ul><li>Storage volumes for <Strong>TEMPORARY</Strong> data that is deleted when you stop, hibernate, or terminate your instance.</li></ul>
+                <li><strong>Key Pairs</strong></li>
+                    <ul><li>Secure login information for your instances using public-key cryptography.</li></ul>
+                <li><strong>Security Groups</strong></li>
+                    <ul><li>A virtual firewall that allows you to specify the protocols, ports, and source IP ranges that can reach your instances, and destination IP ranges to which your instances can connect.</li></ul>
+        
+            </ul>
+            <li>AWS defines EC2 as <span style="font-style: italic;">on-demand, scalable computing capacity in the Amazon Web Services (AWS) Cloud...reduces hardware costs so you can develop and deploy applications faster.</span></li>
+            <li><strong>Accessing EC2</strong></li>
+            <ul>
+                <li>Amazon EC2 console</li>
+                <li>AWS Command Line Interface (AWS CLI)</li>
+                <li>AWS SDKs</li>
+                <li>CloudFormation</li>
+                <li>Query API</li>
+                <li>AWS Tools for Powershell</li>
+            </ul>
+            <li><strong>EC2 Pricing Models</strong></li>
+            <ul>
+                <li><strong>Free Tier</strong></li>
+                    <ul><li>750 hours per month of Linux, RHEL, or SLES t2.micro or t3.micro instances depending on the region.</li>
+                    <li>750 hours per month of Windows t2.micro or t3.micro instances depending on the region.</li></ul>
+                <li><Strong>On-Demand Instances</strong></li>
+                    <ul><li>Pay for the instances that you use by the second, with a <Strong>minimum of 60 seconds</Strong>, with no long-term commitments or upfront payments.</li></ul>
+                <li><strong>Reserved Instances</strong></li>
+                    <ul><li>Commit to specific instance configuration, including instance type and region, for a term of <strong>ONE(1) OR THREE(3)</strong> years.</li></ul>
+                <li><strong>Savings Plans</strong></li>
+                    <ul><li>commit to consistent usage for a term of 1 or 3 years. Ex: $10 dollars per hour.</li></ul>
+                <li><strong>Spot Instances</strong></li>
+                    <ul><li>Request unused EC2 instances at a marked price - can reduce costs significantly, but there is a risk of losing the instance if the price exceeds the max price set. Not good for critical workloads</li></ul>
+                <li><strong>Dedicated Hosts</strong></li>
+                    <ul><li>Using a PHYSICAL EC2 server that is fully dedicated for your use, either On-Demand or as a part of a savings plan. Best for using existing server-bound software licenses AND/OR for meeting compliance requirements.</li></ul>
+                <li><Strong>Dedicated Instances</Strong></li>
+                    <ul><li>Instances that run in a VPC on hardware that is dedicated to a single customer. Unlike Dedicated Hosts, you do not have control over the physical server.</li></ul>
+        </ul>
+        <li><strong>Sizing & configuration options</strong></li>
+        <ul>
+            <li>Operating Systems: Linux, Windows, Mac OS</li>
+            <li>CPU and RAM </li>
+            <li>Storage:</li>
+            <ul>
+                <li>Network-attached: EBS & EFS</li>
+                <li>hardware (EC2 Instance Store)</li>
+            </ul>
+            <li>Network Card: speed of the card, Public IP Address</li>
+            <li>Firewall Rules: <strong>Security Group</strong></li>
+            <li>Bootstrap script: script to configure the instance at first launch (EC2 User Data)</li>
+        </ul>
+        <li><strong>Instance Types</strong></li>
+            <ul>
+                <li>The instance type that you specify determines the hardware of the host computer used for your instance. Each instance type offers different compute, memory, and storage capabilities, and is grouped in an instance family based on these capabilities. Select an instance type based on the requirements of the application or software that you plan to run on your instance.</li>
+                <li>EC2 supports the following hypervisors: <Strong>Xen and Nitro.</Strong> Nitro instances use dedicated hardware cards and a lightweight hypervisor to deliver higher performance, better security, and more features, while Xen instances rely on a traditional software hypervisor with more overhead.</li>
+                <li><strong>Nitro-Based instances</strong>: Hardware + lightweight hypervisor — near bare-metal performance</li>
+                    <ul>
+                        <li>General Purpose</li>
+                        <ul>
+                            <li>Great for diverse workloads: web servers or code repos.Good balance between compute, memory, and networking.</li>
+                            <li>M & T Families</li>
+                            <li>M5 | M5a | M5ad | M5d | M5dn | M5n | M5zn | M6a | M6g | M6gd | M6i | M6id | M6idn | M6in | M7a | M7g | M7gd | M7i | M7i-flex | M8a | M8g | M8gd | M8i | M8i-flex | T3 | T3a | T4g</li>
+                        </ul>
+                        <li>Compute Optimized</li>
+                        <ul>
+                            <li>Compute intensive tasks: Batch processing, media transcoding, high performance web servers or computing, scientific modeling & machine learning, dedicated gaming servers.</li>
+                            <li>C Family</li>
+                            <li>C5 | C5a | C5ad | C5d | C5n | C6a | C6g | C6gd | C6gn | C6i | C6id | C6in | C7a | C7g | C7gd | C7gn | C7i | C7i-flex | C8g | C8gd | C8gn | C8i | C8i-flex</li>
+                        </ul>
+                        <li>Memory Optimized</li>
+                        <ul>
+                            <li>Process large data sets in memory (RAM): high performance relational and nonrelational dbs, distributed web scale cache stores. BI databases. real time processing of big unstructured data.</li>
+                            <li>R, X, Z, and U Families</li>
+                            <li>R5 | R5a | R5ad | R5b | R5d | R5dn | R5n | R6a | R6g | R6gd | R6i | R6id | R6idn | R6in | R7a | R7g | R7gd | R7i | R7iz | R8a | R8g | R8gb | R8gd | R8gn | R8i | R8i-flex | U-3tb1 | U-6tb1 | U-9tb1 | U-12tb1 | U-18tb1 | U-24tb1 | U7i-6tb | U7i-8tb | U7i-12tb | U7in-16tb | U7in-24tb | U7in-32tb | U7inh-32tb | X2gd | X2idn | X2iedn | X2iezn | X8g | z1d</li>
+                        </ul>
+                        <li>Storage Optimized</li>
+                        <ul>
+                            <li>Great for storage intensive tasks that require high, sequential read and write access to large datasets on local storage.OLTP systems, Relational and NoSql, Cache, Data warehousing apps, distributed file systems.</li>
+                            <li>I, D, and H Families</li>
+                            <li>D3 | D3en | I3en | I4g | I4i | I7i | I7ie | I8g | I8ge | Im4gn | Is4gen</li>
+                        </ul>
+                        <li>Accelerated Computing</li>
+                        <ul>
+                            <li>P, G, F, and Inf Families</li>
+                            <li>DL1 | DL2q | F2 | G4ad | G4dn | G5 | G5g | G6 | G6e | G6f | Gr6 | Gr6f | Inf1 | Inf2 | P4d | P4de | P5 | P5e | P5en | P6-B200 | P6-B300 | P6e-GB200 | Trn1 | Trn1n | Trn2 | Trn2u | VT1</li>
+                        </ul>
+                        <li>High-Performance Computing</li>
+                        <ul>
+                            <li>Hpc6a | Hpc6id | Hpc7a | Hpc7g</li>
+                        </ul>
+                        <li>Previous Generation: A1 | P3dn</li>
+                    </ul>
+                <li><strong>Xen-Based</strong>: Traditional virtualization — more overhead</li>
+                <ul>
+                    <li>General Purpose: M1 | M2 | M3 | M4 | T1 | T2</li>
+                    <li>Compute optimized: C1 | C3 | C4</li>
+                    <li>Memory optimized: R3 | R4 | X1 | X1e</li>
+                    <li>Storage optimized: D2 | H1 | I2 | I3</li>
+                    <li>Accelerated computing: F1 | G3 | P2 | P3</li>
+                </ul>
+            </ul>
+    <hr class = "soft-divide">
+    <h2>Security Groups</h2>
+    <p>Security groups control traffic into and out of EC2 instances (like a firewall). They only contain allow rules and can reference by IP or by security group.</p>
+    <ul>
+        <li>They Regulate:</li>
+        <ul>
+            <li>Access to ports</li>
+            <li>Authorized IP ranges - IPv4 and IPv6</li>
+            <li>Control Inbound Network (from outside coming to the instance)</li>
+            <li>Control Outbound Network (from the instance going outside)</li>
+            <img src="./images/sgrule.png" style = "max-width: 75%;margin-top: 10px;margin-bottom: 10px;" alt="Security Group Rules Example ">
+        </ul>
+    </ul>
+    <hr class = "soft-divide">
+    <h2>SSH & EC2 Instance Connect</h2>  
+    <p>SSH: Command Line Utility to connect to instances - only supported by Mac, Linux, and Windows 10+</p>
+    <ul>
+        <li>Uses Public Key Cryptography to authenticate the user to the instance</li>
+        <li>When you create a key pair, you download the private key file (.pem) - keep it secure!</li>
+        <li>Use the private key file with the SSH client to connect to your instance</li>
+        <li>Example SSH command:</li>
+        <ul>
+            <li>ssh -i /path/my-key-pair.pem ec2-user@my-instance-public-dns-name</li>
+        </ul>
+    </ul>
+    <p>EC2 Instance Connect: an SSH Alternative</p>
+    <ul>
+        <li><strong>NOTE: Port 22 needs to be open!</strong></li>
+        <li>Access your instances directly from the web browser</li>
+        <li>No need to manage SSH keys</li>
+        <li>Uses temporary keys that are valid for 60 seconds</li>
+    </ul>
+    <hr class = "soft-divide">
+    <h2>Spot Instances & Spot Fleet - Deep Dive</h2>
+    <p>Spot Instances allow you to take advantage of unused EC2 capacity in the AWS cloud. Spot Instances are available at up to a 90% discount compared to On-Demand prices. The catch is that AWS can reclaim the instance with a two-minute warning if they need the capacity back.</p>
+    <p style="font-style: italic;"><Strong>*** Spot Instances are not suitable for critical jobs OR Databases. ***</Strong></p>
+    <ul>
+        <li>We define a max spot price and the the instance while current spot price is less than our max price.</li>
+        <li>If the price exceeds our max price we are given 2 minutes to either stop or terminate the instance. If you stop the instance, once the spot price drops below the defined max price, we can restart the instance and pick up where we left off.</li>
+        <li>Spot Block: deprecated but may still appear on exam</li>
+        <ul>
+            <li>Block the spot instance during a specified time frame (1 to 6 hours) without interruptions.</li>
+        </ul>
+        <li>Terminating Spot Instances</li>
+        <ul>
+            <li>Spot Requests -- One time or Persistent</li>
+            <li>To cancel: a spot request must be in an open state, active state, or disabled THEN terminate the instances.</li>
+                <ul><li style="font-weight: bold;font-style: italic;">Cancelling a spot request does not terminate instances</li></ul>
+            <img src="./images/spotterm.png" style="max-width: 75%;margin-top: 10px;margin-bottom: 10px;" alt="Terminating Spot Instances">    
+        </ul>
+        <li><strong>Spot Fleet:</strong></li>
+        <ul>
+            <li>Spot Fleets are a set of Spot Instances and On-Demand Instances</li>
+            <li>Tries to meet target capacity with the price constrains.</li>
+            <li>We define the launch pool: instance type, OS, availability zone -- can define multiple pools so that the fleet can decide.</li>
+            <li>Fleet stops launching instances when budget is met or when capacity is reached.</li>
+            <li>Strategies to allocate Spot Instances:</li>
+            <ul>
+                <li>Lowest Price: (most popular) launch from the pool with the lowest price. (short workloads) </li>
+                <li>Diversified: distributed across all pools - great for availability and long workloads</li>
+                <li>Capacity Optimized: launch from the pools with optimal capacity</li>
+                <li>priceCapacityOptimized: <strong>(recommended)</strong> pools with highest capacity available, then select the pool with the lowest price (best choice for most workloads).</li>
+
+            </ul>
+            <li style="font-weight: bold; font-style: italic;">Spot Fleets allows us to automatically request Spot Instances with the lowest price.</li>
+        </ul>
+
+    </ul>
+    <hr class = "soft-divide">
+    <h2>Advanced EC2 Topics</h2>
+    <ul>
+        <li><strong>Private v. Public (IPv4)</strong></li>
+        <ul>
+            <li>Networking has two types of IPs -- IPv4 and IPv6, with IPv4 being the most common</li>
+            <ul>
+                <li>IPv4 (most common): 4 numbers separated by dots --> 1.200.22.33.444</li>
+                <ul><li>Allows for 3.7 billion different addresses in the public space.</li></ul>
+                <li>IPv6 (used mostly for IoT): 8 groups of 4 hexadecimal digits separated by colons --> 2001:0db8:85a3:0000:0000:8a2e:0370:7334</li>
+            </ul>
+            <li><strong>Public IP:</strong></li>
+                <ul>
+                    <li>Machine can be identified on the internet (www)</li>
+                    <li>Must be unique across the whole web</li>
+                    <li>Can be geo-located easily</li>
+                </ul>
+            <li><strong>Private IP:</strong></li>
+                <ul>
+                    <li>Machine can only be identified within a private network (VPC)</li>
+                    <li>Only needs to be unique within the network BUT two different private networks can have the same IPs.</li>
+                    <li>Machines connect to WWW using an internet gateway.</li>
+                    <li>Only a specified range of IPs can be used as private IP</li>
+                </ul>
+            <li><strong>Elastic IP:</strong></li>
+                <ul>
+                    <li>When an EC2 instance is stopped and restarted - it changes a public IP. To combat that, a solution could be to use an <strong>elastic IP</strong></li>
+                    <li>Elastic IP is a static public IPv4 address designed for dynamic cloud computing.</li>
+                    <li>Own it until it is deleted -- only one elastic IP per instance.</li>
+                    <li>Elastic IPs can mask the failure of an instance or software by rapidly remapping the address to another instance in the account</li>
+                        <ul>
+                            <li>Only 5 Elastic IPs per Account - can increase by request</li>
+                            <li style = "font-style: italic;"><strong>Try avoiding Elastic IPs</strong></li>
+                            <ul>
+                                <li>Often Reflect poor architectural decisions</li>
+                                <li>Can incur costs when not used properly</li>
+                                <li>Instead - use a random public IP and register a DNS name to it. Or use a load balance and avoid using a public IP all together.</li>
+                            </ul>
+                        </ul>
+                </ul>
+            <li><strong>EC2 Placement Groups</strong>- controlling the placement of EC2 instances within the AWS Infrastructure.</li>
+            <ul>
+                <li>Strategies</li>
+                <ul>
+                    <li><strong>Cluster</strong>- cluster instances into a low-latency group in a single Availability Zone.</li>
+                    <ul>
+                        <li>Great for networking (10 Gbps bandwidth between instances with Enhanced Networking enabled - recommended)</li>
+                        <li>If the AZ fails, all the instances fail at the same time.</li>
+                        <li>Good for big data job that needs to be completed with speed | Applications that need extremely low latency and high network throughput.</li>
+                    </ul>
+                    <li><strong>Spread</strong>- spreads instances across underlying hardware. Maximum of 7 instances per AZ. Used for critical applications.</li>
+                    <ul>
+                        <li>Used to minimize simultaneous failure -- spans across availability zones</li>
+                        <li>Limited to 7 instances per AZ</li>
+                        <li>Used for applications that need high availability | Critical Apps where each instance must be isolated from failure from each other.</li>
+                    </ul>
+                    <li><strong>Partition</strong>- spread instances across logical partitions such that groups of instances in one partition do not share the underlying hardware with groups of instances in different partitions. Good for large distributed and replicated workloads like HDFS, HBase, and Cassandra. Scales to 100s of EC2 Instances per Group.</li>
+                    <ul>
+                        <li>Up to 7 partitions per AZ</li>
+                        <li>Can span multiple AZs in the same region</li>
+                        <li>Do not share racks with the instances in the other partitions</li>
+                        <li>A partition failure can affect many EC2 but wont affect other partitions</li>
+                        <li>HDFS - HBase - Kafka</li>
+                    </ul>
+                </ul>
+            </ul>
+            <li><strong>Elastic Network Interfaces (ENI)</strong></li>
+            <ul>
+                <li>A virtual network card/interface that you can attach to an instance in a VPC.</li>
+                <li>Can include the following attributes:</li>
+                <ul>
+                    <li>Primary private IPv4 address</li>
+                    <li>One or more secondary private IPv4 addresses</li>
+                    <li>Elastic IP addresses (IPv4)</li>
+                    <li>One public IPv4 address</li>
+                    <li>One or more IPv6 addresses</li>
+                    <li>Security groups</li>
+                    <li>A MAC address</li>
+                    <li>A source/destination check flag</li>
+                    <li>A description</li>
+                </ul>
+                <li>Can be attached and detached from instances - can be used in failover scenarios.</li>
+                <li>Can move ENIs between instances within the same AZ (bound to AZs).</li>
+            </ul>
+            <li><strong>EC2 Hibernate</strong></li>
+            <ul>
+                <li>Saves the contents of the instance's RAM to the EBS root volume.</li>
+                <li>When the instance is started again, the RAM is restored and the instance resumes where it left off.</li>
+                <li>Preserves in-memory state across instance stops and starts.</li>
+                <li>Can only be used with EBS-backed instances.</li>
+                <li>Not supported on all instance types.</li>
+        </ul>
+    </ul>
+
+</div>
+</body>
+</html>

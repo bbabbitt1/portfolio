@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AWS Data & Analytics — Athena, Redshift, EMR, QuickSight, Glue, Lake Formation, Flink, MSK</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <div class="container2">
+        <div class="header">
+            <h1>Data & Analytics: Athena, Redshift, EMR, QuickSight, Glue, Lake Formation</h1>
+            <hr>
+        </div>
+
+        <h2>Overview</h2>
+        <p>AWS Data & Analytics services enable organizations to collect, store, process, and analyze vast amounts of data. This section covers the key services for big data processing, data warehousing, analytics, business intelligence, and streaming analytics. Exam questions often test your ability to select the appropriate service for a given data workload: SQL ad-hoc queries vs precomputed warehouse vs streaming real-time analytics.</p>
+
+        <hr class="soft-divide">
+        <h2>Amazon Athena — Serverless SQL on S3</h2>
+
+        <h3>Service Overview</h3>
+        <p>Amazon Athena is a serverless, interactive query service that enables you to run SQL queries directly on data stored in Amazon S3. No infrastructure provisioning required. Presto engine (distributed SQL query engine) executes queries in parallel across S3 data. Results returned in seconds to minutes depending on data size.</p>
+
+        <h3>Key Characteristics</h3>
+        <ul>
+            <li><strong>Serverless:</strong> No infrastructure to provision or manage. Pay only for data scanned, not compute time.</li>
+            <li><strong>Pricing:</strong> $5 USD per terabyte of data scanned (rounded to nearest 10 MB minimum per query). Use columnar formats to reduce scan cost.</li>
+            <li><strong>Data Format:</strong> Works with CSV, JSON, Parquet, ORC, and other formats stored in S3.</li>
+            <li><strong>SQL Engine:</strong> Presto-based, supports standard SQL, joins, aggregations, window functions.</li>
+            <li><strong>Results:</strong> Query results stored in S3 output location (specified during setup). Can export to CSV, JSON, or query via console.</li>
+            <li><strong>Latency:</strong> Suitable for interactive queries and ad-hoc analytics. Not real-time streaming.</li>
+        </ul>
+
+        <h3>Use Cases & Exam Patterns</h3>
+        <ul>
+            <li><strong>Business Intelligence & Reporting:</strong> Execute SQL queries on historical business data stored in S3.</li>
+            <li><strong>Log Analysis:</strong> Query application logs, VPC Flow Logs, Elastic Load Balancer logs, CloudTrail trails. Filter for errors, security events, or trends.</li>
+            <li><strong>Cost Analysis:</strong> Query AWS billing data exported to S3.</li>
+            <li><strong>Ad-Hoc Analytics:</strong> One-off exploratory queries on large datasets.</li>
+            <li><strong>Exam Tip:</strong> Scenario mentions "serverless SQL analytics," "query data in S3," or "analyze logs" → Athena is the answer.</li>
+        </ul>
+
+        <h3>Performance Optimization in Athena</h3>
+
+        <h4>Columnar Data Formats</h4>
+        <p>Store data in columnar formats (Parquet, ORC) instead of row-based formats (CSV, JSON) for massive cost savings and performance improvements.</p>
+        <ul>
+            <li><strong>Why Columnar?</strong> Columnar formats store data column-by-column. If your query selects 3 columns from a 100-column dataset, only those 3 columns are scanned (vs entire dataset in CSV).</li>
+            <li><strong>Compression:</strong> Columnar formats compress better (repetitive column values). Reduces data scanned further.</li>
+            <li><strong>Performance Improvement:</strong> Up to 100x faster queries, 90% cost reduction compared to CSV.</li>
+            <li><strong>Conversion:</strong> Use AWS Glue to convert CSV/JSON data to Parquet. Once converted, store Parquet files in S3 for future Athena queries.</li>
+        </ul>
+
+        <h4>Partitioning</h4>
+        <p>Organize S3 data into partitions (subdirectories) based on commonly filtered columns (date, region, customer_id). Athena uses partition pruning to scan only relevant partitions.</p>
+        <ul>
+            <li><strong>Example Directory Structure:</strong> <code>s3://my-bucket/data/year=2024/month=12/day=07/data.parquet</code></li>
+            <li><strong>Query:</strong> <code>SELECT * FROM data WHERE year=2024 AND month=12 AND day=07</code> → Athena scans only that partition, not entire dataset.</li>
+            <li><strong>Cost Savings:</strong> Dramatically reduces data scanned if partitions are used in WHERE clauses.</li>
+        </ul>
+
+        <h4>File Size & Compression</h4>
+        <ul>
+            <li><strong>Larger Files:</strong> Use files > 128 MB to minimize overhead. Many small files → many API calls; few large files → efficient scanning.</li>
+            <li><strong>Compression:</strong> GZIP, Snappy, or other compression algorithms further reduce data size and scan costs.</li>
+        </ul>
+
+        <h3>Athena Federated Query</h3>
+        <p>Federated Query allows you to run SQL queries across data stored in multiple sources (relational databases, NoSQL, object storage, custom data sources) in a single Athena query.</p>
+        <ul>
+            <li><strong>Data Sources:</strong> Supported: S3, RDS, DynamoDB, Redshift, DocumentDB, and custom data sources via Lambda.</li>
+            <li><strong>Implementation:</strong> Athena uses Data Source Connectors (AWS Lambda functions) that translate Athena SQL queries to source-specific APIs. Results from multiple sources are joined/aggregated in Athena.</li>
+            <li><strong>Use Case:</strong> Query: "Find all customers from RDS who purchased products from S3 data lake, and cross-reference with DynamoDB inventory." Federated Query handles this in a single query without moving/copying data.</li>
+            <li><strong>Exam Tip:</strong> Scenario mentions "query multiple data sources with single SQL" → Athena Federated Query.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Amazon Redshift — Data Warehouse</h2>
+
+        <h3>Service Overview</h3>
+        <p>Amazon Redshift is a fully managed, petabyte-scale data warehouse optimized for OLAP (Online Analytical Processing). It provides 10x better performance than traditional data warehouses through columnar storage and parallel query execution. Ideal for complex analytical queries, business intelligence, and large-scale aggregations.</p>
+
+        <h3>Key Characteristics</h3>
+        <ul>
+            <li><strong>OLAP vs OLTP:</strong> Redshift is OLAP (analytical queries, aggregations, complex joins) not OLTP (transactional updates). RDS is for OLTP; Redshift for analytics.</li>
+            <li><strong>Columnar Storage:</strong> Data stored column-by-column. Analytical queries that scan specific columns are extremely fast. Compression ratios of 10:1 or better.</li>
+            <li><strong>Parallel Query Engine:</strong> Distributes query across multiple nodes. Each node processes a slice of data in parallel, combining results.</li>
+            <li><strong>Scale:</strong> Scales from 160 GB to petabytes. Add nodes to increase capacity and query performance.</li>
+            <li><strong>SQL Interface:</strong> Supports standard SQL, JDBC/ODBC drivers, integrates with BI tools (Tableau, Looker, etc.).</li>
+            <li><strong>Deployment Modes:</strong>
+                <ul>
+                    <li><strong>Provisioned Cluster:</strong> Manually provision nodes (dc2.large, ra3, etc.). Manage cluster lifecycle. Scales based on demand/cost tradeoffs.</li>
+                    <li><strong>Serverless:</strong> AWS manages capacity automatically. Pay per RPU-hour (Redshift Processing Unit). Removes cluster management overhead.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>Redshift Cluster Architecture</h3>
+        <p>A Redshift cluster consists of multiple nodes working together.</p>
+        <ul>
+            <li><strong>Leader Node:</strong> Coordinates query execution, optimizes queries, manages client connections. Does not store data.</li>
+            <li><strong>Compute Nodes:</strong> Process queries and store data. Each node contains a portion of the dataset (slices). More compute nodes = higher query parallelism and capacity.</li>
+            <li><strong>Node Types:</strong> dc2.large (dense compute), ra3.xlplus/4xlc (RA3 with managed storage, scales independently from compute).</li>
+        </ul>
+
+        <h3>Redshift Snapshots & Disaster Recovery</h3>
+        <ul>
+            <li><strong>Multi-AZ Deployments:</strong> Some cluster types support Multi-AZ with automatic failover if primary node fails (creates backup in standby AZ).</li>
+            <li><strong>Snapshots:</strong> Point-in-time backup of entire cluster. Snapshots are incremental (only changed data since last snapshot). Stored in S3 (managed by AWS).</li>
+            <li><strong>Automated Snapshots:</strong> AWS automatically creates snapshots every 8 hours or every 5 GB of data changes, whichever comes first. Retained per retention period (default 1 day, configurable up to 35 days).</li>
+            <li><strong>Manual Snapshots:</strong> User-initiated snapshots retained indefinitely until explicitly deleted. Useful for long-term backups or pre-release snapshots.</li>
+            <li><strong>Restore from Snapshot:</strong> Create a new cluster from a snapshot in same AWS region or cross-region. Provides disaster recovery capability.</li>
+            <li><strong>Cross-Region Snapshot Replication:</strong> Configure Redshift to automatically copy snapshots to another AWS region for disaster recovery. If primary region fails, restore from replica in secondary region.</li>
+            <li><strong>Exam Tip:</strong> Scenario: "Redshift cluster failed; need to recover." Answer: Restore from snapshot. "Ensure disaster recovery across regions." Answer: Enable cross-region snapshot replication.</li>
+        </ul>
+
+        <h3>Loading Data into Redshift</h3>
+        <ul>
+            <li><strong>Bulk Loading:</strong> Use COPY command to load data from S3, DynamoDB, or other sources. Optimized for bulk inserts (millions/billions of rows).</li>
+            <li><strong>COPY from S3:</strong> <code>COPY table_name FROM 's3://bucket/prefix/' with credentials format parquet</code></li>
+            <li><strong>Large Insert Performance:</strong> Bulk loads (COPY) vastly outperform individual INSERT statements. Always use COPY for initial data loading and batch updates.</li>
+            <li><strong>ETL Pipeline Pattern:</strong> Extract data from source → transform to S3 (via Glue, Lambda, or direct export) → COPY into Redshift.</li>
+        </ul>
+
+        <h3>Redshift Spectrum</h3>
+        <p>Redshift Spectrum allows you to query data directly from S3 without loading it into Redshift. Extends Redshift's query capabilities to massive external datasets.</p>
+        <ul>
+            <li><strong>How It Works:</strong> Query is submitted to Redshift leader node → leader distributes query to thousands of Redshift Spectrum nodes (not in your cluster) → nodes scan S3 data → results returned to Redshift → aggregated and returned to user.</li>
+            <li><strong>Requirements:</strong> Active Redshift cluster required (leader node coordinates; Spectrum nodes are AWS-managed).</li>
+            <li><strong>Use Case:</strong> Query recent data loaded in Redshift + historical data in S3 using single query. Example: <code>SELECT * FROM current_orders (Redshift) JOIN historical_orders_spectrum (S3) ON id</code></li>
+            <li><strong>Performance:</strong> Slower than querying Redshift (S3 access adds latency) but faster than Athena (Spectrum nodes are Redshift-optimized). Good middle ground.</li>
+            <li><strong>Exam Tip:</strong> Scenario: "Query recent data in Redshift + archive data in S3" → Redshift Spectrum.</li>
+        </ul>
+
+        <h3>Redshift vs Athena (Exam Comparison)</h3>
+        <table style="width:100%; border-collapse:collapse; margin:10px 0;">
+            <tr style="background:#f0f0f0;">
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Aspect</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Athena</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Redshift</th>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Infrastructure</td>
+                <td style="border:1px solid #ddd; padding:8px;">Serverless (no provisioning)</td>
+                <td style="border:1px solid #ddd; padding:8px;">Provisioned cluster (manual nodes)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Query Type</td>
+                <td style="border:1px solid #ddd; padding:8px;">Ad-hoc, interactive SQL</td>
+                <td style="border:1px solid #ddd; padding:8px;">Complex OLAP, pre-optimized for analytics</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Performance</td>
+                <td style="border:1px solid #ddd; padding:8px;">Fast for small-medium datasets; indexes not used</td>
+                <td style="border:1px solid #ddd; padding:8px;">10x faster due to indexes, columnar storage, query optimization</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Pricing</td>
+                <td style="border:1px solid #ddd; padding:8px;">$5 per TB scanned</td>
+                <td style="border:1px solid #ddd; padding:8px;">$0.25-$3 per node per hour (provisioned costs)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Best For</td>
+                <td style="border:1px solid #ddd; padding:8px;">One-off queries, log analysis, data exploration</td>
+                <td style="border:1px solid #ddd; padding:8px;">Repeated analytical queries, BI dashboards, data warehouse</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Join Performance</td>
+                <td style="border:1px solid #ddd; padding:8px;">Good, but no indexes</td>
+                <td style="border:1px solid #ddd; padding:8px;">Excellent due to indexing and optimizations</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Aggregations</td>
+                <td style="border:1px solid #ddd; padding:8px;">Good for basic aggregations</td>
+                <td style="border:1px solid #ddd; padding:8px;">Optimized for complex aggregations and window functions</td>
+            </tr>
+        </table>
+
+        <hr class="soft-divide">
+        <h2>Amazon OpenSearch — Full-Text Search & Analytics</h2>
+
+        <h3>Service Overview</h3>
+        <p>Amazon OpenSearch is a fully managed, distributed search and analytics engine (open-source alternative to Elasticsearch). Enables full-text search across any field, even with partial matches. Common to deploy as a complement to another database to provide fast, flexible search capabilities.</p>
+
+        <h3>Key Characteristics</h3>
+        <ul>
+            <li><strong>Search Capabilities:</strong> Full-text search on any field in documents. Supports partial matching, fuzzy search, range queries, and complex boolean queries.</li>
+            <li><strong>Data Model:</strong> JSON documents (similar to MongoDB/DocumentDB). No rigid schema.</li>
+            <li><strong>Deployment Modes:</strong>
+                <ul>
+                    <li><strong>Managed:</strong> Provision domain with cluster configuration. AWS manages underlying infrastructure.</li>
+                    <li><strong>Serverless:</strong> Automatic scaling. Pay per request (OCU - OpenSearch Compute Units). No cluster management.</li>
+                </ul>
+            </li>
+            <li><strong>SQL Support:</strong> Does not natively support SQL, but SQL plugin available (translated to OpenSearch query DSL).</li>
+            <li><strong>Data Ingestion Sources:</strong> Kinesis Data Firehose (push streaming data), AWS IoT (sensor data), CloudWatch Logs (via subscription), custom applications (SDK).</li>
+            <li><strong>Visualization:</strong> OpenSearch Dashboards (formerly Kibana) for creating visualizations, dashboards, and exploring data.</li>
+        </ul>
+
+        <h3>Security & Access Control</h3>
+        <ul>
+            <li><strong>Cognito Integration:</strong> Authenticate users via Amazon Cognito for dashboard access.</li>
+            <li><strong>IAM Policies:</strong> Control API access (CreateDomain, PutDocument, etc.) using IAM roles/policies.</li>
+            <li><strong>Encryption at Rest:</strong> KMS encryption of documents stored in OpenSearch domain.</li>
+            <li><strong>Encryption in Transit:</strong> TLS/HTTPS for API calls and cluster communication.</li>
+        </ul>
+
+        <h3>Architecture Pattern: Search Complement</h3>
+        <p><strong>Scenario:</strong> E-commerce platform with product catalog in RDS (structured data, transactions) but needs fast search. Solution: Replicate product data to OpenSearch via Kinesis → Lambda → OpenSearch API. RDS remains source of truth for updates; OpenSearch provides search index. Search queries hit OpenSearch; transactional queries hit RDS. Best of both worlds: structured database + search engine.</p>
+
+        <h3>Use Cases</h3>
+        <ul>
+            <li><strong>Log Analysis:</strong> Aggregate logs from multiple applications → OpenSearch → Kibana dashboards for searching errors, performance metrics.</li>
+            <li><strong>Full-Text Search:</strong> E-commerce product search, document search, content discovery.</li>
+            <li><strong>Time-Series Analytics:</strong> Application metrics, system performance over time (though Timestream is specialized for this).</li>
+            <li><strong>Exam Tip:</strong> "Full-text search," "search engine," "log visualization" → OpenSearch. Note: Not a database; best used complementary to a database.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Amazon EMR (Elastic MapReduce)</h2>
+
+        <h3>Service Overview</h3>
+        <p>Amazon EMR is a managed service for processing vast amounts of data using distributed computing frameworks. It provisions Hadoop clusters (consisting of hundreds of EC2 instances) on demand, bundles all big data technologies (Hadoop, Spark, Hive, Pig, Flink, Presto), and handles cluster provisioning, scaling, and management.</p>
+
+        <h3>Key Characteristics</h3>
+        <ul>
+            <li><strong>MapReduce Model:</strong> Distributed processing framework: data split into chunks (Map phase) → processed in parallel → results combined (Reduce phase).</li>
+            <li><strong>Bundled Technologies:</strong> Hadoop, Apache Spark (distributed computing), Hive (SQL on Hadoop), Pig (data flow), HBase (NoSQL database), Hue (GUI), Presto (SQL query engine), Flink (stream processing).</li>
+            <li><strong>Cluster Provisioning:</strong> EMR provisions EC2 instances, installs and configures software, manages cluster lifecycle.</li>
+            <li><strong>Cost Advantage:</strong> Use Spot Instances for non-critical workloads, reducing costs significantly vs on-demand.</li>
+        </ul>
+
+        <h3>EMR Cluster Node Types</h3>
+
+        <h4>Master Node</h4>
+        <ul>
+            <li><strong>Role:</strong> Manages cluster and coordinates job execution. Runs NameNode (Hadoop component that tracks files in HDFS) and ResourceManager (allocates resources to tasks).</li>
+            <li><strong>Single per Cluster:</strong> Exactly one master node per cluster.</li>
+            <li><strong>No Data Storage:</strong> Master node coordinates but doesn't store data.</li>
+            <li><strong>Failure Impact:</strong> If master fails, entire cluster fails (single point of failure). AWS recommends high availability architectures with automated restarts.</li>
+        </ul>
+
+        <h4>Core Node(s)</h4>
+        <ul>
+            <li><strong>Role:</strong> Run DataNode (stores HDFS data) and TaskTracker (executes map/reduce tasks). Participate in data processing and storage.</li>
+            <li><strong>Multiple per Cluster:</strong> One or more core nodes hold data and execute tasks.</li>
+            <li><strong>Persistent Storage:</strong> Data stored on core nodes survives task failures (if one core fails, data replicates to other cores).</li>
+            <li><strong>Cannot Be Removed:</strong> Core nodes are permanent members of cluster. Cannot scale down without losing data.</li>
+        </ul>
+
+        <h4>Task Node(s) (Optional)</h4>
+        <ul>
+            <li><strong>Role:</strong> Execute map/reduce tasks only. Do NOT store HDFS data (no DataNode). Pure processing capacity.</li>
+            <li><strong>Flexible Scaling:</strong> Task nodes can be added/removed without data loss (no data stored locally). Perfect for auto-scaling based on job load.</li>
+            <li><strong>Temporary Capacity:</strong> Ideal for handling temporary workload spikes.</li>
+            <li><strong>Cost Optimization:</strong> Use Spot Instances for task nodes (if job fails mid-task, restart on another instance). Master and core nodes should use on-demand or reserved instances.</li>
+        </ul>
+
+        <h3>EMR Purchasing Options</h3>
+        <table style="width:100%; border-collapse:collapse; margin:10px 0;">
+            <tr style="background:#f0f0f0;">
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Purchasing Option</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Cost</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Best For</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Node Type Recommendation</th>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>On-Demand</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Standard hourly rate (~$0.25-$2 per instance/hour depending on size)</td>
+                <td style="border:1px solid #ddd; padding:8px;">Reliable, predictable workloads; production clusters</td>
+                <td style="border:1px solid #ddd; padding:8px;">Master, Core nodes (need consistent availability)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Reserved Instances</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">~40-60% discount vs on-demand (pay upfront for 1-3 years)</td>
+                <td style="border:1px solid #ddd; padding:8px;">Long-running clusters with predictable capacity needs</td>
+                <td style="border:1px solid #ddd; padding:8px;">Master, Core nodes (permanent commitment)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Spot Instances</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">~90% discount vs on-demand (can be interrupted with 2-minute warning)</td>
+                <td style="border:1px solid #ddd; padding:8px;">Non-critical jobs, temporary capacity spikes, cost-sensitive workloads</td>
+                <td style="border:1px solid #ddd; padding:8px;">Task nodes only (lose data if interrupted, but can restart on another node)</td>
+            </tr>
+        </table>
+
+        <h3>EMR Use Cases</h3>
+        <ul>
+            <li><strong>Big Data Processing:</strong> Process terabytes/petabytes of data using Spark, Hadoop, Hive.</li>
+            <li><strong>ETL Pipelines:</strong> Extract, Transform, Load data from sources → process on EMR → store in data lake or warehouse.</li>
+            <li><strong>Interactive Analytics:</strong> Use Spark SQL via Hue for exploratory analytics on large datasets.</li>
+            <li><strong>Real-Time Streaming:</strong> Flink on EMR processes streaming data from Kinesis.</li>
+            <li><strong>Machine Learning:</strong> Use PySpark MLlib for distributed machine learning on large datasets.</li>
+            <li><strong>Exam Tip:</strong> Scenario mentions "big data," "Hadoop," "petabyte scale processing" → EMR. Compare with Redshift (data warehouse, SQL) and Athena (serverless SQL on S3).</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Amazon QuickSight — Business Intelligence & Dashboards</h2>
+
+        <h3>Service Overview</h3>
+        <p>Amazon QuickSight is a fully managed business intelligence (BI) service for creating interactive dashboards, visualizations, and reports. Enables non-technical users to explore data, identify trends, and make data-driven decisions. Integrates with multiple AWS data sources and third-party databases.</p>
+
+        <h3>Key Characteristics</h3>
+        <ul>
+            <li><strong>Interactive Dashboards:</strong> Create visualizations (charts, maps, tables, KPIs) directly from data sources.</li>
+            <li><strong>User Management:</strong> Define users and groups for dashboard access. Note: Uses QuickSight-specific user management, NOT IAM (important distinction for exam).</li>
+            <li><strong>Two Types of Objects:</strong>
+                <ul>
+                    <li><strong>Analysis:</strong> Interactive, editable view of data. Authors modify visualizations, filter data, drill down.</li>
+                    <li><strong>Dashboard:</strong> Read-only snapshot of an analysis. Preserves the configuration (filters, visualizations) from the analysis. Can be shared with users/groups for consumption (not editing). Perfect for sharing findings with stakeholders.</li>
+                </ul>
+            </li>
+            <li><strong>Data Sources:</strong> Connects to RDS, Redshift, Athena, S3, DynamoDB, Salesforce, Google Analytics, Excel, and other sources.</li>
+        </ul>
+
+        <h3>AWS Integrations</h3>
+        <ul>
+            <li><strong>Redshift:</strong> Query Redshift data warehouse directly for complex analytics.</li>
+            <li><strong>Athena:</strong> Query data in S3 via Athena for ad-hoc dashboarding.</li>
+            <li><strong>RDS:</strong> Visualize relational database data (PostgreSQL, MySQL, Aurora).</li>
+            <li><strong>DynamoDB:</strong> Create dashboards from NoSQL data.</li>
+            <li><strong>S3:</strong> Direct connection to S3 data or via Athena.</li>
+            <li><strong>EMR:</strong> Query results from EMR Spark SQL jobs.</li>
+            <li><strong>OpenSearch:</strong> Visualize metrics and logs in OpenSearch domains.</li>
+        </ul>
+
+        <h3>User Management & Sharing</h3>
+        <ul>
+            <li><strong>QuickSight User Types:</strong>
+                <ul>
+                    <li><strong>Authors:</strong> Create analyses and dashboards. Full edit permissions.</li>
+                    <li><strong>Readers:</strong> View dashboards and analyses (read-only). Can filter and drill-down but cannot modify structure.</li>
+                    <li><strong>Admin:</strong> Manage QuickSight account, users, data sources, settings.</li>
+                </ul>
+            </li>
+            <li><strong>User Management Method:</strong> QuickSight has its own user/group management system (not IAM). Create users directly in QuickSight console or federate with corporate directory via SAML/OpenID Connect.</li>
+            <li><strong>Sharing Dashboards:</strong> Authors publish dashboards. Specify which users/groups can access. Shared dashboards are read-only snapshots preserving analysis configuration.</li>
+            <li><strong>Exam Tip:</strong> "Manage QuickSight users" → Use QuickSight's user management, not IAM.</li>
+        </ul>
+
+        <h3>Use Cases</h3>
+        <ul>
+            <li>Business metrics dashboards (sales, revenue, KPIs).</li>
+            <li>Real-time monitoring dashboards feeding from Redshift or Athena.</li>
+            <li>Executive dashboards for data-driven decision making.</li>
+            <li><strong>Exam Tip:</strong> Scenario: "Create dashboards for business users from data warehouse" → QuickSight.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>AWS Glue — Managed ETL & Data Catalog</h2>
+
+        <h3>Service Overview</h3>
+        <p>AWS Glue is a fully managed, serverless Extract-Transform-Load (ETL) service for preparing and loading data for analytics. Automates data discovery, transformation, and loading. Removes manual ETL coding (though custom code supported). Central component of AWS data lakes.</p>
+
+        <h3>Key Components</h3>
+
+        <h4>Glue Data Catalog</h4>
+        <p>Centralized metadata repository describing all datasets in your data lake/warehouse.</p>
+        <ul>
+            <li><strong>Purpose:</strong> Stores metadata about tables, partitions, schemas, data location (S3 paths), format (Parquet, CSV, JSON).</li>
+            <li><strong>Automatic Discovery:</strong> Glue Crawlers automatically discover data in S3, RDS, DynamoDB and populate the catalog.</li>
+            <li><strong>Glue Crawlers:</strong> Run on schedule (hourly, daily) or on-demand. Connect to data source → infer schema → create/update catalog table entries. No manual schema definition needed.</li>
+            <li><strong>Data Consumers:</strong> Athena, Redshift, EMR query the Glue Catalog to understand data schema and location. Enables cross-service data discovery.</li>
+            <li><strong>Exam Pattern:</strong> Scenario: "Automatically discover data schema in S3" → Glue Crawler.</li>
+        </ul>
+
+        <h4>Glue ETL Jobs</h4>
+        <ul>
+            <li><strong>Purpose:</strong> Transform data. Read from source → apply transformations → write to target.</li>
+            <li><strong>Languages:</strong> Python or Scala code. Glue provides pre-built libraries (Glue DPU - Data Processing Units - provides compute for jobs).</li>
+            <li><strong>Scalability:</strong> Glue automatically scales compute resources based on data volume.</li>
+            <li><strong>Monitoring:</strong> CloudWatch integration for job success/failure monitoring.</li>
+        </ul>
+
+        <h4>Glue Job Bookmarks</h4>
+        <p>Prevents reprocessing of old data in incremental ETL jobs.</p>
+        <ul>
+            <li><strong>How It Works:</strong> Glue remembers the last data processed. On next job run, starts from where it left off. Tracks state using internal bookmarks.</li>
+            <li><strong>Use Case:</strong> Daily ETL job loads new records from a database. Without bookmarks, each run would reprocess all historical data. With bookmarks, only new/changed records since last run are processed.</li>
+            <li><strong>Cost Savings:</strong> Reduces processing time and compute costs by avoiding redundant processing.</li>
+        </ul>
+
+        <h4>Glue DataBrew</h4>
+        <p>Visual data preparation tool for cleaning and normalizing data without coding.</p>
+        <ul>
+            <li><strong>Features:</strong> Pre-built transformations (remove duplicates, standardize formats, handle missing values, data validation).</li>
+            <li><strong>GUI-Based:</strong> Non-technical users can create recipes via point-and-click interface.</li>
+            <li><strong>Use Case:</strong> Data quality issues discovered → use DataBrew to clean data → output cleaned data to S3.</li>
+        </ul>
+
+        <h4>Glue Studio</h4>
+        <p>Visual GUI for creating, running, and monitoring ETL jobs.</p>
+        <ul>
+            <li><strong>Drag-and-Drop:</strong> Create ETL pipeline by connecting source, transformation, and target nodes visually.</li>
+            <li><strong>Code Generation:</strong> Generates Python/Scala code from visual pipeline (can edit code if needed).</li>
+            <li><strong>Monitoring:</strong> Track job runs, view logs, monitor performance.</li>
+        </ul>
+
+        <h4>Glue Streaming ETL</h4>
+        <ul>
+            <li><strong>Purpose:</strong> Real-time ETL for streaming data.</li>
+            <li><strong>Sources:</strong> Kinesis Data Streams, Kafka streams.</li>
+            <li><strong>Transformations:</strong> Apply transformations as data arrives.</li>
+            <li><strong>Targets:</strong> Write transformed data to S3, DynamoDB, Redshift, etc.</li>
+        </ul>
+
+        <h3>Glue Use Cases</h3>
+        <ul>
+            <li>Automated data discovery and cataloging.</li>
+            <li>ETL pipelines for data lake ingestion.</li>
+            <li>Data cleaning and validation before analytics.</li>
+            <li>Incremental data loading with job bookmarks.</li>
+            <li><strong>Exam Tip:</strong> Scenario: "Automated ETL, data discovery, catalog" → Glue. Scenario: "Big data processing" → EMR or Spark on EMR.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>AWS Lake Formation — Managed Data Lake</h2>
+
+        <h3>Service Overview</h3>
+        <p>AWS Lake Formation is a fully managed service that simplifies building and managing data lakes. It automates complex manual steps (data ingestion, cataloging, cleaning, deduplication, governance) and provides a centralized platform for data lake management and security.</p>
+
+        <h3>Key Characteristics</h3>
+        <ul>
+            <li><strong>Automation:</strong> Automates data lake setup. Instead of manually building ETL pipelines, Lake Formation handles ingestion, transformation, and governance.</li>
+            <li><strong>Source Blueprints:</strong> Pre-built templates for common data sources: S3, RDS (relational databases), DynamoDB (NoSQL), third-party connectors.</li>
+            <li><strong>Data Consolidation:</strong> Combine structured (relational), semi-structured (JSON), and unstructured data (images, documents) in a single data lake.</li>
+            <li><strong>Built on Glue:</strong> Lake Formation uses Glue under the hood for cataloging and ETL (Crawlers, Jobs, DataBrew).</li>
+            <li><strong>Governed Workspace:</strong> Provides managed storage and compute for data lake operations.</li>
+        </ul>
+
+        <h3>Centralized Permission Management</h3>
+        <p>Lake Formation provides fine-grained access control at row and column level, replacing IAM for data access.</p>
+        <ul>
+            <li><strong>Data Lake Permissions:</strong> Grant permissions on tables, columns, rows instead of S3 bucket policies (IAM). Easier to manage and audit.</li>
+            <li><strong>Row & Column Level:</strong> Control access to specific columns (e.g., hide salary column from non-HR users) or specific rows (e.g., department-based filtering).</li>
+            <li><strong>Centralized Permissions:</strong> Single place to manage who can access which data. Policies automatically enforced across Athena, Redshift, EMR queries.</li>
+            <li><strong>Audit Trail:</strong> CloudTrail integration logs all data access for compliance audits.</li>
+            <li><strong>IAM Integration:</strong> Lake Formation permissions work with IAM roles (IAM authenticates, Lake Formation authorizes data access).</li>
+        </ul>
+
+        <h3>Workflow</h3>
+        <ol>
+            <li><strong>Configure:</strong> Set up data lake with Lake Formation console → specify data location (S3 bucket).</li>
+            <li><strong>Ingest:</strong> Use source blueprints to configure data ingestion from RDS, S3, etc. Lake Formation automatically runs Glue Crawlers.</li>
+            <li><strong>Catalog:</strong> Data automatically appears in Glue Data Catalog with discovered schemas.</li>
+            <li><strong>Govern:</strong> Define fine-grained permissions on tables/columns/rows.</li>
+            <li><strong>Query:</strong> Users query via Athena, Redshift, EMR. Lake Formation enforces permissions transparently.</li>
+        </ol>
+
+        <h3>Lake Formation vs Glue</h3>
+        <ul>
+            <li><strong>Glue:</strong> ETL and cataloging service. You define and manage ETL jobs and data discovery.</li>
+            <li><strong>Lake Formation:</strong> Higher-level data lake platform built on Glue. Automates ETL and governance. Better for end-to-end data lake management.</li>
+            <li><strong>Analogy:</strong> Glue = low-level toolbox. Lake Formation = high-level managed platform using Glue.</li>
+            <li><strong>Exam Tip:</strong> Scenario: "Setup data lake with governance" → Lake Formation. Scenario: "Custom ETL pipeline" → Glue.</li>
+        </ul>
+
+        <h3>Use Cases</h3>
+        <ul>
+            <li>Build data lake from multiple sources with automated governance.</li>
+            <li>Enable data sharing between teams with fine-grained access control.</li>
+            <li>Compliance-driven data lakes requiring row/column level security.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Amazon Managed Streaming for Apache Flink</h2>
+
+        <h3>Service Overview</h3>
+        <p>Amazon Managed Streaming for Apache Flink is a fully managed service for processing real-time streaming data using Apache Flink. Flink is a distributed stream processing framework optimized for low-latency, high-throughput event processing.</p>
+
+        <h3>What is Apache Flink?</h3>
+        <p>Apache Flink is an open-source framework for stream and batch data processing. Key features:</p>
+        <ul>
+            <li><strong>Stateful Processing:</strong> Maintains state across events (window aggregations, session tracking). Not just event-by-event processing.</li>
+            <li><strong>Complex Event Processing:</strong> Detect patterns, complex conditions across event streams.</li>
+            <li><strong>Low Latency & High Throughput:</strong> Microsecond latencies with millions of events per second.</li>
+            <li><strong>Fault Tolerance:</strong> Checkpointing ensures no data loss even if nodes fail.</li>
+            <li><strong>Windowing:</strong> Time windows (tumbling, sliding), session windows for aggregations over time.</li>
+        </ul>
+
+        <h3>Data Sources</h3>
+        <ul>
+            <li><strong>Amazon Kinesis Data Streams:</strong> Primary streaming source for Flink on AWS.</li>
+            <li><strong>Apache Kafka:</strong> Flink can consume from Kafka clusters.</li>
+            <li><strong>Note:</strong> Flink does NOT read from Kinesis Data Firehose (Firehose is for delivery, not consumption by Flink).</li>
+        </ul>
+
+        <h3>Use Cases</h3>
+        <ul>
+            <li><strong>Real-Time Analytics:</strong> Process events and compute metrics on-the-fly (e.g., track real-time sales trends).</li>
+            <li><strong>Anomaly Detection:</strong> Detect unusual patterns in event streams (fraud detection, network anomalies).</li>
+            <li><strong>Session Analytics:</strong> Track user sessions, session duration, activities.</li>
+            <li><strong>Complex Event Processing:</strong> Pattern matching across event streams (e.g., sequence of events triggering alerts).</li>
+            <li><strong>Exam Tip:</strong> Scenario: "Real-time stream processing," "low-latency analytics," "pattern detection" → Managed Flink. Distinguish from Kinesis Firehose (batch delivery) and Lambda (event-driven but simpler).</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Amazon MSK (Managed Streaming for Apache Kafka)</h2>
+
+        <h3>Service Overview</h3>
+        <p>Amazon Managed Streaming for Apache Kafka (MSK) is a fully managed service for Apache Kafka clusters. Kafka is a distributed message broker optimized for high-throughput, persistent event streaming. MSK removes operational burden of Kafka cluster management.</p>
+
+        <h3>Key Characteristics</h3>
+        <ul>
+            <li><strong>Apache Kafka:</strong> Pub/sub messaging system (similar to SNS/SQS but optimized for streaming). Producers send messages to topics; consumers subscribe to topics and consume messages.</li>
+            <li><strong>Partitioning:</strong> Topics divided into partitions for parallelism. Each partition ordered independently.</li>
+            <li><strong>Persistence:</strong> Messages retained on broker disks (default: 7 days, configurable). Consumers can replay messages by seeking to offset.</li>
+            <li><strong>High Throughput:</strong> Designed for millions of messages per second across many producers/consumers.</li>
+            <li><strong>Exactly-Once Semantics (optional):</strong> Transactional writes ensure exactly-once message delivery (vs at-least-once in SQS/SNS).</li>
+            <li><strong>Fully Managed:</strong> AWS provisions Kafka brokers, handles failover, scaling, patching. No broker management.</li>
+        </ul>
+
+        <h3>Use Cases</h3>
+        <ul>
+            <li>High-throughput event streaming (millions of events/second).</li>
+            <li>Event sourcing (immutable log of events).</li>
+            <li>Stream processing pipelines (Flink, Spark Streaming consume from Kafka).</li>
+            <li>Real-time analytics and monitoring.</li>
+            <li>Decoupling microservices with persistent event bus.</li>
+        </ul>
+
+        <h3>Kinesis Data Streams vs Amazon MSK Comparison</h3>
+        <table style="width:100%; border-collapse:collapse; margin:10px 0;">
+            <tr style="background:#f0f0f0;">
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Aspect</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Kinesis Data Streams</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Amazon MSK (Kafka)</th>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Managed By</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">AWS fully managed</td>
+                <td style="border:1px solid #ddd; padding:8px;">AWS manages Kafka brokers, but Kafka is open-source</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Throughput</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">1000 records/sec per shard (scale by adding shards)</td>
+                <td style="border:1px solid #ddd; padding:8px;">Millions of messages/sec (designed for high throughput)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Data Retention</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">24 hours default (up to 365 days, requires extended retention)</td>
+                <td style="border:1px solid #ddd; padding:8px;">7 days default (configurable, can increase)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Consumer Groups</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Enhanced fan-out for multiple consumers</td>
+                <td style="border:1px solid #ddd; padding:8px;">Native consumer groups with offset management</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Schema Support</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Schema Registry available (third-party)</td>
+                <td style="border:1px solid #ddd; padding:8px;">Schema Registry built-in (Confluent, or AWS Glue)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Ecosystem</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">AWS-native (Lambda, Firehose, Flink)</td>
+                <td style="border:1px solid #ddd; padding:8px;">Kafka ecosystem (Kafka Connect, Kafka Streams, Confluent)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Operator Experience</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Simpler, AWS handles everything</td>
+                <td style="border:1px solid #ddd; padding:8px;">More complex, but greater control and flexibility</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Best For</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">AWS-native streaming workflows, AWS Lambda consumers</td>
+                <td style="border:1px solid #ddd; padding:8px;">High-throughput, complex event sourcing, existing Kafka users</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Pricing</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Per shard-hour + data ingestion/retrieval</td>
+                <td style="border:1px solid #ddd; padding:8px;">Per broker-hour + storage (EC2 compute costs)</td>
+            </tr>
+        </table>
+
+        <hr class="soft-divide">
+        <h2>Data & Analytics Selection Decision Tree</h2>
+        <table style="width:100%; border-collapse:collapse; margin:10px 0;">
+            <tr style="background:#f0f0f0;">
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Workload Type</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Recommended Service(s)</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Reason</th>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Ad-hoc SQL queries on S3</td>
+                <td style="border:1px solid #ddd; padding:8px;">Athena</td>
+                <td style="border:1px solid #ddd; padding:8px;">Serverless, pay per query, no infrastructure</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Complex analytics, BI dashboards, repeated queries</td>
+                <td style="border:1px solid #ddd; padding:8px;">Redshift</td>
+                <td style="border:1px solid #ddd; padding:8px;">Data warehouse, 10x faster with indexes, optimized for aggregations</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Full-text search, log analysis, visualization</td>
+                <td style="border:1px solid #ddd; padding:8px;">OpenSearch + OpenSearch Dashboards</td>
+                <td style="border:1px solid #ddd; padding:8px;">Search-optimized, flexible queries, Kibana-like visualization</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Big data processing, Hadoop, Spark jobs</td>
+                <td style="border:1px solid #ddd; padding:8px;">EMR</td>
+                <td style="border:1px solid #ddd; padding:8px;">Distributed computing, scale to 100s of nodes, petabyte processing</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Business intelligence dashboards</td>
+                <td style="border:1px solid #ddd; padding:8px;">QuickSight</td>
+                <td style="border:1px solid #ddd; padding:8px;">BI tool, visual dashboard creation, user-friendly</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">ETL pipelines, data cataloging, data discovery</td>
+                <td style="border:1px solid #ddd; padding:8px;">Glue + Glue Catalog</td>
+                <td style="border:1px solid #ddd; padding:8px;">Serverless ETL, automatic crawlers, metadata discovery</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Build data lake with governance</td>
+                <td style="border:1px solid #ddd; padding:8px;">Lake Formation</td>
+                <td style="border:1px solid #ddd; padding:8px;">Automated data lake setup, centralized permissions, row/column security</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Real-time stream processing, low-latency analytics</td>
+                <td style="border:1px solid #ddd; padding:8px;">Managed Flink (consuming from Kinesis or Kafka)</td>
+                <td style="border:1px solid #ddd; padding:8px;">Stateful processing, complex event detection, microsecond latency</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Streaming integration, event sourcing, high-throughput pub/sub</td>
+                <td style="border:1px solid #ddd; padding:8px;">MSK (Kafka)</td>
+                <td style="border:1px solid #ddd; padding:8px;">Persistent event broker, millions of msgs/sec, consumer groups, replaying</td>
+            </tr>
+        </table>
+
+        <hr class="soft-divide">
+        <h2>Exam-Style Questions & Answers</h2>
+
+        <ol>
+            <li>
+                <strong>Q: Your company stores 100 TB of application logs in S3. The data science team needs to run SQL queries to identify error patterns. They require fast query results for interactive exploration. Cost-consciousness is important. What's the optimal solution?</strong>
+                <br><br>
+                <strong>A:</strong> Amazon Athena. Serverless SQL on S3 data. Convert logs to Parquet format (compress 90% cost reduction, 100x faster queries). Partition by date/hour for faster filtering. Use Athena Insights for quick ad-hoc queries. Cost: ~$0.05 per query vs $thousands for Redshift. If queries become repetitive/predictable, migrate to Redshift for 10x performance.
+            </li>
+
+            <li>
+                <strong>Q: A financial company executes complex BI queries (aggregations, joins across 10 tables, window functions) against a data warehouse serving 50 concurrent analysts. Queries currently take 5-10 minutes and impact business decisions. Executives demand sub-1-minute query performance. What architecture improves performance?</strong>
+                <br><br>
+                <strong>A:</strong> Amazon Redshift. Purpose-built for OLAP with columnar storage and parallel query engine. Redshift is 10x faster than traditional data warehouses. Add indexes on frequently joined/filtered columns. Redshift Spectrum extends queries to S3 if historical data needed. RA3 nodes with managed storage auto-scale compute independently of storage. Upgrade from Athena to Redshift for this workload (Athena unsuitable for repeated complex queries requiring sub-1-minute latency).
+            </li>
+
+            <li>
+                <strong>Q: A healthcare company ingests patient data from multiple hospitals (RDS databases, FHIR HL7 files in S3, IoT wearables via Kinesis). Data must be consolidated into a data lake with role-based access control (doctors see all data, nurses see patient data only for their ward, administrators audit all access). Manual governance is infeasible. How is this architected?</strong>
+                <br><br>
+                <strong>A:</strong> AWS Lake Formation. Source blueprints ingest from RDS → S3 data lake (Lake Formation auto-catalogs via Glue Crawlers). IoT data → Kinesis → Lambda → S3. Lake Formation provides centralized permission management: doctors get full table access, nurses get row-based filtering (WHERE ward_id = X), administrators get audit permissions. Row/column-level security enforced transparently across Athena, Redshift, EMR queries. Fine-grained access control removes manual IAM policy management.
+            </li>
+
+            <li>
+                <strong>Q: Your e-commerce platform's recommendation engine must process millions of user events per second (clicks, purchases, views). ML model needs access to recent user behavior. Queries must be sub-millisecond latency. Current architecture (Redshift) can't handle throughput and latency. What's an alternative?</strong>
+                <br><br>
+                <strong>A:</strong> Kafka on Amazon MSK for high-throughput event ingestion (millions/sec) + Apache Flink (or Spark Streaming) for real-time processing → ElastiCache (Redis) for sub-millisecond lookups. Event flow: user clicks → MSK Kafka topic → Flink processes (aggregates user behavior per minute) → stores aggregated state in Redis → ML model reads from Redis for low-latency inference. This architecture combines high-throughput streaming (Kafka) + real-time processing (Flink) + ultra-fast serving (Redis).
+            </li>
+
+            <li>
+                <strong>Q: A data engineering team builds nightly ETL to load customer data from RDS into S3 data lake, then transform and deduplicate. Currently manual: export RDS → SFTP → custom Python script → S3. New requirements: automated, scalable, idempotent (no duplicate processing if job reruns). What minimizes development?</strong>
+                <br><br>
+                <strong>A:</strong> AWS Glue with Job Bookmarks. Glue source blueprint connects to RDS → automatically copies incremental changes to S3 (with Job Bookmarks to track last sync point). Glue ETL Job transforms data (deduplication, validation) → output to S3. No custom scripting. If job reruns, bookmarks ensure incremental data reprocessing (cost-effective). Glue Crawlers automatically discover schema changes in RDS (no manual schema definition). Fully serverless, scales automatically with data volume.
+            </li>
+
+            <li>
+                <strong>Q: Your application emits 50,000 events per second to Kinesis Streams for real-time fraud detection. The fraud detection logic is complex: correlate events across user sessions, detect patterns, apply ML model. Current Lambda consumers timeout (too slow). What's a better architecture?</strong>
+                <br><br>
+                <strong>A:</strong> Amazon Managed Streaming for Apache Flink. Flink specializes in stateful stream processing (maintains session state, windowing) and complex event detection (patterns across events). Lambda is event-by-event processing; Flink maintains state. Flink consumes from Kinesis, detects fraud patterns, outputs alerts to SNS/SQS. Flink handles sub-second latency and maintains session windows across event streams.
+            </li>
+
+            <li>
+                <strong>Q: A startup has data in multiple sources: customer DB (RDS), product images (S3), user behavior (Kinesis), IoT sensor readings (various formats). Executives want real-time dashboards showing sales trends, customer segments, sensor alerts. Non-technical business users should create their own dashboards without asking engineers. What architecture enables this?</strong>
+                <br><br>
+                <strong>A:</strong> Multi-service architecture: (1) Glue Catalog consolidates metadata from all sources (RDS, S3, Kinesis). (2) Athena/Redshift query the catalog for analytics. (3) Amazon QuickSight connects to Athena/Redshift, creates dashboards without code (business users drag-drop visualizations). QuickSight's managed user/group system controls access. Result: self-service BI for non-technical users backed by consolidated data lake.
+            </li>
+
+            <li>
+                <strong>Q: A data science team processes 500 TB of machine learning training data using PySpark. Data stored in S3. Cluster should spin up on-demand for training, auto-scale based on job load, then auto-terminate to save costs. Spot instances acceptable (job can restart). What service is appropriate?</strong>
+                <br><br>
+                <strong>A:</strong> Amazon EMR with auto-scaling. Launch EMR cluster (Master + Core nodes on on-demand, Task nodes on Spot Instances). EMR auto-scales Task nodes based on HDFS utilization/job queue. Use Spark SQL on EMR for distributed ML training (PySpark). Cluster terminates after job completes (cost-effective). Spot instances on Task nodes achieve 90% cost reduction vs on-demand.
+            </li>
+
+            <li>
+                <strong>Q: Your company's entire Apache Kafka infrastructure is running on-premises. You're migrating to AWS but want to minimize operational changes (teams familiar with Kafka, have Kafka Connect transformations, etc.). What's the lowest-migration-effort service?</strong>
+                <br><br>
+                <strong>A:</strong> Amazon MSK (Managed Streaming for Apache Kafka). AWS manages Kafka brokers, but your Kafka client code, producers/consumers, Kafka Connect transformations all work unchanged. Simple schema migration: use Kafka replication tools to copy topics from on-prem → MSK cluster. No need to rewrite ETL pipelines using Kinesis/Lambda (which would require significant refactoring). MSK maintains Kafka ecosystem compatibility.
+            </li>
+
+            <li>
+                <strong>Q: Your organization must analyze VPC Flow Logs (100 GB daily) to find DDoS sources and unusual traffic patterns. Logs stored in S3. Requires both simple ad-hoc queries (find top IPs) and complex analysis (time-series trend detection, anomaly detection). Budget-conscious. What's the optimal architecture?</strong>
+                <br><br>
+                <strong>A:</strong> Athena for simple queries (ad-hoc SQL on VPC Flow Logs in S3 format), OpenSearch for complex analytics/visualization (ingest VPC logs via Kinesis Firehose → OpenSearch → Kibana dashboards for time-series analysis and anomaly alerts). Athena cost-effective for simple queries; OpenSearch powerful for complex pattern detection. Hybrid approach leverages strengths of each service.
+            </li>
+        </ol>
+
+        <hr class="soft-divide">
+        <h2>Best Practices & Architecture Checklist</h2>
+        <ul>
+            <li><strong>Query Optimization for Athena:</strong> Use Parquet/ORC (90% cost reduction), partition datasets, use larger files (>128 MB), compress data.</li>
+            <li><strong>Redshift vs Athena Decision:</strong> Ad-hoc queries on diverse data → Athena. Repeated complex queries, BI dashboards → Redshift. Redshift 10x faster but higher fixed cost.</li>
+            <li><strong>Data Lake Architecture:</strong> Lake Formation simplifies multi-source ingestion + governance. Glue provides cataloging + ETL. Athena/Redshift provide analytics.</li>
+            <li><strong>Real-Time Analytics:</strong> Kinesis for throughput, Flink for complex processing, OpenSearch for search/visualization.</li>
+            <li><strong>ETL Best Practices:</strong> Use Glue for serverless ETL, Job Bookmarks for incremental processing, DataBrew for data cleaning.</li>
+            <li><strong>BI & Dashboarding:</strong> QuickSight for business users (self-service BI), integrates with Athena/Redshift/RDS.</li>
+            <li><strong>Streaming Choice:</strong> Kinesis for AWS-native, simple workloads. Kafka (MSK) for high-throughput, complex event sourcing, existing Kafka users.</li>
+            <li><strong>Cost Optimization:</strong> Partition data, use columnar formats, leverage spot instances for EMR task nodes, Athena for ad-hoc (no fixed costs).</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Closing Notes</h2>
+        <p>Data & Analytics is a critical exam domain. Master the service selection matrix: Athena for serverless SQL, Redshift for data warehouse, EMR for big data, QuickSight for BI, Glue for ETL,<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AWS Data & Analytics — Athena, Redshift, EMR, QuickSight, Glue, Lake Formation, Flink, MSK</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <div class="container2">
+        <div class="header">
+            <h1>Data & Analytics: Athena, Redshift, EMR, QuickSight, Glue, Lake Formation</h1>
+            <hr>
+        </div>
+
+        <h2>Overview</h2>
+        <p>AWS Data & Analytics services enable organizations to collect, store, process, and analyze vast amounts of data. This section covers the key services for big data processing, data warehousing, analytics, business intelligence, and streaming analytics. Exam questions often test your ability to select the appropriate service for a given data workload: SQL ad-hoc queries vs precomputed warehouse vs streaming real-time analytics.</p>
+
+        <hr class="soft-divide">
+        <h2>Amazon Athena — Serverless SQL on S3</h2>
+
+        <h3>Service Overview</h3>
+        <p>Amazon Athena is a serverless, interactive query service that enables you to run SQL queries directly on data stored in Amazon S3. No infrastructure provisioning required. Presto engine (distributed SQL query engine) executes queries in parallel across S3 data. Results returned in seconds to minutes depending on data size.</p>
+
+        <h3>Key Characteristics</h3>
+        <ul>
+            <li><strong>Serverless:</strong> No infrastructure to provision or manage. Pay only for data scanned, not compute time.</li>
+            <li><strong>Pricing:</strong> $5 USD per terabyte of data scanned (rounded to nearest 10 MB minimum per query). Use columnar formats to reduce scan cost.</li>
+            <li><strong>Data Format:</strong> Works with CSV, JSON, Parquet, ORC, and other formats stored in S3.</li>
+            <li><strong>SQL Engine:</strong> Presto-based, supports standard SQL, joins, aggregations, window functions.</li>
+            <li><strong>Results:</strong> Query results stored in S3 output location (specified during setup). Can export to CSV, JSON, or query via console.</li>
+            <li><strong>Latency:</strong> Suitable for interactive queries and ad-hoc analytics. Not real-time streaming.</li>
+        </ul>
+
+        <h3>Use Cases & Exam Patterns</h3>
+        <ul>
+            <li><strong>Business Intelligence & Reporting:</strong> Execute SQL queries on historical business data stored in S3.</li>
+            <li><strong>Log Analysis:</strong> Query application logs, VPC Flow Logs, Elastic Load Balancer logs, CloudTrail trails. Filter for errors, security events, or trends.</li>
+            <li><strong>Cost Analysis:</strong> Query AWS billing data exported to S3.</li>
+            <li><strong>Ad-Hoc Analytics:</strong> One-off exploratory queries on large datasets.</li>
+            <li><strong>Exam Tip:</strong> Scenario mentions "serverless SQL analytics," "query data in S3," or "analyze logs" → Athena is the answer.</li>
+        </ul>
+
+        <h3>Performance Optimization in Athena</h3>
+
+        <h4>Columnar Data Formats</h4>
+        <p>Store data in columnar formats (Parquet, ORC) instead of row-based formats (CSV, JSON) for massive cost savings and performance improvements.</p>
+        <ul>
+            <li><strong>Why Columnar?</strong> Columnar formats store data column-by-column. If your query selects 3 columns from a 100-column dataset, only those 3 columns are scanned (vs entire dataset in CSV).</li>
+            <li><strong>Compression:</strong> Columnar formats compress better (repetitive column values). Reduces data scanned further.</li>
+            <li><strong>Performance Improvement:</strong> Up to 100x faster queries, 90% cost reduction compared to CSV.</li>
+            <li><strong>Conversion:</strong> Use AWS Glue to convert CSV/JSON data to Parquet. Once converted, store Parquet files in S3 for future Athena queries.</li>
+        </ul>
+
+        <h4>Partitioning</h4>
+        <p>Organize S3 data into partitions (subdirectories) based on commonly filtered columns (date, region, customer_id). Athena uses partition pruning to scan only relevant partitions.</p>
+        <ul>
+            <li><strong>Example Directory Structure:</strong> <code>s3://my-bucket/data/year=2024/month=12/day=07/data.parquet</code></li>
+            <li><strong>Query:</strong> <code>SELECT * FROM data WHERE year=2024 AND month=12 AND day=07</code> → Athena scans only that partition, not entire dataset.</li>
+            <li><strong>Cost Savings:</strong> Dramatically reduces data scanned if partitions are used in WHERE clauses.</li>
+        </ul>
+
+        <h4>File Size & Compression</h4>
+        <ul>
+            <li><strong>Larger Files:</strong> Use files > 128 MB to minimize overhead. Many small files → many API calls; few large files → efficient scanning.</li>
+            <li><strong>Compression:</strong> GZIP, Snappy, or other compression algorithms further reduce data size and scan costs.</li>
+        </ul>
+
+        <h3>Athena Federated Query</h3>
+        <p>Federated Query allows you to run SQL queries across data stored in multiple sources (relational databases, NoSQL, object storage, custom data sources) in a single Athena query.</p>
+        <ul>
+            <li><strong>Data Sources:</strong> Supported: S3, RDS, DynamoDB, Redshift, DocumentDB, and custom data sources via Lambda.</li>
+            <li><strong>Implementation:</strong> Athena uses Data Source Connectors (AWS Lambda functions) that translate Athena SQL queries to source-specific APIs. Results from multiple sources are joined/aggregated in Athena.</li>
+            <li><strong>Use Case:</strong> Query: "Find all customers from RDS who purchased products from S3 data lake, and cross-reference with DynamoDB inventory." Federated Query handles this in a single query without moving/copying data.</li>
+            <li><strong>Exam Tip:</strong> Scenario mentions "query multiple data sources with single SQL" → Athena Federated Query.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Amazon Redshift — Data Warehouse</h2>
+
+        <h3>Service Overview</h3>
+        <p>Amazon Redshift is a fully managed, petabyte-scale data warehouse optimized for OLAP (Online Analytical Processing). It provides 10x better performance than traditional data warehouses through columnar storage and parallel query execution. Ideal for complex analytical queries, business intelligence, and large-scale aggregations.</p>
+
+        <h3>Key Characteristics</h3>
+        <ul>
+            <li><strong>OLAP vs OLTP:</strong> Redshift is OLAP (analytical queries, aggregations, complex joins) not OLTP (transactional updates). RDS is for OLTP; Redshift for analytics.</li>
+            <li><strong>Columnar Storage:</strong> Data stored column-by-column. Analytical queries that scan specific columns are extremely fast. Compression ratios of 10:1 or better.</li>
+            <li><strong>Parallel Query Engine:</strong> Distributes query across multiple nodes. Each node processes a slice of data in parallel, combining results.</li>
+            <li><strong>Scale:</strong> Scales from 160 GB to petabytes. Add nodes to increase capacity and query performance.</li>
+            <li><strong>SQL Interface:</strong> Supports standard SQL, JDBC/ODBC drivers, integrates with BI tools (Tableau, Looker, etc.).</li>
+            <li><strong>Deployment Modes:</strong>
+                <ul>
+                    <li><strong>Provisioned Cluster:</strong> Manually provision nodes (dc2.large, ra3, etc.). Manage cluster lifecycle. Scales based on demand/cost tradeoffs.</li>
+                    <li><strong>Serverless:</strong> AWS manages capacity automatically. Pay per RPU-hour (Redshift Processing Unit). Removes cluster management overhead.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>Redshift Cluster Architecture</h3>
+        <p>A Redshift cluster consists of multiple nodes working together.</p>
+        <ul>
+            <li><strong>Leader Node:</strong> Coordinates query execution, optimizes queries, manages client connections. Does not store data.</li>
+            <li><strong>Compute Nodes:</strong> Process queries and store data. Each node contains a portion of the dataset (slices). More compute nodes = higher query parallelism and capacity.</li>
+            <li><strong>Node Types:</strong> dc2.large (dense compute), ra3.xlplus/4xlc (RA3 with managed storage, scales independently from compute).</li>
+        </ul>
+
+        <h3>Redshift Snapshots & Disaster Recovery</h3>
+        <ul>
+            <li><strong>Multi-AZ Deployments:</strong> Some cluster types support Multi-AZ with automatic failover if primary node fails (creates backup in standby AZ).</li>
+            <li><strong>Snapshots:</strong> Point-in-time backup of entire cluster. Snapshots are incremental (only changed data since last snapshot). Stored in S3 (managed by AWS).</li>
+            <li><strong>Automated Snapshots:</strong> AWS automatically creates snapshots every 8 hours or every 5 GB of data changes, whichever comes first. Retained per retention period (default 1 day, configurable up to 35 days).</li>
+            <li><strong>Manual Snapshots:</strong> User-initiated snapshots retained indefinitely until explicitly deleted. Useful for long-term backups or pre-release snapshots.</li>
+            <li><strong>Restore from Snapshot:</strong> Create a new cluster from a snapshot in same AWS region or cross-region. Provides disaster recovery capability.</li>
+            <li><strong>Cross-Region Snapshot Replication:</strong> Configure Redshift to automatically copy snapshots to another AWS region for disaster recovery. If primary region fails, restore from replica in secondary region.</li>
+            <li><strong>Exam Tip:</strong> Scenario: "Redshift cluster failed; need to recover." Answer: Restore from snapshot. "Ensure disaster recovery across regions." Answer: Enable cross-region snapshot replication.</li>
+        </ul>
+
+        <h3>Loading Data into Redshift</h3>
+        <ul>
+            <li><strong>Bulk Loading:</strong> Use COPY command to load data from S3, DynamoDB, or other sources. Optimized for bulk inserts (millions/billions of rows).</li>
+            <li><strong>COPY from S3:</strong> <code>COPY table_name FROM 's3://bucket/prefix/' with credentials format parquet</code></li>
+            <li><strong>Large Insert Performance:</strong> Bulk loads (COPY) vastly outperform individual INSERT statements. Always use COPY for initial data loading and batch updates.</li>
+            <li><strong>ETL Pipeline Pattern:</strong> Extract data from source → transform to S3 (via Glue, Lambda, or direct export) → COPY into Redshift.</li>
+        </ul>
+
+        <h3>Redshift Spectrum</h3>
+        <p>Redshift Spectrum allows you to query data directly from S3 without loading it into Redshift. Extends Redshift's query capabilities to massive external datasets.</p>
+        <ul>
+            <li><strong>How It Works:</strong> Query is submitted to Redshift leader node → leader distributes query to thousands of Redshift Spectrum nodes (not in your cluster) → nodes scan S3 data → results returned to Redshift → aggregated and returned to user.</li>
+            <li><strong>Requirements:</strong> Active Redshift cluster required (leader node coordinates; Spectrum nodes are AWS-managed).</li>
+            <li><strong>Use Case:</strong> Query recent data loaded in Redshift + historical data in S3 using single query. Example: <code>SELECT * FROM current_orders (Redshift) JOIN historical_orders_spectrum (S3) ON id</code></li>
+            <li><strong>Performance:</strong> Slower than querying Redshift (S3 access adds latency) but faster than Athena (Spectrum nodes are Redshift-optimized). Good middle ground.</li>
+            <li><strong>Exam Tip:</strong> Scenario: "Query recent data in Redshift + archive data in S3" → Redshift Spectrum.</li>
+        </ul>
+
+        <h3>Redshift vs Athena (Exam Comparison)</h3>
+        <table style="width:100%; border-collapse:collapse; margin:10px 0;">
+            <tr style="background:#f0f0f0;">
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Aspect</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Athena</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Redshift</th>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Infrastructure</td>
+                <td style="border:1px solid #ddd; padding:8px;">Serverless (no provisioning)</td>
+                <td style="border:1px solid #ddd; padding:8px;">Provisioned cluster (manual nodes)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Query Type</td>
+                <td style="border:1px solid #ddd; padding:8px;">Ad-hoc, interactive SQL</td>
+                <td style="border:1px solid #ddd; padding:8px;">Complex OLAP, pre-optimized for analytics</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Performance</td>
+                <td style="border:1px solid #ddd; padding:8px;">Fast for small-medium datasets; indexes not used</td>
+                <td style="border:1px solid #ddd; padding:8px;">10x faster due to indexes, columnar storage, query optimization</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Pricing</td>
+                <td style="border:1px solid #ddd; padding:8px;">$5 per TB scanned</td>
+                <td style="border:1px solid #ddd; padding:8px;">$0.25-$3 per node per hour (provisioned costs)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Best For</td>
+                <td style="border:1px solid #ddd; padding:8px;">One-off queries, log analysis, data exploration</td>
+                <td style="border:1px solid #ddd; padding:8px;">Repeated analytical queries, BI dashboards, data warehouse</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Join Performance</td>
+                <td style="border:1px solid #ddd; padding:8px;">Good, but no indexes</td>
+                <td style="border:1px solid #ddd; padding:8px;">Excellent due to indexing and optimizations</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Aggregations</td>
+                <td style="border:1px solid #ddd; padding:8px;">Good for basic aggregations</td>
+                <td style="border:1px solid #ddd; padding:8px;">Optimized for complex aggregations and window functions</td>
+            </tr>
+        </table>
+
+        <hr class="soft-divide">
+        <h2>Amazon OpenSearch — Full-Text Search & Analytics</h2>
+
+        <h3>Service Overview</h3>
+        <p>Amazon OpenSearch is a fully managed, distributed search and analytics engine (open-source alternative to Elasticsearch). Enables full-text search across any field, even with partial matches. Common to deploy as a complement to another database to provide fast, flexible search capabilities.</p>
+
+        <h3>Key Characteristics</h3>
+        <ul>
+            <li><strong>Search Capabilities:</strong> Full-text search on any field in documents. Supports partial matching, fuzzy search, range queries, and complex boolean queries.</li>
+            <li><strong>Data Model:</strong> JSON documents (similar to MongoDB/DocumentDB). No rigid schema.</li>
+            <li><strong>Deployment Modes:</strong>
+                <ul>
+                    <li><strong>Managed:</strong> Provision domain with cluster configuration. AWS manages underlying infrastructure.</li>
+                    <li><strong>Serverless:</strong> Automatic scaling. Pay per request (OCU - OpenSearch Compute Units). No cluster management.</li>
+                </ul>
+            </li>
+            <li><strong>SQL Support:</strong> Does not natively support SQL, but SQL plugin available (translated to OpenSearch query DSL).</li>
+            <li><strong>Data Ingestion Sources:</strong> Kinesis Data Firehose (push streaming data), AWS IoT (sensor data), CloudWatch Logs (via subscription), custom applications (SDK).</li>
+            <li><strong>Visualization:</strong> OpenSearch Dashboards (formerly Kibana) for creating visualizations, dashboards, and exploring data.</li>
+        </ul>
+
+        <h3>Security & Access Control</h3>
+        <ul>
+            <li><strong>Cognito Integration:</strong> Authenticate users via Amazon Cognito for dashboard access.</li>
+            <li><strong>IAM Policies:</strong> Control API access (CreateDomain, PutDocument, etc.) using IAM roles/policies.</li>
+            <li><strong>Encryption at Rest:</strong> KMS encryption of documents stored in OpenSearch domain.</li>
+            <li><strong>Encryption in Transit:</strong> TLS/HTTPS for API calls and cluster communication.</li>
+        </ul>
+
+        <h3>Architecture Pattern: Search Complement</h3>
+        <p><strong>Scenario:</strong> E-commerce platform with product catalog in RDS (structured data, transactions) but needs fast search. Solution: Replicate product data to OpenSearch via Kinesis → Lambda → OpenSearch API. RDS remains source of truth for updates; OpenSearch provides search index. Search queries hit OpenSearch; transactional queries hit RDS. Best of both worlds: structured database + search engine.</p>
+
+        <h3>Use Cases</h3>
+        <ul>
+            <li><strong>Log Analysis:</strong> Aggregate logs from multiple applications → OpenSearch → Kibana dashboards for searching errors, performance metrics.</li>
+            <li><strong>Full-Text Search:</strong> E-commerce product search, document search, content discovery.</li>
+            <li><strong>Time-Series Analytics:</strong> Application metrics, system performance over time (though Timestream is specialized for this).</li>
+            <li><strong>Exam Tip:</strong> "Full-text search," "search engine," "log visualization" → OpenSearch. Note: Not a database; best used complementary to a database.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Amazon EMR (Elastic MapReduce)</h2>
+
+        <h3>Service Overview</h3>
+        <p>Amazon EMR is a managed service for processing vast amounts of data using distributed computing frameworks. It provisions Hadoop clusters (consisting of hundreds of EC2 instances) on demand, bundles all big data technologies (Hadoop, Spark, Hive, Pig, Flink, Presto), and handles cluster provisioning, scaling, and management.</p>
+
+        <h3>Key Characteristics</h3>
+        <ul>
+            <li><strong>MapReduce Model:</strong> Distributed processing framework: data split into chunks (Map phase) → processed in parallel → results combined (Reduce phase).</li>
+            <li><strong>Bundled Technologies:</strong> Hadoop, Apache Spark (distributed computing), Hive (SQL on Hadoop), Pig (data flow), HBase (NoSQL database), Hue (GUI), Presto (SQL query engine), Flink (stream processing).</li>
+            <li><strong>Cluster Provisioning:</strong> EMR provisions EC2 instances, installs and configures software, manages cluster lifecycle.</li>
+            <li><strong>Cost Advantage:</strong> Use Spot Instances for non-critical workloads, reducing costs significantly vs on-demand.</li>
+        </ul>
+
+        <h3>EMR Cluster Node Types</h3>
+
+        <h4>Master Node</h4>
+        <ul>
+            <li><strong>Role:</strong> Manages cluster and coordinates job execution. Runs NameNode (Hadoop component that tracks files in HDFS) and ResourceManager (allocates resources to tasks).</li>
+            <li><strong>Single per Cluster:</strong> Exactly one master node per cluster.</li>
+            <li><strong>No Data Storage:</strong> Master node coordinates but doesn't store data.</li>
+            <li><strong>Failure Impact:</strong> If master fails, entire cluster fails (single point of failure). AWS recommends high availability architectures with automated restarts.</li>
+        </ul>
+
+        <h4>Core Node(s)</h4>
+        <ul>
+            <li><strong>Role:</strong> Run DataNode (stores HDFS data) and TaskTracker (executes map/reduce tasks). Participate in data processing and storage.</li>
+            <li><strong>Multiple per Cluster:</strong> One or more core nodes hold data and execute tasks.</li>
+            <li><strong>Persistent Storage:</strong> Data stored on core nodes survives task failures (if one core fails, data replicates to other cores).</li>
+            <li><strong>Cannot Be Removed:</strong> Core nodes are permanent members of cluster. Cannot scale down without losing data.</li>
+        </ul>
+
+        <h4>Task Node(s) (Optional)</h4>
+        <ul>
+            <li><strong>Role:</strong> Execute map/reduce tasks only. Do NOT store HDFS data (no DataNode). Pure processing capacity.</li>
+            <li><strong>Flexible Scaling:</strong> Task nodes can be added/removed without data loss (no data stored locally). Perfect for auto-scaling based on job load.</li>
+            <li><strong>Temporary Capacity:</strong> Ideal for handling temporary workload spikes.</li>
+            <li><strong>Cost Optimization:</strong> Use Spot Instances for task nodes (if job fails mid-task, restart on another instance). Master and core nodes should use on-demand or reserved instances.</li>
+        </ul>
+
+        <h3>EMR Purchasing Options</h3>
+        <table style="width:100%; border-collapse:collapse; margin:10px 0;">
+            <tr style="background:#f0f0f0;">
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Purchasing Option</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Cost</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Best For</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Node Type Recommendation</th>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>On-Demand</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Standard hourly rate (~$0.25-$2 per instance/hour depending on size)</td>
+                <td style="border:1px solid #ddd; padding:8px;">Reliable, predictable workloads; production clusters</td>
+                <td style="border:1px solid #ddd; padding:8px;">Master, Core nodes (need consistent availability)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Reserved Instances</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">~40-60% discount vs on-demand (pay upfront for 1-3 years)</td>
+                <td style="border:1px solid #ddd; padding:8px;">Long-running clusters with predictable capacity needs</td>
+                <td style="border:1px solid #ddd; padding:8px;">Master, Core nodes (permanent commitment)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Spot Instances</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">~90% discount vs on-demand (can be interrupted with 2-minute warning)</td>
+                <td style="border:1px solid #ddd; padding:8px;">Non-critical jobs, temporary capacity spikes, cost-sensitive workloads</td>
+                <td style="border:1px solid #ddd; padding:8px;">Task nodes only (lose data if interrupted, but can restart on another node)</td>
+            </tr>
+        </table>
+
+        <h3>EMR Use Cases</h3>
+        <ul>
+            <li><strong>Big Data Processing:</strong> Process terabytes/petabytes of data using Spark, Hadoop, Hive.</li>
+            <li><strong>ETL Pipelines:</strong> Extract, Transform, Load data from sources → process on EMR → store in data lake or warehouse.</li>
+            <li><strong>Interactive Analytics:</strong> Use Spark SQL via Hue for exploratory analytics on large datasets.</li>
+            <li><strong>Real-Time Streaming:</strong> Flink on EMR processes streaming data from Kinesis.</li>
+            <li><strong>Machine Learning:</strong> Use PySpark MLlib for distributed machine learning on large datasets.</li>
+            <li><strong>Exam Tip:</strong> Scenario mentions "big data," "Hadoop," "petabyte scale processing" → EMR. Compare with Redshift (data warehouse, SQL) and Athena (serverless SQL on S3).</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Amazon QuickSight — Business Intelligence & Dashboards</h2>
+
+        <h3>Service Overview</h3>
+        <p>Amazon QuickSight is a fully managed business intelligence (BI) service for creating interactive dashboards, visualizations, and reports. Enables non-technical users to explore data, identify trends, and make data-driven decisions. Integrates with multiple AWS data sources and third-party databases.</p>
+
+        <h3>Key Characteristics</h3>
+        <ul>
+            <li><strong>Interactive Dashboards:</strong> Create visualizations (charts, maps, tables, KPIs) directly from data sources.</li>
+            <li><strong>User Management:</strong> Define users and groups for dashboard access. Note: Uses QuickSight-specific user management, NOT IAM (important distinction for exam).</li>
+            <li><strong>Two Types of Objects:</strong>
+                <ul>
+                    <li><strong>Analysis:</strong> Interactive, editable view of data. Authors modify visualizations, filter data, drill down.</li>
+                    <li><strong>Dashboard:</strong> Read-only snapshot of an analysis. Preserves the configuration (filters, visualizations) from the analysis. Can be shared with users/groups for consumption (not editing). Perfect for sharing findings with stakeholders.</li>
+                </ul>
+            </li>
+            <li><strong>Data Sources:</strong> Connects to RDS, Redshift, Athena, S3, DynamoDB, Salesforce, Google Analytics, Excel, and other sources.</li>
+        </ul>
+
+        <h3>AWS Integrations</h3>
+        <ul>
+            <li><strong>Redshift:</strong> Query Redshift data warehouse directly for complex analytics.</li>
+            <li><strong>Athena:</strong> Query data in S3 via Athena for ad-hoc dashboarding.</li>
+            <li><strong>RDS:</strong> Visualize relational database data (PostgreSQL, MySQL, Aurora).</li>
+            <li><strong>DynamoDB:</strong> Create dashboards from NoSQL data.</li>
+            <li><strong>S3:</strong> Direct connection to S3 data or via Athena.</li>
+            <li><strong>EMR:</strong> Query results from EMR Spark SQL jobs.</li>
+            <li><strong>OpenSearch:</strong> Visualize metrics and logs in OpenSearch domains.</li>
+        </ul>
+
+        <h3>User Management & Sharing</h3>
+        <ul>
+            <li><strong>QuickSight User Types:</strong>
+                <ul>
+                    <li><strong>Authors:</strong> Create analyses and dashboards. Full edit permissions.</li>
+                    <li><strong>Readers:</strong> View dashboards and analyses (read-only). Can filter and drill-down but cannot modify structure.</li>
+                    <li><strong>Admin:</strong> Manage QuickSight account, users, data sources, settings.</li>
+                </ul>
+            </li>
+            <li><strong>User Management Method:</strong> QuickSight has its own user/group management system (not IAM). Create users directly in QuickSight console or federate with corporate directory via SAML/OpenID Connect.</li>
+            <li><strong>Sharing Dashboards:</strong> Authors publish dashboards. Specify which users/groups can access. Shared dashboards are read-only snapshots preserving analysis configuration.</li>
+            <li><strong>Exam Tip:</strong> "Manage QuickSight users" → Use QuickSight's user management, not IAM.</li>
+        </ul>
+
+        <h3>Use Cases</h3>
+        <ul>
+            <li>Business metrics dashboards (sales, revenue, KPIs).</li>
+            <li>Real-time monitoring dashboards feeding from Redshift or Athena.</li>
+            <li>Executive dashboards for data-driven decision making.</li>
+            <li><strong>Exam Tip:</strong> Scenario: "Create dashboards for business users from data warehouse" → QuickSight.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>AWS Glue — Managed ETL & Data Catalog</h2>
+
+        <h3>Service Overview</h3>
+        <p>AWS Glue is a fully managed, serverless Extract-Transform-Load (ETL) service for preparing and loading data for analytics. Automates data discovery, transformation, and loading. Removes manual ETL coding (though custom code supported). Central component of AWS data lakes.</p>
+
+        <h3>Key Components</h3>
+
+        <h4>Glue Data Catalog</h4>
+        <p>Centralized metadata repository describing all datasets in your data lake/warehouse.</p>
+        <ul>
+            <li><strong>Purpose:</strong> Stores metadata about tables, partitions, schemas, data location (S3 paths), format (Parquet, CSV, JSON).</li>
+            <li><strong>Automatic Discovery:</strong> Glue Crawlers automatically discover data in S3, RDS, DynamoDB and populate the catalog.</li>
+            <li><strong>Glue Crawlers:</strong> Run on schedule (hourly, daily) or on-demand. Connect to data source → infer schema → create/update catalog table entries. No manual schema definition needed.</li>
+            <li><strong>Data Consumers:</strong> Athena, Redshift, EMR query the Glue Catalog to understand data schema and location. Enables cross-service data discovery.</li>
+            <li><strong>Exam Pattern:</strong> Scenario: "Automatically discover data schema in S3" → Glue Crawler.</li>
+        </ul>
+
+        <h4>Glue ETL Jobs</h4>
+        <ul>
+            <li><strong>Purpose:</strong> Transform data. Read from source → apply transformations → write to target.</li>
+            <li><strong>Languages:</strong> Python or Scala code. Glue provides pre-built libraries (Glue DPU - Data Processing Units - provides compute for jobs).</li>
+            <li><strong>Scalability:</strong> Glue automatically scales compute resources based on data volume.</li>
+            <li><strong>Monitoring:</strong> CloudWatch integration for job success/failure monitoring.</li>
+        </ul>
+
+        <h4>Glue Job Bookmarks</h4>
+        <p>Prevents reprocessing of old data in incremental ETL jobs.</p>
+        <ul>
+            <li><strong>How It Works:</strong> Glue remembers the last data processed. On next job run, starts from where it left off. Tracks state using internal bookmarks.</li>
+            <li><strong>Use Case:</strong> Daily ETL job loads new records from a database. Without bookmarks, each run would reprocess all historical data. With bookmarks, only new/changed records since last run are processed.</li>
+            <li><strong>Cost Savings:</strong> Reduces processing time and compute costs by avoiding redundant processing.</li>
+        </ul>
+
+        <h4>Glue DataBrew</h4>
+        <p>Visual data preparation tool for cleaning and normalizing data without coding.</p>
+        <ul>
+            <li><strong>Features:</strong> Pre-built transformations (remove duplicates, standardize formats, handle missing values, data validation).</li>
+            <li><strong>GUI-Based:</strong> Non-technical users can create recipes via point-and-click interface.</li>
+            <li><strong>Use Case:</strong> Data quality issues discovered → use DataBrew to clean data → output cleaned data to S3.</li>
+        </ul>
+
+        <h4>Glue Studio</h4>
+        <p>Visual GUI for creating, running, and monitoring ETL jobs.</p>
+        <ul>
+            <li><strong>Drag-and-Drop:</strong> Create ETL pipeline by connecting source, transformation, and target nodes visually.</li>
+            <li><strong>Code Generation:</strong> Generates Python/Scala code from visual pipeline (can edit code if needed).</li>
+            <li><strong>Monitoring:</strong> Track job runs, view logs, monitor performance.</li>
+        </ul>
+
+        <h4>Glue Streaming ETL</h4>
+        <ul>
+            <li><strong>Purpose:</strong> Real-time ETL for streaming data.</li>
+            <li><strong>Sources:</strong> Kinesis Data Streams, Kafka streams.</li>
+            <li><strong>Transformations:</strong> Apply transformations as data arrives.</li>
+            <li><strong>Targets:</strong> Write transformed data to S3, DynamoDB, Redshift, etc.</li>
+        </ul>
+
+        <h3>Glue Use Cases</h3>
+        <ul>
+            <li>Automated data discovery and cataloging.</li>
+            <li>ETL pipelines for data lake ingestion.</li>
+            <li>Data cleaning and validation before analytics.</li>
+            <li>Incremental data loading with job bookmarks.</li>
+            <li><strong>Exam Tip:</strong> Scenario: "Automated ETL, data discovery, catalog" → Glue. Scenario: "Big data processing" → EMR or Spark on EMR.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>AWS Lake Formation — Managed Data Lake</h2>
+
+        <h3>Service Overview</h3>
+        <p>AWS Lake Formation is a fully managed service that simplifies building and managing data lakes. It automates complex manual steps (data ingestion, cataloging, cleaning, deduplication, governance) and provides a centralized platform for data lake management and security.</p>
+
+        <h3>Key Characteristics</h3>
+        <ul>
+            <li><strong>Automation:</strong> Automates data lake setup. Instead of manually building ETL pipelines, Lake Formation handles ingestion, transformation, and governance.</li>
+            <li><strong>Source Blueprints:</strong> Pre-built templates for common data sources: S3, RDS (relational databases), DynamoDB (NoSQL), third-party connectors.</li>
+            <li><strong>Data Consolidation:</strong> Combine structured (relational), semi-structured (JSON), and unstructured data (images, documents) in a single data lake.</li>
+            <li><strong>Built on Glue:</strong> Lake Formation uses Glue under the hood for cataloging and ETL (Crawlers, Jobs, DataBrew).</li>
+            <li><strong>Governed Workspace:</strong> Provides managed storage and compute for data lake operations.</li>
+        </ul>
+
+        <h3>Centralized Permission Management</h3>
+        <p>Lake Formation provides fine-grained access control at row and column level, replacing IAM for data access.</p>
+        <ul>
+            <li><strong>Data Lake Permissions:</strong> Grant permissions on tables, columns, rows instead of S3 bucket policies (IAM). Easier to manage and audit.</li>
+            <li><strong>Row & Column Level:</strong> Control access to specific columns (e.g., hide salary column from non-HR users) or specific rows (e.g., department-based filtering).</li>
+            <li><strong>Centralized Permissions:</strong> Single place to manage who can access which data. Policies automatically enforced across Athena, Redshift, EMR queries.</li>
+            <li><strong>Audit Trail:</strong> CloudTrail integration logs all data access for compliance audits.</li>
+            <li><strong>IAM Integration:</strong> Lake Formation permissions work with IAM roles (IAM authenticates, Lake Formation authorizes data access).</li>
+        </ul>
+
+        <h3>Workflow</h3>
+        <ol>
+            <li><strong>Configure:</strong> Set up data lake with Lake Formation console → specify data location (S3 bucket).</li>
+            <li><strong>Ingest:</strong> Use source blueprints to configure data ingestion from RDS, S3, etc. Lake Formation automatically runs Glue Crawlers.</li>
+            <li><strong>Catalog:</strong> Data automatically appears in Glue Data Catalog with discovered schemas.</li>
+            <li><strong>Govern:</strong> Define fine-grained permissions on tables/columns/rows.</li>
+            <li><strong>Query:</strong> Users query via Athena, Redshift, EMR. Lake Formation enforces permissions transparently.</li>
+        </ol>
+
+        <h3>Lake Formation vs Glue</h3>
+        <ul>
+            <li><strong>Glue:</strong> ETL and cataloging service. You define and manage ETL jobs and data discovery.</li>
+            <li><strong>Lake Formation:</strong> Higher-level data lake platform built on Glue. Automates ETL and governance. Better for end-to-end data lake management.</li>
+            <li><strong>Analogy:</strong> Glue = low-level toolbox. Lake Formation = high-level managed platform using Glue.</li>
+            <li><strong>Exam Tip:</strong> Scenario: "Setup data lake with governance" → Lake Formation. Scenario: "Custom ETL pipeline" → Glue.</li>
+        </ul>
+
+        <h3>Use Cases</h3>
+        <ul>
+            <li>Build data lake from multiple sources with automated governance.</li>
+            <li>Enable data sharing between teams with fine-grained access control.</li>
+            <li>Compliance-driven data lakes requiring row/column level security.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Amazon Managed Streaming for Apache Flink</h2>
+
+        <h3>Service Overview</h3>
+        <p>Amazon Managed Streaming for Apache Flink is a fully managed service for processing real-time streaming data using Apache Flink. Flink is a distributed stream processing framework optimized for low-latency, high-throughput event processing.</p>
+
+        <h3>What is Apache Flink?</h3>
+        <p>Apache Flink is an open-source framework for stream and batch data processing. Key features:</p>
+        <ul>
+            <li><strong>Stateful Processing:</strong> Maintains state across events (window aggregations, session tracking). Not just event-by-event processing.</li>
+            <li><strong>Complex Event Processing:</strong> Detect patterns, complex conditions across event streams.</li>
+            <li><strong>Low Latency & High Throughput:</strong> Microsecond latencies with millions of events per second.</li>
+            <li><strong>Fault Tolerance:</strong> Checkpointing ensures no data loss even if nodes fail.</li>
+            <li><strong>Windowing:</strong> Time windows (tumbling, sliding), session windows for aggregations over time.</li>
+        </ul>
+
+        <h3>Data Sources</h3>
+        <ul>
+            <li><strong>Amazon Kinesis Data Streams:</strong> Primary streaming source for Flink on AWS.</li>
+            <li><strong>Apache Kafka:</strong> Flink can consume from Kafka clusters.</li>
+            <li><strong>Note:</strong> Flink does NOT read from Kinesis Data Firehose (Firehose is for delivery, not consumption by Flink).</li>
+        </ul>
+
+        <h3>Use Cases</h3>
+        <ul>
+            <li><strong>Real-Time Analytics:</strong> Process events and compute metrics on-the-fly (e.g., track real-time sales trends).</li>
+            <li><strong>Anomaly Detection:</strong> Detect unusual patterns in event streams (fraud detection, network anomalies).</li>
+            <li><strong>Session Analytics:</strong> Track user sessions, session duration, activities.</li>
+            <li><strong>Complex Event Processing:</strong> Pattern matching across event streams (e.g., sequence of events triggering alerts).</li>
+            <li><strong>Exam Tip:</strong> Scenario: "Real-time stream processing," "low-latency analytics," "pattern detection" → Managed Flink. Distinguish from Kinesis Firehose (batch delivery) and Lambda (event-driven but simpler).</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Amazon MSK (Managed Streaming for Apache Kafka)</h2>
+
+        <h3>Service Overview</h3>
+        <p>Amazon Managed Streaming for Apache Kafka (MSK) is a fully managed service for Apache Kafka clusters. Kafka is a distributed message broker optimized for high-throughput, persistent event streaming. MSK removes operational burden of Kafka cluster management.</p>
+
+        <h3>Key Characteristics</h3>
+        <ul>
+            <li><strong>Apache Kafka:</strong> Pub/sub messaging system (similar to SNS/SQS but optimized for streaming). Producers send messages to topics; consumers subscribe to topics and consume messages.</li>
+            <li><strong>Partitioning:</strong> Topics divided into partitions for parallelism. Each partition ordered independently.</li>
+            <li><strong>Persistence:</strong> Messages retained on broker disks (default: 7 days, configurable). Consumers…

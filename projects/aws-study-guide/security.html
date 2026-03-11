@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AWS Security — Encryption, KMS, WAF, Shield, GuardDuty, Inspector, Macie</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <div class="container2">
+        <div class="header">
+            <h1>AWS Security: Encryption, Key Management, and Threat Protection</h1>
+            <hr>
+        </div>
+
+        <h2>Overview</h2>
+        <p>This section covers AWS security architecture and services essential for protecting data, infrastructure, and applications. Topics include encryption strategies (in-flight, server-side, client-side), key management via AWS KMS, network and application layer protection (WAF, Shield), intelligent threat detection (GuardDuty, Inspector, Macie), and secrets management. Understanding these services and how they work together is critical for Solutions Architect exams and real-world security posture.</p>
+
+        <hr class="soft-divide">
+        <h2>OSI Model & Attack Surface — Security Layers Context</h2>
+        <p>Understanding the OSI (Open Systems Interconnection) model provides context for which AWS services protect which layers against common attacks:</p>
+
+        <table style="width:100%; border-collapse:collapse; margin:10px 0;">
+            <tr style="background:#f0f0f0;">
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Layer</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Name</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Examples</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Common Attacks</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">AWS Protection</th>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Layer 7</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Application</td>
+                <td style="border:1px solid #ddd; padding:8px;">HTTP/HTTPS, DNS, SMTP, FTP</td>
+                <td style="border:1px solid #ddd; padding:8px;">SQL injection, Cross-Site Scripting (XSS), DDoS (application-layer flood), API abuse</td>
+                <td style="border:1px solid #ddd; padding:8px;">AWS WAF, Shield Advanced (Layer 7), API Gateway throttling</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Layer 6</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Presentation</td>
+                <td style="border:1px solid #ddd; padding:8px;">Encryption/Decryption, Compression</td>
+                <td style="border:1px solid #ddd; padding:8px;">Man-in-the-Middle (MITM) on encrypted traffic, encryption downgrade attacks</td>
+                <td style="border:1px solid #ddd; padding:8px;">TLS/SSL certificates (ACM), enforced encryption policies</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Layer 5</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Session</td>
+                <td style="border:1px solid #ddd; padding:8px;">Session management, authentication</td>
+                <td style="border:1px solid #ddd; padding:8px;">Session hijacking, privilege escalation, credential theft</td>
+                <td style="border:1px solid #ddd; padding:8px;">IAM, Cognito, Secrets Manager, KMS (for credential encryption)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Layer 4</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Transport</td>
+                <td style="border:1px solid #ddd; padding:8px;">TCP, UDP, SCTP</td>
+                <td style="border:1px solid #ddd; padding:8px;">SYN floods, UDP reflection attacks, port scanning</td>
+                <td style="border:1px solid #ddd; padding:8px;">Shield (Standard/Advanced), Network ACLs, Security Groups (stateful), NLB protection</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Layer 3</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Network</td>
+                <td style="border:1px solid #ddd; padding:8px;">IP (IPv4, IPv6), ICMP, routing</td>
+                <td style="border:1px solid #ddd; padding:8px;">IP spoofing, routing attacks, ICMP floods, fragmentation attacks</td>
+                <td style="border:1px solid #ddd; padding:8px;">Shield (DDoS mitigation), Network ACLs, route tables, AWS Network Firewall</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Layer 2</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Data Link</td>
+                <td style="border:1px solid #ddd; padding:8px;">Ethernet, ARP, MAC addressing</td>
+                <td style="border:1px solid #ddd; padding:8px;">ARP spoofing, MAC flooding, VLAN hopping</td>
+                <td style="border:1px solid #ddd; padding:8px;">VPC isolation, ENI security, AWS Outposts (physical isolation)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Layer 1</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Physical</td>
+                <td style="border:1px solid #ddd; padding:8px;">Cables, switches, electrical signals</td>
+                <td style="border:1px solid #ddd; padding:8px;">Physical intrusion, cable tapping, equipment theft</td>
+                <td style="border:1px solid #ddd; padding:8px;">AWS data center security, physical access controls, Outposts (on-premises hardware)</td>
+            </tr>
+        </table>
+
+        <p style="font-style: italic;"><strong>Exam Context:</strong> When a question mentions "Layer 3/4 DDoS" (volumetric), think Shield. "Layer 7 DDoS" (application-layer), think WAF. "Encryption in transit," think TLS/ACM. "Encryption at rest," think KMS.</p>
+
+        <hr class="soft-divide">
+        <h2>Data Encryption — Three Strategies</h2>
+
+        <h3>Why Encryption Matters</h3>
+        <p>Encryption protects data confidentiality (only authorized parties can read) and can provide integrity assurance. AWS security best practice: always encrypt sensitive data. Three main encryption strategies exist:</p>
+
+        <h3>1. Encryption in Flight (In Transit)</h3>
+        <p><strong>Definition:</strong> Data is encrypted before transmission and decrypted upon receipt. Protects data while moving across networks.</p>
+        <ul>
+            <li><strong>Mechanism:</strong> Transport Layer Security (TLS) protocol encrypts HTTP traffic into HTTPS. Uses public-key cryptography for key exchange, then symmetric encryption for bulk data.</li>
+            <li><strong>Protection Against:</strong> Man-in-the-Middle (MITM) attacks where attacker intercepts network traffic between client and server.</li>
+            <li><strong>Implementation:</strong> Use HTTPS (TLS 1.2+). AWS Certificate Manager (ACM) manages TLS certificates. API Gateway, ALB, CloudFront all support HTTPS.</li>
+            <li><strong>Certificate Validation:</strong> Client verifies server's TLS certificate is valid and issued by trusted Certificate Authority. Prevents attackers from impersonating legitimate servers.</li>
+            <li><strong>Exam Tip:</strong> "Protect data over the network," "prevent MITM attacks" → encryption in flight / HTTPS / TLS.</li>
+        </ul>
+
+        <h3>2. Server-Side Encryption at Rest</h3>
+        <p><strong>Definition:</strong> Data is encrypted on the server after receipt and before storage. Data is encrypted while stored on disk. Server decrypts before sending to client. Server (not client) manages encryption keys.</p>
+        <ul>
+            <li><strong>Mechanism:</strong> When data arrives at AWS service, it's encrypted using a key (usually held in AWS KMS). Stored in encrypted form on disk. When requested, server decrypts using the key before returning to client.</li>
+            <li><strong>Key Management:</strong> Keys stored in KMS (hardware security modules). Server has access to keys via IAM roles. Application does not directly manage keys.</li>
+            <li><strong>Pros:</strong> Transparent to application. Data protected at rest. Reduces management burden (AWS manages keys).</li>
+            <li><strong>Cons:</strong> Server has access to decrypted data (insider threat risk). If server is compromised, attacker can decrypt data.</li>
+            <li><strong>AWS Services:</strong> S3 (SSE-S3, SSE-KMS), RDS, DynamoDB, EBS, Glacier all support server-side encryption at rest.</li>
+            <li><strong>Exam Tip:</strong> "Encrypt data at rest," "server manages encryption" → server-side encryption / KMS.</li>
+        </ul>
+
+        <h3>3. Client-Side Encryption</h3>
+        <p><strong>Definition:</strong> Data is encrypted by the client before sending to server. Server never sees unencrypted data. Client manages encryption keys and decryption.</p>
+        <ul>
+            <li><strong>Mechanism:</strong> Client encrypts data locally, sends encrypted blob to AWS service. Service stores encrypted blob. Client later retrieves encrypted blob, decrypts locally. Server never has access to unencrypted data.</li>
+            <li><strong>Key Management:</strong> Client completely responsible for key management. Keys never sent to AWS (not stored in KMS). Client must securely manage and backup keys.</li>
+            <li><strong>Pros:</strong> Strongest security. Server compromise doesn't expose data (server only has encrypted blobs). Even AWS cannot decrypt data without key.</li>
+            <li><strong>Cons:</strong> Application complexity (must implement encryption/decryption). Key management burden on client. If client loses keys, data is unrecoverable.</li>
+            <li><strong>AWS Services:</strong> S3 (client-side encryption libraries), DynamoDB Encryption Client, custom applications using KMS API.</li>
+            <li><strong>Use Case:</strong> Highly sensitive data (personal health information, financial records, trade secrets) where organization wants absolute control. Multi-tenant SaaS where each customer's data is encrypted with customer's key.</li>
+            <li><strong>Exam Tip:</strong> "Client manages encryption," "application encrypts before sending," "server cannot decrypt" → client-side encryption.</li>
+        </ul>
+
+        <h3>Encryption Methods Comparison</h3>
+        <table style="width:100%; border-collapse:collapse; margin:10px 0;">
+            <tr style="background:#f0f0f0;">
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Aspect</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Encryption in Flight</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Server-Side Encryption</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Client-Side Encryption</th>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Protection Scope</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Network transmission</td>
+                <td style="border:1px solid #ddd; padding:8px;">Data at rest on disk</td>
+                <td style="border:1px solid #ddd; padding:8px;">Data at rest AND in transit</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Key Management</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">TLS protocol (automatic)</td>
+                <td style="border:1px solid #ddd; padding:8px;">AWS KMS (AWS manages)</td>
+                <td style="border:1px solid #ddd; padding:8px;">Client (full responsibility)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Protects Against</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">MITM attacks</td>
+                <td style="border:1px solid #ddd; padding:8px;">Disk theft, insider threats (partially)</td>
+                <td style="border:1px solid #ddd; padding:8px;">Disk theft, insider threats, compromised servers</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Application Complexity</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Low (use HTTPS)</td>
+                <td style="border:1px solid #ddd; padding:8px;">Low (transparent to app)</td>
+                <td style="border:1px solid #ddd; padding:8px;">High (implement crypto)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Use Case</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">All web/API traffic</td>
+                <td style="border:1px solid #ddd; padding:8px;">Standard data protection</td>
+                <td style="border:1px solid #ddd; padding:8px;">Highly sensitive data</td>
+            </tr>
+        </table>
+
+        <hr class="soft-divide">
+        <h2>AWS Key Management Service (KMS)</h2>
+
+        <h3>Service Overview</h3>
+        <p>AWS Key Management Service (KMS) is a managed encryption key service. Whenever you hear "encryption" in AWS, KMS is likely involved. KMS creates and manages encryption keys (called Customer Master Keys or CMKs) used to encrypt/decrypt data. KMS integrates seamlessly into most AWS services (S3, RDS, DynamoDB, EBS, Lambda, Secrets Manager, etc.). You never get access to the actual key material—all encryption/decryption happens through KMS API calls.</p>
+
+        <h3>Key Types in KMS</h3>
+
+        <h4>Symmetric Keys (AES-256)</h4>
+        <ul>
+            <li><strong>Definition:</strong> Single key used for both encryption and decryption. Also called Secret Key encryption.</li>
+            <li><strong>Key Access:</strong> You never get direct access to the key material. All encryption/decryption happens via KMS API calls. You reference the key by Key ID or ARN.</li>
+            <li><strong>Performance:</strong> Fast encryption/decryption. No computational overhead on application side.</li>
+            <li><strong>Use Cases:</strong> Default choice for most AWS services (S3, RDS, DynamoDB, EBS). Data stored at rest in AWS.</li>
+            <li><strong>Exam Tip:</strong> When question mentions "encrypt data with KMS," it's symmetric encryption unless otherwise specified.</li>
+        </ul>
+
+        <h4>Asymmetric Keys (RSA & ECC Key Pairs)</h4>
+        <ul>
+            <li><strong>Definition:</strong> Public-private key pair. Public key encrypts data; private key decrypts. Or public key verifies signatures; private key signs.</li>
+            <li><strong>Public Key Download:</strong> You can download and use the public key outside of AWS (e.g., encrypt data on-premises, send to AWS). Private key stays in KMS (never exposed).</li>
+            <li><strong>Use Cases:</strong> Encryption outside AWS. Sign/verify operations (digital signatures). When you need to encrypt data without calling KMS API (e.g., edge devices, partner applications).</li>
+            <li><strong>Example Scenario:</strong> Partner sends you encrypted data. They use your KMS public key to encrypt. You use KMS private key (via API) to decrypt in AWS.</li>
+            <li><strong>Exam Tip:</strong> "Encrypt data outside AWS," "partner encryption," "digital signatures" → asymmetric keys.</li>
+        </ul>
+
+        <h3>KMS Key Ownership & Costs</h3>
+        <ul>
+            <li><strong>AWS Owned Keys (Free):</strong> Managed by AWS. Used for services like SSE-S3 (S3 default encryption), SSE-SQS (SQS encryption), SSE-DDB (DynamoDB encryption). You cannot control, rotate, or view key policies.</li>
+            <li><strong>AWS Managed Keys (Free):</strong> Created and managed by AWS on your behalf. Named with format <code>aws/service-name</code> (e.g., <code>aws/s3</code>, <code>aws/rds</code>). AWS handles rotation, key policies are fixed. Used for integrated KMS encryption in services.</li>
+            <li><strong>Customer Managed Keys (CMKs):</strong> You create and manage in KMS. Cost: $1 per month per key (regardless of usage). Plus API call costs ($0.03 per 10,000 calls). You have full control over key policies, rotation, and access.</li>
+            <li><strong>Imported Keys (Customer Managed):</strong> Import key material from external source. Cost: $1 per month. Useful for key migration or keys generated outside AWS.</li>
+            <li><strong>Exam Tip:</strong> For cost-optimization, use AWS managed keys where possible. Use customer managed keys only when you need custom access control or rotation policies.</li>
+        </ul>
+
+        <h3>Automatic Key Rotation</h3>
+        <p>KMS can automatically rotate Customer Managed Keys to protect against potential key compromise:</p>
+        <ul>
+            <li><strong>Automatic Rotation:</strong> AWS KMS rotates the key material annually (every 365 days). New key version generated; old versions retained for decryption of previously encrypted data.</li>
+            <li><strong>Transparent to Applications:</strong> Applications reference the key by ID; KMS automatically uses the correct version to decrypt old data (using old key version) and encrypt new data (using new key version).</li>
+            <li><strong>Rotation Policy:</strong> Automatic rotation enabled by default for customer managed keys. Can be disabled if needed (not recommended).</li>
+            <li><strong>Manual Rotation:</strong> Create a new key version manually anytime. Useful before suspected compromise.</li>
+            <li><strong>Imported Keys:</strong> Automatic rotation not supported. You must manually rotate imported keys (create new key, remove old key material).</li>
+            <li><strong>Exam Tip:</strong> "Regularly rotate encryption keys" → enable KMS automatic key rotation.</li>
+        </ul>
+
+        <h3>KMS Key Policies</h3>
+        <p>Key Policies control who can use and manage KMS keys. Similar to S3 bucket policies but with a critical difference: a key policy is required. Without a key policy, no one (including the root account) can use the key.</p>
+        <ul>
+            <li><strong>Default Key Policy:</strong> Created automatically when you create a customer managed key. Grants complete access to the key to the root user (AWS account). This means the entire AWS account has access; further access control via IAM.</li>
+            <li><strong>Custom Key Policy:</strong> Define explicit principals (users, roles, other AWS accounts) who can call KMS operations (Decrypt, Encrypt, GenerateDataKey, DescribeKey, etc.). Define who can administer the key (update policies, schedule deletion).</li>
+            <li><strong>Root User Exception:</strong> Even if a key policy denies access, the root user (AWS account root access keys) can update the key policy to grant themselves access. This is intentional for emergency access.</li>
+            <li><strong>Cross-Account Access:</strong> Define key policy allowing another AWS account (or specific role in another account) to use the key. Combined with IAM policy in target account, enables encrypted cross-account data sharing.</li>
+            <li><strong>Exam Tip:</strong> "Cross-account encryption," "grant another account access to key" → custom key policy + target account IAM policy.</li>
+        </ul>
+
+        <h3>KMS Multi-Region Keys</h3>
+        <p>KMS Multi-Region Keys simplify managing encryption keys across AWS regions for applications and services that span multiple regions:</p>
+        <ul>
+            <li><strong>Purpose:</strong> Create a primary key in one region and replicate to other regions. Replicated keys are standalone (independent) in each region. All regions have read/write capability.</li>
+            <li><strong>Use Cases:</strong>
+                <ul>
+                    <li><strong>Global Disaster Recovery:</strong> Encrypt backups in primary region with primary key. If primary region fails, replicas in DR regions can decrypt backups without cross-region API calls (lower latency, no dependency on primary region).</li>
+                    <li><strong>Multi-Region Databases:</strong> Encrypt database replicas with multi-region keys. Replicas in each region use local key version for encryption/decryption (no cross-region traffic).</li>
+                    <li><strong>Global Applications:</strong> Applications in different regions encrypt/decrypt with local replica key (low latency). Keys automatically sync.</li>
+                </ul>
+            </li>
+            <li><strong>Replication Behavior:</strong> When you promote a replica to primary (e.g., after primary region failure), the replica becomes the new primary. Other replicas now sync with the new primary.</li>
+            <li><strong>Cost:</strong> $1 per month per multi-region key (covers primary + all replicas).</li>
+            <li><strong>Exam Tip:</strong> "Multi-region encryption," "failover to replica region" → KMS multi-region keys.</li>
+        </ul>
+
+        <h3>KMS Integration Patterns</h3>
+
+        <h4>Cross-Account Snapshot Sharing with Encryption</h4>
+        <p><strong>Scenario:</strong> Account A has EBS snapshots encrypted with KMS key. Account B needs to access and use the snapshots.</p>
+        <ul>
+            <li><strong>Step 1:</strong> In Account A, create/select snapshot encrypted with KMS key.</li>
+            <li><strong>Step 2:</strong> Create custom KMS key policy allowing Account B to use the key (Decrypt, CreateGrant, etc.).</li>
+            <li><strong>Step 3:</strong> Share the encrypted snapshot with Account B (snapshot share in EC2).</li>
+            <li><strong>Step 4:</strong> In Account B, create IAM policy allowing role to use Account A's KMS key (via key ARN).</li>
+            <li><strong>Step 5:</strong> In Account B, copy the snapshot (encrypted with Account A key) and encrypt with Account B's own KMS key. Now Account B owns an encrypted copy.</li>
+            <li><strong>Step 6:</strong> In Account B, create volume from the copied snapshot.</li>
+        </ul>
+
+        <h4>DynamoDB Client-Side Encryption with Multi-Region Keys</h4>
+        <p><strong>Scenario:</strong> DynamoDB Global Table spans multiple regions. Application encrypts sensitive attributes client-side before sending to DynamoDB.</p>
+        <ul>
+            <li><strong>Setup:</strong> Use KMS multi-region key. DynamoDB replicas in each region.</li>
+            <li><strong>Encryption:</strong> Application uses DynamoDB Encryption Client library. Library calls KMS local replica (in same region) to get data key, encrypts specific attributes, sends encrypted data to DynamoDB.</li>
+            <li><strong>Replication:</strong> Encrypted attributes replicate to other regions unchanged (encryption happens client-side, before sending to DynamoDB).</li>
+            <li><strong>Decryption:</strong> In other regions, applications use multi-region key replicas (local to each region) for decryption. No cross-region KMS calls needed (low latency).</li>
+            <li><strong>Security:</strong> Only applications with KMS key access can decrypt. DynamoDB service itself cannot decrypt.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>AWS Secrets Manager</h2>
+
+        <h3>Service Overview</h3>
+        <p>AWS Secrets Manager is a managed service for securely storing, managing, and rotating secrets (database passwords, API keys, OAuth tokens, etc.). Unlike Systems Manager Parameter Store (configuration management), Secrets Manager focuses on secrets with built-in rotation capabilities and integration with AWS services.</p>
+
+        <h3>Key Features</h3>
+        <ul>
+            <li><strong>Secure Storage:</strong> Secrets encrypted at rest using KMS (default AWS managed key or customer managed key). Encryption in transit via HTTPS.</li>
+            <li><strong>Automatic Rotation:</strong> Schedule automatic rotation of secrets (e.g., rotate RDS password every 30 days). Secrets Manager can integrate with Lambda to rotate passwords in the actual target system (database, API provider, etc.).</li>
+            <li><strong>Automatic Generation:</strong> Secrets Manager generates new secrets on rotation (e.g., generate new RDS password, store in Secrets Manager, update RDS instance, invalidate old password). Application always uses current secret from Secrets Manager.</li>
+            <li><strong>Service Integrations:</strong> Native integration with RDS, Aurora, DocumentDB, Redshift for credential management. When you rotate credentials in Secrets Manager, it updates the database instance automatically.</li>
+            <li><strong>Multi-Region Secrets:</strong> Replicate secrets to multiple regions. Secrets Manager keeps replicas in sync with primary secret. Useful for multi-region applications and disaster recovery.</li>
+            <li><strong>Secret Versioning:</strong> Each rotation creates new version. Previous versions retained for a configurable period (RECOVERY_WINDOW_IN_DAYS). Allows gradual rotation without breaking applications.</li>
+        </ul>
+
+        <h3>Multi-Region Secrets & Disaster Recovery</h3>
+        <ul>
+            <li><strong>Use Case:</strong> Multi-region database (RDS with read replicas in different regions). Application in each region needs access to database credentials.</li>
+            <li><strong>Setup:</strong> Create secret in primary region. Replicate to secondary regions. Each replica is a read-only shadow of primary. When primary secret updates, replicas automatically sync.</li>
+            <li><strong>Failover:</strong> If primary region fails, promote a replica secret to primary in a secondary region. Application in secondary region now uses the promoted secret (and connects to database failover in that region).</li>
+            <li><strong>Exam Pattern:</strong> "Multi-region app," "disaster recovery," "automatic credential rotation" → Secrets Manager with replication.</li>
+        </ul>
+
+        <h3>Comparison: Secrets Manager vs Parameter Store</h3>
+        <ul>
+            <li><strong>Secrets Manager:</strong> Purpose-built for secrets. Automatic rotation, secret generation, service integrations. Higher cost (~$0.40/secret/month + API calls). Use for database passwords, API keys, OAuth tokens.</li>
+            <li><strong>Parameter Store:</strong> General-purpose configuration management. Optional encryption, versioning, no automatic rotation. Free tier available (standard parameters). Use for configuration values, feature flags, non-secret data.</li>
+            <li><strong>Exam Pattern:</strong> "Rotate passwords automatically," "database credentials" → Secrets Manager. "Configuration values," "feature flags" → Parameter Store.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>AWS Systems Manager Parameter Store</h2>
+
+        <h3>Service Overview</h3>
+        <p>AWS Systems Manager Parameter Store provides secure, centralized storage for configuration data and optional secrets. It's a lightweight alternative to Secrets Manager for non-rotation use cases or configuration management.</p>
+
+        <h3>Key Features</h3>
+        <ul>
+            <li><strong>Parameter Types:</strong> String, StringList, SecureString (KMS-encrypted), typed parameters.</li>
+            <li><strong>Optional Encryption:</strong> Encrypt SecureString parameters using KMS (default AWS managed key or customer managed). Non-SecureString parameters stored in plaintext.</li>
+            <li><strong>Version Tracking:</strong> Automatic versioning of parameter changes. Retrieve current or previous versions.</li>
+            <li><strong>IAM-Based Security:</strong> IAM policies control who can read/write parameters. Fine-grained control per parameter.</li>
+            <li><strong>EventBridge Integration:</strong> Trigger notifications when parameters change (e.g., configuration update alerts).</li>
+            <li><strong>CloudFormation Integration:</strong> Reference parameters in CloudFormation templates. Centralize configuration across infrastructure-as-code.</li>
+            <li><strong>Pricing:</strong> Free tier for standard parameters (no encryption). Small charge for advanced parameters and high API request volume.</li>
+        </ul>
+
+        <h3>Parameter Policies</h3>
+        <p>Parameter policies attach expiration or rotation policies to parameters, forcing updates or deletion of sensitive data:</p>
+        <ul>
+            <li><strong>Time-to-Live (TTL) Policy:</strong> Assign expiration date to parameter. After expiration, parameter must be updated or it's marked as expired. Useful for temporary credentials or time-limited access tokens. Forces regular rotation without explicit deletion.</li>
+            <li><strong>Expiration Notification:</strong> Trigger EventBridge events before expiration so automation can renew the parameter.</li>
+            <li><strong>Multiple Policies:</strong> Assign multiple policies to a single parameter (e.g., TTL + notification).</li>
+            <li><strong>Use Case Example (Exam):</strong> Store temporary API token with TTL of 24 hours. Application reads token from Parameter Store. When token expires (TTL reached), EventBridge triggers Lambda → Lambda refreshes token → updates Parameter Store. Application detects expired token, refreshes from Parameter Store, gets new token. No manual intervention required.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>AWS Certificate Manager (ACM)</h2>
+
+        <h3>Service Overview</h3>
+        <p>AWS Certificate Manager provisions, manages, and deploys TLS/SSL certificates for securing web traffic (HTTPS). ACM handles certificate generation, validation, renewal, and deployment to AWS services. Certificates are free for public TLS certificates.</p>
+
+        <h3>Certificate Types</h3>
+        <ul>
+            <li><strong>Public Certificates:</strong> TLS certificates for public websites accessible from the internet. Issued by AWS-trusted Certificate Authority. Free of charge. Automatically renewed 60 days before expiration.</li>
+            <li><strong>Private Certificates:</strong> TLS certificates for internal communication (private services, internal APIs). Issued by AWS Private Certificate Authority (PCA). Charged per certificate issued. No auto-renewal (you renew manually).</li>
+        </ul>
+
+        <h3>Requesting a Public Certificate</h3>
+        <ul>
+            <li><strong>Domain Names:</strong> List fully qualified domain names (FQDNs) to include in certificate. Example: <code>corp.example.com</code>, <code>api.example.com</code>. Wildcard domains supported: <code>*.example.com</code> covers all subdomains.</li>
+            <li><strong>Validation Methods:</strong>
+                <ul>
+                    <li><strong>DNS Validation (Preferred):</strong> ACM generates a DNS CNAME record. You add the CNAME to your domain's DNS config. ACM validates ownership by checking DNS record. Automated; no email required. Preferred for automation.</li>
+                    <li><strong>Email Validation:</strong> ACM sends validation emails to domain contact addresses (from WHOIS). Email recipient clicks approval link. Manual process; slower; requires email access to domain contacts.</li>
+                </ul>
+            </li>
+            <li><strong>Issuance Timeline:</strong> After validation setup, certificate typically issued within hours (sometimes immediate, sometimes up to 24 hours depending on validation method and DNS propagation).</li>
+            <li><strong>Auto-Renewal:</strong> Public certificates automatically renewed 60 days before expiration. AWS handles entire renewal process. Requires DNS validation enabled (email-validated certs need manual renewal).</li>
+        </ul>
+
+        <h3>Importing Certificates</h3>
+        <ul>
+            <li><strong>Option:</strong> Generate certificate outside ACM (using Let's Encrypt, DigiCert, etc.), import into ACM. Imported certificates can be used with AWS services (ALB, CloudFront, API Gateway, etc.).</li>
+            <li><strong>Auto-Renewal:</strong> Imported certificates do NOT have automatic renewal. ACM sends expiration notifications to EventBridge 45 days before expiration. You must manually renew and re-import before expiration.</li>
+            <li><strong>AWS Config Rule:</strong> AWS Config managed rule checks for expiring certificates (configurable days before expiration). Useful for tracking imported certificates and alert when renewal needed.</li>
+        </ul>
+
+        <h3>ACM Integration with AWS Services</h3>
+
+        <h4>Application Load Balancer (ALB)</h4>
+        <ul>
+            <li>Attach ACM certificate to ALB HTTPS listener. ALB terminates TLS, forwards plain HTTP to backend targets. Client gets HTTPS encryption.</li>
+        </ul>
+
+        <h4>CloudFront</h4>
+        <ul>
+            <li>Associate ACM certificate with CloudFront distribution. Certificate must be in <code>us-east-1</code> region (CloudFront requirement). Enables HTTPS for distribution domain and custom domain names.</li>
+        </ul>
+
+        <h4>API Gateway (Custom Domain Names)</h4>
+        <ul>
+            <li><strong>Edge-Optimized Endpoints:</strong> Use CloudFront edge locations. Certificate must be in <code>us-east-1</code>. API Gateway lives in one region but requests routed through CloudFront.</li>
+            <li><strong>Regional Endpoints:</strong> API in specific region. Certificate must be in the same region as API stage. No CloudFront routing; direct regional access.</li>
+            <li><strong>Setup:</strong> Create custom domain name in API Gateway → associate ACM certificate → create CNAME or A (alias) record in Route 53 pointing to API endpoint.</li>
+        </ul>
+
+        <h4>Important: NOT for EC2 Instances</h4>
+        <p>ACM certificates cannot be directly installed on EC2 instances (ACM doesn't export private keys). If you need TLS on EC2, either (1) use ALB/NLB in front (ALB has ACM cert), or (2) use third-party certificates that allow private key export.</p>
+
+        <hr class="soft-divide">
+        <h2>AWS Web Application Firewall (WAF)</h2>
+
+        <h3>Service Overview</h3>
+        <p>AWS WAF is a web application firewall protecting against Layer 7 (application-layer) attacks. It inspects HTTP/HTTPS requests and blocks malicious traffic based on rules. WAF is deployed in front of web applications (CloudFront distributions, ALBs, API Gateway, AppSync, Cognito) to filter traffic before it reaches the application.</p>
+
+        <h3>WAF Components</h3>
+        <ul>
+            <li><strong>Web Access Control List (Web ACL):</strong> Set of rules applied to resources. Rules evaluated in order; first matching rule determines action (Allow, Block, Count).</li>
+            <li><strong>Rules:</strong> Conditions that inspect request attributes and determine if request matches. Multiple rule types:</li>
+            <ul>
+                <li><strong>IP Set Rules:</strong> Match source IP address. Up to 10,000 IPs per set. Example: whitelist office IPs, blacklist known attacker IPs.</li>
+                <li><strong>HTTP Headers Rules:</strong> Inspect header values (User-Agent, Referer, Authorization, etc.). Block requests with suspicious headers.</li>
+                <li><strong>HTTP Body Rules:</strong> Inspect request body content. Detect SQL injection, command injection payloads.</li>
+                <li><strong>URI String Rules:</strong> Inspect request URI/path. Block access to admin paths, sensitive endpoints.</li>
+                <li><strong>Geo-Matching Rules:</strong> Match country/region of source IP. Restrict access to specific geographic regions.</li>
+                <li><strong>Rate-Based Rules:</strong> Count requests from an IP over a time window. Block if count exceeds threshold. Prevents DDoS and brute-force attacks.</li>
+                <li><strong>AWS Managed Rules:</strong> Pre-packaged rule groups from AWS covering common attacks (OWASP Top 10, SQL injection, XSS, bot control, etc.).</li>
+            </ul>
+            <li><strong>Rule Groups:</strong> Reusable sets of rules packaged together. Create custom rule groups for your organization's policies. Share across multiple Web ACLs.</li>
+        </ul>
+
+        <h3>Protected Common Attacks</h3>
+        <ul>
+            <li><strong>SQL Injection:</strong> Malicious SQL in request parameters. WAF detects SQL keywords/syntax in headers/body. Example payload: <code>id=1' OR '1'='1</code> → blocked.</li>
+            <li><strong>Cross-Site Scripting (XSS):</strong> Malicious JavaScript injected into pages. WAF detects script tags, event handlers in requests. Example payload: <code>&lt;script&gt;alert('xss')&lt;/script&gt;</code> → blocked.</li>
+            <li><strong>Cross-Site Request Forgery (CSRF):</strong> Attacker tricks user into making requests. WAF can check for CSRF tokens in requests.</li>
+            <li><strong>Bot Traffic:</strong> AWS Managed Rules include bot control to identify and block bot traffic (crawlers, scrapers, DDoS bots).</li>
+        </ul>
+
+        <h3>WAF Deployment & Regions</h3>
+        <ul>
+            <li><strong>Regional Web ACLs:</strong> ALB, API Gateway, AppSync (specific regions). Web ACL created in same region as resource.</li>
+            <li><strong>CloudFront Web ACLs:</strong> WAF deployed globally for CloudFront distributions. Web ACL must be created in <code>us-east-1</code> region (CloudFront requirement). Applies to all edge locations.</li>
+            <li><strong>Limitations:</strong> WAF does NOT support Network Load Balancer (Layer 4 load balancer). For NLB, use AWS Shield Advanced or Network Firewall.</li>
+        </ul>
+
+        <h3>Exam Scenario: Fixed IP + WAF on ALB</h3>
+        <p><strong>Problem:</strong> Client needs fixed IP address to whitelist in firewall. But ALB doesn't provide fixed IP (it's load-balanced across multiple backend IPs).</p>
+        <p><strong>Solution:</strong> Use AWS Global Accelerator in front of ALB. Global Accelerator provides 2 fixed Anycast IPs. Client connects to fixed IP → Global Accelerator routes to ALB → ALB routes to targets. Deploy WAF on ALB for application layer protection. Exam answer: "Global Accelerator + WAF on ALB".</p>
+
+        <hr class="soft-divide">
+        <h2>AWS Shield — DDoS Protection</h2>
+
+        <h3>Service Overview</h3>
+        <p>AWS Shield protects AWS resources against Distributed Denial of Service (DDoS) attacks. DDoS attacks flood targets with massive request volume from multiple sources, overwhelming infrastructure and making service unavailable to legitimate users.</p>
+
+        <h3>Shield Standard (Free)</h3>
+        <ul>
+            <li><strong>Included:</strong> Free for all AWS customers. Automatically enabled.</li>
+            <li><strong>Protection:</strong> Defends against common Layer 3 and Layer 4 DDoS attacks:</li>
+            <ul>
+                <li><strong>SYN Flood:</strong> Attacker sends many TCP SYN packets without completing handshake, exhausting connection resources.</li>
+                <li><strong>UDP Flood:</strong> Overwhelming traffic on UDP protocol (DNS queries, NTP, etc.).</li>
+                <li><strong>Reflection Attacks:</strong> Attacker spoofs source IP to send traffic to victim. Amplification servers (DNS, NTP) reflect requests to victim, overwhelming network.</li>
+            </ul>
+            <li><strong>No Configuration:</strong> Works automatically. No setup or configuration needed.</li>
+            <li><strong>Limitation:</strong> No advanced Layer 7 (application-layer) DDoS protection. No dedicated support team.</li>
+        </ul>
+
+        <h3>Shield Advanced (Paid)</h3>
+        <ul>
+            <li><strong>Cost:</strong> $3,000 per month per AWS organization (not per region).</li>
+            <li><strong>Enhanced Protection:</strong> Protects against sophisticated Layer 3, 4, AND Layer 7 attacks. Includes AWS WAF automatic rule deployment.</li>
+            <li><strong>Automatic Application Layer DDoS Mitigation:</strong> Detects Layer 7 attacks (HTTP floods, bot traffic, malicious request patterns) and automatically creates/deploys WAF rules to block them. No manual intervention.</li>
+            <li><strong>Dedicated Support:</strong> 24/7 access to AWS DDoS Response Team (DRT). Real humans analyze attacks, provide mitigation recommendations, manual rule deployment.</li>
+            <li><strong>Cost Protection:</strong> Protects against unexpected bills during DDoS attack. If attack causes traffic spikes (data transfer, compute scaling), Shield Advanced covers the excess costs. Customer pays normal baseline; Shield covers DDoS surge costs.</li>
+            <li><strong>Protected Resources:</strong> CloudFront, Route 53, ALB, NLB, Elastic IP, EC2, AWS Global Accelerator.</li>
+            <li><strong>Exam Pattern:</strong> "DDoS attack," "Layer 7 attack," "24/7 support," "cost protection" → Shield Advanced.</li>
+        </ul>
+
+        <h3>Comparison: Shield Standard vs Shield Advanced</h3>
+        <table style="width:100%; border-collapse:collapse; margin:10px 0;">
+            <tr style="background:#f0f0f0;">
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Feature</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Shield Standard</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Shield Advanced</th>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Cost</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Free</td>
+                <td style="border:1px solid #ddd; padding:8px;">$3,000/month</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Layer 3/4 Protection</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Yes</td>
+                <td style="border:1px solid #ddd; padding:8px;">Yes</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Layer 7 Protection</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">No</td>
+                <td style="border:1px solid #ddd; padding:8px;">Yes (automatic WAF rules)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>DDoS Response Team</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">No</td>
+                <td style="border:1px solid #ddd; padding:8px;">Yes (24/7)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Cost Protection</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">No</td>
+                <td style="border:1px solid #ddd; padding:8px;">Yes</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Best For</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Basic protection (default)</td>
+                <td style="border:1px solid #ddd; padding:8px;">High-risk critical services</td>
+            </tr>
+        </table>
+
+        <hr class="soft-divide">
+        <h2>AWS Firewall Manager</h2>
+
+        <h3>Service Overview</h3>
+        <p>AWS Firewall Manager simplifies managing security policies across all AWS accounts and resources in an AWS Organization. It centralizes management of WAF rules, Shield, security groups, and network firewall rules, ensuring consistent security policies across the organization.</p>
+
+        <h3>Key Capabilities</h3>
+        <ul>
+            <li><strong>Centralized Policy Management:</strong> Define security policies once in Firewall Manager (central account). Policies automatically deployed to member accounts.</li>
+            <li><strong>Security Policies Supported:</strong>
+                <ul>
+                    <li><strong>AWS WAF Policies:</strong> Define Web ACLs, rule groups centrally. Deploy to ALBs, API Gateways, CloudFront distributions across all accounts.</li>
+                    <li><strong>AWS Shield Advanced:</strong> Enable Shield Advanced across organization accounts from central policy.</li>
+                    <li><strong>Security Group Policies:</strong> Define allowed/denied inbound/outbound rules. Apply to EC2 instances, ALBs, ENIs across organization.</li>
+                    <li><strong>AWS Network Firewall Policies:</strong> Manage stateful network firewall rules centrally.</li>
+                    <li><strong>Amazon Route 53 Resolver Policies:</strong> Manage DNS query logging and filtering.</li>
+                </ul>
+            </li>
+            <li><strong>Policy Application:</strong> Policies created at region level. Automatically applied to new resources as they're created. No manual per-resource configuration.</li>
+            <li><strong>Exceptions:</strong> Allow member accounts to request exceptions to centralized policies (e.g., specific security group rule not applicable to their resources). Central team reviews/approves.</li>
+        </ul>
+
+        <h3>WAF + Shield + Firewall Manager Integration</h3>
+        <p>These three services work together for comprehensive DDoS and application protection across organization:</p>
+        <ul>
+            <li><strong>WAF alone:</strong> Granular, fine-tuned protection for specific resources. Use when you need custom rules for different applications.</li>
+            <li><strong>WAF + Firewall Manager:</strong> Scale WAF rules across multiple accounts and resources. Automate policy deployment to new resources. For organizations managing WAF across teams/accounts.</li>
+            <li><strong>Shield Advanced:</strong> Add sophisticated Layer 7 DDoS protection, automatic WAF rule deployment, dedicated support. For critical high-risk resources.</li>
+            <li><strong>Full Stack (WAF + Shield + Firewall Manager):</strong> Centralized security policies (Firewall Manager), Layer 7 attack protection (WAF), advanced DDoS mitigation (Shield Advanced), dedicated support for DDoS incidents.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Amazon GuardDuty — Intelligent Threat Detection</h2>
+
+        <h3>Service Overview</h3>
+        <p>Amazon GuardDuty is an intelligent threat detection service that uses machine learning, anomaly detection, and third-party threat intelligence to identify malicious activity and unauthorized behavior in AWS accounts. It analyzes activity logs to find suspicious patterns without requiring manual rules.</p>
+
+        <h3>Data Sources</h3>
+        <p>GuardDuty ingests data from multiple sources:</p>
+        <ul>
+            <li><strong>CloudTrail Event Logs (Management Events):</strong> API calls made in AWS account. Detects unusual API calls (e.g., unusual AWS service access, unusual IAM actions, unauthorized deployments).</li>
+            <li><strong>CloudTrail Management Events:</strong> Create VPC, subnet, trail, IAM role, etc. Detects suspicious resource creation patterns.</li>
+            <li><strong>CloudTrail S3 Data Events (Optional):</strong> S3 GetObject, PutObject, DeleteObject operations. Detect suspicious data access patterns (exfiltration attempts).</li>
+            <li><strong>VPC Flow Logs:</strong> Network traffic between EC2 instances, VPCs, external IPs. Detect unusual internal traffic (lateral movement), external scanning, data exfiltration.</li>
+            <li><strong>DNS Logs:</strong> DNS queries from instances. Detect DNS tunneling (data exfiltration via DNS), unusual domain requests.</li>
+            <li><strong>Optional Features (Additional Cost):</strong>
+                <ul>
+                    <li><strong>EKS Audit Logs:</strong> Kubernetes API calls in EKS clusters. Detect suspicious Kubernetes activity.</li>
+                    <li><strong>RDS & Aurora Logs:</strong> Database activity (logins, queries, users). Detect unauthorized database access.</li>
+                    <li><strong>EBS Volumes:</strong> Analyze snapshots for malware, unauthorized changes.</li>
+                    <li><strong>Lambda Logs:</strong> Function invocation patterns, code execution anomalies.</li>
+                    <li><strong>S3 Data Events:</strong> Object access patterns (covered above, part of optional features).</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>Threat Detection & Findings</h3>
+        <ul>
+            <li><strong>Machine Learning:</strong> GuardDuty learns normal baseline behavior for your accounts. Detects deviations (anomalies).</li>
+            <li><strong>Third-Party Intelligence:</strong> Uses threat intelligence feeds (known malicious IPs, domains, etc.) to match against activity.</li>
+            <li><strong>Findings:</strong> GuardDuty generates findings when suspicious activity detected. Each finding includes severity (Low, Medium, High), type (Trojan, CryptoCurrency, etc.), and context.</li>
+            <li><strong>Cryptocurrency Attack Detection:</strong> Detects EC2 instances participating in cryptocurrency mining (unusual CPU, network patterns).</li>
+        </ul>
+
+        <h3>Enabling & Notifications</h3>
+        <ul>
+            <li><strong>One-Click Enable:</strong> Enable in GuardDuty console. No configuration needed.</li>
+            <li><strong>Free Trial:</strong> 30-day free trial for new GuardDuty users. After trial, charged based on data ingested and resources monitored.</li>
+            <li><strong>EventBridge Integration:</strong> GuardDuty findings automatically sent to EventBridge. Create EventBridge rules to react to findings:</li>
+            <ul>
+                <li>Target Lambda function: Auto-remediate threats (isolate instance, revoke credentials).</li>
+                <li>Target SNS topic: Send notifications to security team.</li>
+                <li>Target S3: Log findings to S3 for long-term audit.</li>
+            </ul>
+            <li><strong>Exam Pattern:</strong> "Detect malicious activity," "threat detection," "anomaly detection," "unusual API calls" → GuardDuty.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Amazon Inspector — Automated Security Assessments</h2>
+
+        <h3>Service Overview</h3>
+        <p>Amazon Inspector automatically assesses resources for security vulnerabilities and compliance issues. It uses agents and API assessments to identify unintended network accessibility, software vulnerabilities, and missing security patches. Findings are prioritized by risk score.</p>
+
+        <h3>Assessment Targets</h3>
+
+        <h4>EC2 Instances</h4>
+        <ul>
+            <li><strong>Requirement:</strong> EC2 instance must have AWS Systems Manager Agent installed.</li>
+            <li><strong>Assessment:</strong> Inspector analyzes OS for known vulnerabilities (comparing against CVE databases), security patches, and network accessibility.</li>
+            <li><strong>Findings:</strong> Example findings:
+                <ul>
+                    <li>"OS Package Vulnerability (High)": OpenSSL 1.0.2 has known vulnerability CVE-2020-1234. Patch available in version 1.0.3.</li>
+                    <li>"Network Reachability (Medium)": SSH (port 22) accessible from 0.0.0.0/0 (entire internet). Security group overly permissive.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h4>Container Images (in Amazon ECR)</h4>
+        <ul>
+            <li><strong>When:</strong> Automatically assessed when container image pushed to ECR.</li>
+            <li><strong>Assessment:</strong> Scanner analyzes image layers for known software vulnerabilities in dependencies (packages, libraries).</li>
+            <li><strong>Findings:</strong> "Package Vulnerability (Critical)": Flask 1.0.2 has SQL injection vulnerability. Use Flask 1.1.0 or later.</li>
+            <li><strong>Prevention:</strong> Prevent deployment of images with critical vulnerabilities.</li>
+        </ul>
+
+        <h4>Lambda Functions</h4>
+        <ul>
+            <li><strong>When:</strong> Assessed when function deployed or code updated.</li>
+            <li><strong>Assessment:</strong> Inspector analyzes function code and dependencies for known vulnerabilities.</li>
+            <li><strong>Findings:</strong> "Dependency Vulnerability (High)": requests library 2.7.0 has SSL verification bypass. Use 2.28.0 or later.</li>
+        </ul>
+
+        <h3>Risk Scoring & Prioritization</h3>
+        <ul>
+            <li><strong>Risk Score:</strong> Each finding assigned a risk score (1-100, or Low/Medium/High/Critical). Score based on severity of vulnerability, exploitability, exposure (e.g., if vulnerable service is publicly exposed).</li>
+            <li><strong>Prioritization:</strong> Focus remediation on high-risk findings first. Critical vulnerabilities in publicly accessible services are highest priority.</li>
+            <li><strong>Continuous Scanning:</strong> Inspector continuously scans (on schedule). As patches released or new images deployed, findings update.</li>
+        </ul>
+
+        <h3>Reporting & Integration</h3>
+        <ul>
+            <li><strong>AWS Security Hub:</strong> Inspector findings exported to Security Hub for centralized security dashboard.</li>
+            <li><strong>EventBridge:</strong> Findings sent to EventBridge. Create rules to trigger Lambda functions for auto-remediation (install patches, update dependencies).</li>
+            <li><strong>Exam Pattern:</strong> "Identify software vulnerabilities," "assessment of running resources," "patch management," "container image scanning" → Inspector.</li>
+        </ul>
+
+        <h3>Key Limitation</h3>
+        <p><strong>Running Resources Only:</strong> Inspector assesses only running EC2 instances, deployed Lambda functions, and images in ECR. It does NOT scan:
+        <ul>
+            <li>Stopped EC2 instances (no ongoing assessment).</li>
+            <li>Code repositories (use CodeGuru for static code analysis).</li>
+            <li>Archived/inactive container images.</li>
+        </ul>
+        For continuous code analysis, use Amazon CodeGuru (static analysis) or third-party SAST tools.</p>
+
+        <hr class="soft-divide">
+        <h2>Amazon Macie — Data Discovery & Protection</h2>
+
+        <h3>Service Overview</h3>
+        <p>Amazon Macie is a fully managed data security and privacy service using machine learning and pattern matching to discover, classify, and protect sensitive data in AWS. It automatically identifies personally identifiable information (PII), financial data, intellectual property, and other sensitive content stored in S3 buckets.</p>
+
+        <h3>Key Capabilities</h3>
+        <ul>
+            <li><strong>Sensitive Data Discovery:</strong> Automatically scans S3 buckets to find sensitive data types. Built-in classifiers for:
+                <ul>
+                    <li>Personally Identifiable Information (PII): Names, email addresses, phone numbers, social security numbers, credit card numbers, passport numbers, etc.</li>
+                    <li>Financial Data: Bank account numbers, credit card numbers, routing numbers, tax identifiers.</li>
+                    <li>Intellectual Property: Proprietary algorithms, source code, technical documentation.</li>
+                    <li>Custom Classifiers: Define custom patterns to match your organization's sensitive data types.</li>
+                </ul>
+            </li>
+            <li><strong>Classification & Inventory:</strong> Macie creates inventory of S3 objects by sensitivity level (public, internal, sensitive, highly sensitive). Detailed reports on data exposure risks.</li>
+            <li><strong>Data Exposure Alerts:</strong> Detect and alert on suspicious S3 bucket policies or access patterns (e.g., bucket accidentally made public, unusual access from external IP).</li>
+            <li><strong>Integration with Security Services:</strong> Findings sent to EventBridge and Security Hub. Trigger automated responses (restrict bucket access, quarantine sensitive data, notify security team).</li>
+        </ul>
+
+        <h3>Use Cases</h3>
+        <ul>
+            <li><strong>Compliance & Privacy:</strong> Ensure no PII accidentally exposed in S3. Audit data governance and privacy controls.</li>
+            <li><strong>Data Breach Prevention:</strong> Alert if sensitive data bucket becomes publicly accessible. Trigger lockdown before data breached.</li>
+            <li><strong>Data Classification:</strong> Automatically categorize S3 data by sensitivity for access control policies.</li>
+            <li><strong>Exam Pattern:</strong> "Identify sensitive data," "PII discovery," "data protection," "S3 data classification" → Macie.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Exam-Style Questions & Answers</h2>
+
+        <ol>
+            <li>
+                <strong>Q: Your company stores customer data encrypted with KMS in S3 and RDS. You need to share encrypted snapshots with a partner company in another AWS account. What's the secure process?</strong>
+                <br><br>
+                <strong>A:</strong> (1) In your account, create custom KMS key policy allowing partner account to use the key (Decrypt, DescribeKey). (2) Share encrypted RDS snapshot with partner account. (3) Partner account creates IAM policy allowing their role to call KMS Decrypt on your key (via key ARN). (4) Partner copies snapshot and encrypts with their own CMK. (5) Partner can now decrypt and use snapshot. Key points: key policy + IAM policy combination, never expose key material, partner owns copy encrypted with their key.
+            </li>
+
+            <li>
+                <strong>Q: A healthcare organization stores patient medical records (PII) in S3. They need to automatically detect if any records are accidentally exposed publicly. Which AWS services?</strong>
+                <br><br>
+                <strong>A:</strong> Amazon Macie to discover and classify sensitive data (PII) in S3. Macie scans buckets, identifies medical records with PII, alerts if bucket becomes public. Integrate with EventBridge → trigger Lambda to restrict bucket access immediately. Also use AWS Config rule to continuously check for public S3 bucket access. Combination: Macie (detection) + EventBridge (automation) + AWS Config (compliance).
+            </li>
+
+            <li>
+                <strong>Q: Your application was hit by a Layer 7 DDoS attack that lasted 4 hours. Infrastructure auto-scaled, consuming extra compute resources. Bill increased by $5,000. What should you have enabled to prevent unexpected charges?</strong>
+                <br><br>
+                <strong>A:</strong> AWS Shield Advanced ($3,000/month). Provides cost protection against DDoS-induced scaling charges. Shield Advanced would have covered the $5,000 overcharge, limiting your cost impact to just the Shield subscription. Also, enable WAF with Shield Advanced for automatic Layer 7 attack mitigation (prevents attack from reaching infrastructure, avoiding scaling entirely).
+            </li>
+
+            <li>
+                <strong>Q: An EC2 instance is running outdated software with known vulnerabilities. You want to automatically scan for vulnerabilities and get notified. Which service?</strong>
+                <br><br>
+                <strong>A:</strong> Amazon Inspector. Requires Systems Manager Agent on EC2. Inspector automatically scans for OS vulnerabilities (CVE databases), compares against known patches, generates findings with risk scores. Integrate with EventBridge to trigger Lambda for auto-patching when high-risk vulnerability found. Alternative: AWS Systems Manager Patch Manager for automated patching without vulnerability assessment.
+            </li>
+
+            <li>
+                <strong>Q: You need to rotate database passwords automatically every 30 days. Applications must always use current credentials. Where should credentials be stored?</strong>
+                <br><br>
+                <strong>A:</strong> AWS Secrets Manager. Store database password in Secrets Manager. Configure automatic rotation (Lambda function updates password in RDS). Applications retrieve current secret from Secrets Manager (not hardcoded). When rotation triggered, Secrets Manager updates both the secret and the RDS database instance. Applications automatically use updated password on next retrieval.
+            </li>
+
+            <li>
+                <strong>Q: An attacker scanned your VPC and found an EC2 instance in a private subnet with SSH accessible from 0.0.0.0/0. How is this possible? How do you prevent it?</strong>
+                <br><br>
+                <strong>A:</strong> Security group allows SSH (port 22) from anywhere. Even though instance is in private subnet, the security group rule is egregiously permissive. Use AWS Firewall Manager to centrally define security group policies: only allow SSH from bastion host security group or specific IP range. Firewall Manager applies policy organization-wide. Also use AWS Config rule to audit security groups and alert on 0.0.0.0/0 rules.
+            </li>
+
+            <li>
+                <strong>Q: Your company detects unusual API calls in CloudTrail (new IAM role creation from unfamiliar IP, deployment to production region not normally used). What AWS service should automatically detect and alert you?</strong>
+                <br><br>
+                <strong>A:</strong> Amazon GuardDuty. Analyzes CloudTrail logs using machine learning to detect anomalies (unusual API patterns, unauthorized deployments, unusual access). Generates findings when suspicious activity detected. Integrate with EventBridge to send alerts to SNS or trigger Lambda for auto-remediation (quarantine role, audit logs). GuardDuty 30-day free trial available.
+            </li>
+
+            <li>
+                <strong>Q: A web application needs T<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AWS Security — Encryption, KMS, WAF, Shield, GuardDuty, Inspector, Macie</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <div class="container2">
+        <div class="header">
+            <h1>AWS Security: Encryption, Key Management, and Threat Protection</h1>
+            <hr>
+        </div>
+
+        <h2>Overview</h2>
+        <p>This section covers AWS security architecture and services essential for protecting data, infrastructure, and applications. Topics include encryption strategies (in-flight, server-side, client-side), key management via AWS KMS, network and application layer protection (WAF, Shield), intelligent threat detection (GuardDuty, Inspector, Macie), and secrets management. Understanding these services and how they work together is critical for Solutions Architect exams and real-world security posture.</p>
+
+        <hr class="soft-divide">
+        <h2>OSI Model & Attack Surface — Security Layers Context</h2>
+        <p>Understanding the OSI (Open Systems Interconnection) model provides context for which AWS services protect which layers against common attacks:</p>
+
+        <table style="width:100%; border-collapse:collapse; margin:10px 0;">
+            <tr style="background:#f0f0f0;">
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Layer</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Name</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Examples</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Common Attacks</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">AWS Protection</th>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Layer 7</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Application</td>
+                <td style="border:1px solid #ddd; padding:8px;">HTTP/HTTPS, DNS, SMTP, FTP</td>
+                <td style="border:1px solid #ddd; padding:8px;">SQL injection, Cross-Site Scripting (XSS), DDoS (application-layer flood), API abuse</td>
+                <td style="border:1px solid #ddd; padding:8px;">AWS WAF, Shield Advanced (Layer 7), API Gateway throttling</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Layer 6</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Presentation</td>
+                <td style="border:1px solid #ddd; padding:8px;">Encryption/Decryption, Compression</td>
+                <td style="border:1px solid #ddd; padding:8px;">Man-in-the-Middle (MITM) on encrypted traffic, encryption downgrade attacks</td>
+                <td style="border:1px solid #ddd; padding:8px;">TLS/SSL certificates (ACM), enforced encryption policies</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Layer 5</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Session</td>
+                <td style="border:1px solid #ddd; padding:8px;">Session management, authentication</td>
+                <td style="border:1px solid #ddd; padding:8px;">Session hijacking, privilege escalation, credential theft</td>
+                <td style="border:1px solid #ddd; padding:8px;">IAM, Cognito, Secrets Manager, KMS (for credential encryption)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Layer 4</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Transport</td>
+                <td style="border:1px solid #ddd; padding:8px;">TCP, UDP, SCTP</td>
+                <td style="border:1px solid #ddd; padding:8px;">SYN floods, UDP reflection attacks, port scanning</td>
+                <td style="border:1px solid #ddd; padding:8px;">Shield (Standard/Advanced), Network ACLs, Security Groups (stateful), NLB protection</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Layer 3</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Network</td>
+                <td style="border:1px solid #ddd; padding:8px;">IP (IPv4, IPv6), ICMP, routing</td>
+                <td style="border:1px solid #ddd; padding:8px;">IP spoofing, routing attacks, ICMP floods, fragmentation attacks</td>
+                <td style="border:1px solid #ddd; padding:8px;">Shield (DDoS mitigation), Network ACLs, route tables, AWS Network Firewall</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Layer 2</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Data Link</td>
+                <td style="border:1px solid #ddd; padding:8px;">Ethernet, ARP, MAC addressing</td>
+                <td style="border:1px solid #ddd; padding:8px;">ARP spoofing, MAC flooding, VLAN hopping</td>
+                <td style="border:1px solid #ddd; padding:8px;">VPC isolation, ENI security, AWS Outposts (physical isolation)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Layer 1</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Physical</td>
+                <td style="border:1px solid #ddd; padding:8px;">Cables, switches, electrical signals</td>
+                <td style="border:1px solid #ddd; padding:8px;">Physical intrusion, cable tapping, equipment theft</td>
+                <td style="border:1px solid #ddd; padding:8px;">AWS data center security, physical access controls, Outposts (on-premises hardware)</td>
+            </tr>
+        </table>
+
+        <p style="font-style: italic;"><strong>Exam Context:</strong> When a question mentions "Layer 3/4 DDoS" (volumetric), think Shield. "Layer 7 DDoS" (application-layer), think WAF. "Encryption in transit," think TLS/ACM. "Encryption at rest," think KMS.</p>
+
+        <hr class="soft-divide">
+        <h2>Data Encryption — Three Strategies</h2>
+
+        <h3>Why Encryption Matters</h3>
+        <p>Encryption protects data confidentiality (only authorized parties can read) and can provide integrity assurance. AWS security best practice: always encrypt sensitive data. Three main encryption strategies exist:</p>
+
+        <h3>1. Encryption in Flight (In Transit)</h3>
+        <p><strong>Definition:</strong> Data is encrypted before transmission and decrypted upon receipt. Protects data while moving across networks.</p>
+        <ul>
+            <li><strong>Mechanism:</strong> Transport Layer Security (TLS) protocol encrypts HTTP traffic into HTTPS. Uses public-key cryptography for key exchange, then symmetric encryption for bulk data.</li>
+            <li><strong>Protection Against:</strong> Man-in-the-Middle (MITM) attacks where attacker intercepts network traffic between client and server.</li>
+            <li><strong>Implementation:</strong> Use HTTPS (TLS 1.2+). AWS Certificate Manager (ACM) manages TLS certificates. API Gateway, ALB, CloudFront all support HTTPS.</li>
+            <li><strong>Certificate Validation:</strong> Client verifies server's TLS certificate is valid and issued by trusted Certificate Authority. Prevents attackers from impersonating legitimate servers.</li>
+            <li><strong>Exam Tip:</strong> "Protect data over the network," "prevent MITM attacks" → encryption in flight / HTTPS / TLS.</li>
+        </ul>
+
+        <h3>2. Server-Side Encryption at Rest</h3>
+        <p><strong>Definition:</strong> Data is encrypted on the server after receipt and before storage. Data is encrypted while stored on disk. Server decrypts before sending to client. Server (not client) manages encryption keys.</p>
+        <ul>
+            <li><strong>Mechanism:</strong> When data arrives at AWS service, it's encrypted using a key (usually held in AWS KMS). Stored in encrypted form on disk. When requested, server decrypts using the key before returning to client.</li>
+            <li><strong>Key Management:</strong> Keys stored in KMS (hardware security modules). Server has access to keys via IAM roles. Application does not directly manage keys.</li>
+            <li><strong>Pros:</strong> Transparent to application. Data protected at rest. Reduces management burden (AWS manages keys).</li>
+            <li><strong>Cons:</strong> Server has access to decrypted data (insider threat risk). If server is compromised, attacker can decrypt data.</li>
+            <li><strong>AWS Services:</strong> S3 (SSE-S3, SSE-KMS), RDS, DynamoDB, EBS, Glacier all support server-side encryption at rest.</li>
+            <li><strong>Exam Tip:</strong> "Encrypt data at rest," "server manages encryption" → server-side encryption / KMS.</li>
+        </ul>
+
+        <h3>3. Client-Side Encryption</h3>
+        <p><strong>Definition:</strong> Data is encrypted by the client before sending to server. Server never sees unencrypted data. Client manages encryption keys and decryption.</p>
+        <ul>
+            <li><strong>Mechanism:</strong> Client encrypts data locally, sends encrypted blob to AWS service. Service stores encrypted blob. Client later retrieves encrypted blob, decrypts locally. Server never has access to unencrypted data.</li>
+            <li><strong>Key Management:</strong> Client completely responsible for key management. Keys never sent to AWS (not stored in KMS). Client must securely manage and backup keys.</li>
+            <li><strong>Pros:</strong> Strongest security. Server compromise doesn't expose data (server only has encrypted blobs). Even AWS cannot decrypt data without key.</li>
+            <li><strong>Cons:</strong> Application complexity (must implement encryption/decryption). Key management burden on client. If client loses keys, data is unrecoverable.</li>
+            <li><strong>AWS Services:</strong> S3 (client-side encryption libraries), DynamoDB Encryption Client, custom applications using KMS API.</li>
+            <li><strong>Use Case:</strong> Highly sensitive data (personal health information, financial records, trade secrets) where organization wants absolute control. Multi-tenant SaaS where each customer's data is encrypted with customer's key.</li>
+            <li><strong>Exam Tip:</strong> "Client manages encryption," "application encrypts before sending," "server cannot decrypt" → client-side encryption.</li>
+        </ul>
+
+        <h3>Encryption Methods Comparison</h3>
+        <table style="width:100%; border-collapse:collapse; margin:10px 0;">
+            <tr style="background:#f0f0f0;">
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Aspect</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Encryption in Flight</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Server-Side Encryption</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Client-Side Encryption</th>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Protection Scope</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Network transmission</td>
+                <td style="border:1px solid #ddd; padding:8px;">Data at rest on disk</td>
+                <td style="border:1px solid #ddd; padding:8px;">Data at rest AND in transit</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Key Management</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">TLS protocol (automatic)</td>
+                <td style="border:1px solid #ddd; padding:8px;">AWS KMS (AWS manages)</td>
+                <td style="border:1px solid #ddd; padding:8px;">Client (full responsibility)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Protects Against</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">MITM attacks</td>
+                <td style="border:1px solid #ddd; padding:8px;">Disk theft, insider threats (partially)</td>
+                <td style="border:1px solid #ddd; padding:8px;">Disk theft, insider threats, compromised servers</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Application Complexity</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Low (use HTTPS)</td>
+                <td style="border:1px solid #ddd; padding:8px;">Low (transparent to app)</td>
+                <td style="border:1px solid #ddd; padding:8px;">High (implement crypto)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Use Case</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">All web/API traffic</td>
+                <td style="border:1px solid #ddd; padding:8px;">Standard data protection</td>
+                <td style="border:1px solid #ddd; padding:8px;">Highly sensitive data</td>
+            </tr>
+        </table>
+
+        <hr class="soft-divide">
+        <h2>AWS Key Management Service (KMS)</h2>
+
+        <h3>Service Overview</h3>
+        <p>AWS Key Management Service (KMS) is a managed encryption key service. Whenever you hear "encryption" in AWS, KMS is likely involved. KMS creates and manages encryption keys (called Customer Master Keys or CMKs) used to encrypt/decrypt data. KMS integrates seamlessly into most AWS services (S3, RDS, DynamoDB, EBS, Lambda, Secrets Manager, etc.). You never get access to the actual key material—all encryption/decryption happens through KMS API calls.</p>
+
+        <h3>Key Types in KMS</h3>
+
+        <h4>Symmetric Keys (AES-256)</h4>
+        <ul>
+            <li><strong>Definition:</strong> Single key used for both encryption and decryption. Also called Secret Key encryption.</li>
+            <li><strong>Key Access:</strong> You never get direct access to the key material. All encryption/decryption happens via KMS API calls. You reference the key by Key ID or ARN.</li>
+            <li><strong>Performance:</strong> Fast encryption/decryption. No computational overhead on application side.</li>
+            <li><strong>Use Cases:</strong> Default choice for most AWS services (S3, RDS, DynamoDB, EBS). Data stored at rest in AWS.</li>
+            <li><strong>Exam Tip:</strong> When question mentions "encrypt data with KMS," it's symmetric encryption unless otherwise specified.</li>
+        </ul>
+
+        <h4>Asymmetric Keys (RSA & ECC Key Pairs)</h4>
+        <ul>
+            <li><strong>Definition:</strong> Public-private key pair. Public key encrypts data; private key decrypts. Or public key verifies signatures; private key signs.</li>
+            <li><strong>Public Key Download:</strong> You can download and use the public key outside of AWS (e.g., encrypt data on-premises, send to AWS). Private key stays in KMS (never exposed).</li>
+            <li><strong>Use Cases:</strong> Encryption outside AWS. Sign/verify operations (digital signatures). When you need to encrypt data without calling KMS API (e.g., edge devices, partner applications).</li>
+            <li><strong>Example Scenario:</strong> Partner sends you encrypted data. They use your KMS public key to encrypt. You use KMS private key (via API) to decrypt in AWS.</li>
+            <li><strong>Exam Tip:</strong> "Encrypt data outside AWS," "partner encryption," "digital signatures" → asymmetric keys.</li>
+        </ul>
+
+        <h3>KMS Key Ownership & Costs</h3>
+        <ul>
+            <li><strong>AWS Owned Keys (Free):</strong> Managed by AWS. Used for services like SSE-S3 (S3 default encryption), SSE-SQS (SQS encryption), SSE-DDB (DynamoDB encryption). You cannot control, rotate, or view key policies.</li>
+            <li><strong>AWS Managed Keys (Free):</strong> Created and managed by AWS on your behalf. Named with format <code>aws/service-name</code> (e.g., <code>aws/s3</code>, <code>aws/rds</code>). AWS handles rotation, key policies are fixed. Used for integrated KMS encryption in services.</li>
+            <li><strong>Customer Managed Keys (CMKs):</strong> You create and manage in KMS. Cost: $1 per month per key (regardless of usage). Plus API call costs ($0.03 per 10,000 calls). You have full control over key policies, rotation, and access.</li>
+            <li><strong>Imported Keys (Customer Managed):</strong> Import key material from external source. Cost: $1 per month. Useful for key migration or keys generated outside AWS.</li>
+            <li><strong>Exam Tip:</strong> For cost-optimization, use AWS managed keys where possible. Use customer managed keys only when you need custom access control or rotation policies.</li>
+        </ul>
+
+        <h3>Automatic Key Rotation</h3>
+        <p>KMS can automatically rotate Customer Managed Keys to protect against potential key compromise:</p>
+        <ul>
+            <li><strong>Automatic Rotation:</strong> AWS KMS rotates the key material annually (every 365 days). New key version generated; old versions retained for decryption of previously encrypted data.</li>
+            <li><strong>Transparent to Applications:</strong> Applications reference the key by ID; KMS automatically uses the correct version to decrypt old data (using old key version) and encrypt new data (using new key version).</li>
+            <li><strong>Rotation Policy:</strong> Automatic rotation enabled by default for customer managed keys. Can be disabled if needed (not recommended).</li>
+            <li><strong>Manual Rotation:</strong> Create a new key version manually anytime. Useful before suspected compromise.</li>
+            <li><strong>Imported Keys:</strong> Automatic rotation not supported. You must manually rotate imported keys (create new key, remove old key material).</li>
+            <li><strong>Exam Tip:</strong> "Regularly rotate encryption keys" → enable KMS automatic key rotation.</li>
+        </ul>
+
+        <h3>KMS Key Policies</h3>
+        <p>Key Policies control who can use and manage KMS keys. Similar to S3 bucket policies but with a critical difference: a key policy is required. Without a key policy, no one (including the root account) can use the key.</p>
+        <ul>
+            <li><strong>Default Key Policy:</strong> Created automatically when you create a customer managed key. Grants complete access to the key to the root user (AWS account). This means the entire AWS account has access; further access control via IAM.</li>
+            <li><strong>Custom Key Policy:</strong> Define explicit principals (users, roles, other AWS accounts) who can call KMS operations (Decrypt, Encrypt, GenerateDataKey, DescribeKey, etc.). Define who can administer the key (update policies, schedule deletion).</li>
+            <li><strong>Root User Exception:</strong> Even if a key policy denies access, the root user (AWS account root access keys) can update the key policy to grant themselves access. This is intentional for emergency access.</li>
+            <li><strong>Cross-Account Access:</strong> Define key policy allowing another AWS account (or specific role in another account) to use the key. Combined with IAM policy in target account, enables encrypted cross-account data sharing.</li>
+            <li><strong>Exam Tip:</strong> "Cross-account encryption," "grant another account access to key" → custom key policy + target account IAM policy.</li>
+        </ul>
+
+        <h3>KMS Multi-Region Keys</h3>
+        <p>KMS Multi-Region Keys simplify managing encryption keys across AWS regions for applications and services that span multiple regions:</p>
+        <ul>
+            <li><strong>Purpose:</strong> Create a primary key in one region and replicate to other regions. Replicated keys are standalone (independent) in each region. All regions have read/write capability.</li>
+            <li><strong>Use Cases:</strong>
+                <ul>
+                    <li><strong>Global Disaster Recovery:</strong> Encrypt backups in primary region with primary key. If primary region fails, replicas in DR regions can decrypt backups without cross-region API calls (lower latency, no dependency on primary region).</li>
+                    <li><strong>Multi-Region Databases:</strong> Encrypt database replicas with multi-region keys. Replicas in each region use local key version for encryption/decryption (no cross-region traffic).</li>
+                    <li><strong>Global Applications:</strong> Applications in different regions encrypt/decrypt with local replica key (low latency). Keys automatically sync.</li>
+                </ul>
+            </li>
+            <li><strong>Replication Behavior:</strong> When you promote a replica to primary (e.g., after primary region failure), the replica becomes the new primary. Other replicas now sync with the new primary.</li>
+            <li><strong>Cost:</strong> $1 per month per multi-region key (covers primary + all replicas).</li>
+            <li><strong>Exam Tip:</strong> "Multi-region encryption," "failover to replica region" → KMS multi-region keys.</li>
+        </ul>
+
+        <h3>KMS Integration Patterns</h3>
+
+        <h4>Cross-Account Snapshot Sharing with Encryption</h4>
+        <p><strong>Scenario:</strong> Account A has EBS snapshots encrypted with KMS key. Account B needs to access and use the snapshots.</p>
+        <ul>
+            <li><strong>Step 1:</strong> In Account A, create/select snapshot encrypted with KMS

@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snake | Barry Babbitt</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../public/styles.css">
+  <style>
+    .game-wrapper {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 24px 20px 60px;
+    }
+
+    .game-container {
+      position: relative;
+      background: #000;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid rgba(111,183,173,0.15);
+      margin-bottom: 24px;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .controls-box {
+      background: rgba(47,75,79,0.3);
+      border: 1px solid rgba(111,183,173,0.12);
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+    }
+
+    .controls-box h3 {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+
+    .keys-row {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .key-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    kbd {
+      display: inline-block;
+      background: rgba(79,163,209,0.12);
+      border: 1px solid rgba(79,163,209,0.25);
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-family: 'Inter', monospace;
+      font-size: 0.72rem;
+      color: var(--accent);
+      min-width: 28px;
+      text-align: center;
+    }
+
+    .settings-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .setting-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .setting-group label {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .setting-group select {
+      background: rgba(47,75,79,0.5);
+      border: 1px solid rgba(111,183,173,0.2);
+      border-radius: 4px;
+      padding: 4px 8px;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.78rem;
+    }
+
+    .btn-start {
+      display: inline-block;
+      background: var(--accent);
+      color: #0a192f;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 24px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .btn-start:hover { opacity: 0.85; }
+
+    .game-status {
+      text-align: center;
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    .high-score {
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--accent);
+      margin-top: 4px;
+    }
+
+    @media (max-width: 600px) {
+      .game-wrapper { padding: 16px 0 40px; }
+      .settings-row { gap: 8px; }
+      .btn-start { width: 100%; padding: 10px 24px; }
+      .controls-box { padding: 12px 14px; }
+      .controls-box h3 { font-size: 0.78rem; }
+      .key-item { font-size: 0.74rem; }
+      .keys-row { gap: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="case-study">
+
+  <a href="../index.html#projects" class="back-link">
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    Back to Portfolio
+  </a>
+
+  <div class="project-hero">
+    <h1>Snake</h1>
+    <p class="hero-desc">
+      Classic Snake — originally built with Python Turtle, ported to JavaScript Canvas for the browser.
+      Eat food to grow, avoid the walls and your own tail.
+    </p>
+    <div class="hero-tags">
+      <span class="tag">Python</span>
+      <span class="tag">Turtle</span>
+      <span class="tag">OOP</span>
+      <span class="tag">JavaScript</span>
+      <span class="tag">Canvas</span>
+    </div>
+    <a href="https://github.com/bbabbitt1/PythonProjects/tree/main/Basic-Games/Snake" target="_blank" rel="noopener noreferrer" class="github-cta">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+      View Python Source
+    </a>
+  </div>
+
+  <div class="game-wrapper">
+    <div class="controls-box">
+      <h3>Controls</h3>
+      <div class="keys-row">
+        <div class="key-item"><kbd>&uarr;</kbd> Up</div>
+        <div class="key-item"><kbd>&darr;</kbd> Down</div>
+        <div class="key-item"><kbd>&larr;</kbd> Left</div>
+        <div class="key-item"><kbd>&rarr;</kbd> Right</div>
+      </div>
+    </div>
+
+    <div class="settings-row">
+      <div class="setting-group">
+        <label>Speed:</label>
+        <select id="speed">
+          <option value="120">Slow</option>
+          <option value="80" selected>Normal</option>
+          <option value="50">Fast</option>
+        </select>
+      </div>
+      <button class="btn-start" id="start-btn">Start Game</button>
+    </div>
+
+    <div class="game-container">
+      <canvas id="snake" width="600" height="600"></canvas>
+    </div>
+    <p class="game-status" id="status">Press Start Game to play</p>
+    <p class="high-score" id="high-score"></p>
+  </div>
+
+</div>
+
+<script>
+const canvas = document.getElementById('snake');
+const ctx = canvas.getContext('2d');
+const statusEl = document.getElementById('status');
+const highScoreEl = document.getElementById('high-score');
+const startBtn = document.getElementById('start-btn');
+
+const SIZE = 600;
+const GRID = 20;
+const CELLS = SIZE / GRID;
+const BOUNDARY = 280;
+
+let snake = [];
+let direction = { x: 1, y: 0 };
+let nextDirection = { x: 1, y: 0 };
+let food = { x: 0, y: 0 };
+let score = 0;
+let highScore = parseInt(localStorage.getItem('snakeHighScore') || '0');
+let running = false;
+let gameOver = false;
+let interval = null;
+let tickRate = 80;
+
+if (highScore > 0) highScoreEl.textContent = `Best: ${highScore}`;
+
+const spawnFood = () => {
+  let valid = false;
+  while (!valid) {
+    food.x = Math.floor(Math.random() * (CELLS - 2)) + 1;
+    food.y = Math.floor(Math.random() * (CELLS - 2)) + 1;
+    valid = !snake.some(seg => seg.x === food.x && seg.y === food.y);
+  }
+};
+
+const reset = () => {
+  const mid = Math.floor(CELLS / 2);
+  snake = [
+    { x: mid, y: mid },
+    { x: mid - 1, y: mid },
+    { x: mid - 2, y: mid }
+  ];
+  direction = { x: 1, y: 0 };
+  nextDirection = { x: 1, y: 0 };
+  score = 0;
+  gameOver = false;
+  spawnFood();
+};
+
+const update = () => {
+  direction = { ...nextDirection };
+
+  const head = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
+
+  // Boundary check
+  if (head.x < 0 || head.x >= CELLS || head.y < 0 || head.y >= CELLS) {
+    return endGame();
+  }
+
+  // Self-collision
+  if (snake.some(seg => seg.x === head.x && seg.y === head.y)) {
+    return endGame();
+  }
+
+  snake.unshift(head);
+
+  // Food collision
+  if (head.x === food.x && head.y === food.y) {
+    score++;
+    spawnFood();
+  } else {
+    snake.pop();
+  }
+
+  draw();
+};
+
+const draw = () => {
+  // Background
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, SIZE, SIZE);
+
+  // Grid lines (subtle)
+  ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+  ctx.lineWidth = 0.5;
+  for (let i = 0; i <= CELLS; i++) {
+    ctx.beginPath();
+    ctx.moveTo(i * GRID, 0);
+    ctx.lineTo(i * GRID, SIZE);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(0, i * GRID);
+    ctx.lineTo(SIZE, i * GRID);
+    ctx.stroke();
+  }
+
+  // Snake
+  snake.forEach((seg, i) => {
+    const alpha = 1 - (i / snake.length) * 0.5;
+    ctx.fillStyle = i === 0 ? '#D9FFF6' : `rgba(111,183,173,${alpha})`;
+    ctx.fillRect(seg.x * GRID + 1, seg.y * GRID + 1, GRID - 2, GRID - 2);
+  });
+
+  // Food
+  ctx.fillStyle = '#4FA3D1';
+  ctx.beginPath();
+  ctx.arc(food.x * GRID + GRID / 2, food.y * GRID + GRID / 2, GRID / 2 - 2, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Score
+  ctx.fillStyle = 'rgba(255,255,255,0.5)';
+  ctx.font = 'bold 18px "Courier New", monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText(`Score: ${score}`, SIZE / 2, 24);
+};
+
+const endGame = () => {
+  running = false;
+  gameOver = true;
+  clearInterval(interval);
+
+  if (score > highScore) {
+    highScore = score;
+    localStorage.setItem('snakeHighScore', String(highScore));
+  }
+
+  draw();
+  ctx.fillStyle = '#4FA3D1';
+  ctx.font = 'bold 36px "Courier New", monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('GAME OVER!', SIZE / 2, SIZE / 2 + 12);
+
+  statusEl.textContent = `Game Over — Score: ${score}`;
+  highScoreEl.textContent = `Best: ${highScore}`;
+  startBtn.textContent = 'Play Again';
+};
+
+// Input
+document.addEventListener('keydown', e => {
+  if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) e.preventDefault();
+
+  switch (e.key) {
+    case 'ArrowUp':
+      if (direction.y !== 1) nextDirection = { x: 0, y: -1 };
+      break;
+    case 'ArrowDown':
+      if (direction.y !== -1) nextDirection = { x: 0, y: 1 };
+      break;
+    case 'ArrowLeft':
+      if (direction.x !== 1) nextDirection = { x: -1, y: 0 };
+      break;
+    case 'ArrowRight':
+      if (direction.x !== -1) nextDirection = { x: 1, y: 0 };
+      break;
+  }
+});
+
+// Initial draw
+reset();
+draw();
+
+startBtn.addEventListener('click', () => {
+  if (running) return;
+
+  tickRate = parseInt(document.getElementById('speed').value);
+  reset();
+  running = true;
+  startBtn.textContent = 'Playing...';
+  statusEl.textContent = 'Use arrow keys to steer';
+  interval = setInterval(update, tickRate);
+});
+</script>
+
+</body>
+</html>

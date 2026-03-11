@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Strokes Gained Calculator | Barry Babbitt</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../public/styles.css">
+</head>
+<body>
+
+<div class="case-study">
+
+  <a href="../index.html#projects" class="back-link">
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    Back to Portfolio
+  </a>
+
+  <!-- HERO -->
+  <div class="project-hero">
+    <h1>Strokes Gained Calculator</h1>
+    <p class="hero-desc">
+      A Python desktop application for tracking golf rounds shot-by-shot and computing real-time strokes gained metrics against PGA Tour benchmarks. Features a star schema SQLite database, live calculation feedback, and Matplotlib analytics visualizations.
+    </p>
+    <div class="hero-tags">
+      <span class="tag">Python</span>
+      <span class="tag">Tkinter</span>
+      <span class="tag">SQLite</span>
+      <span class="tag">Pandas</span>
+      <span class="tag">Matplotlib</span>
+    </div>
+    <a href="https://github.com/bbabbitt1" target="_blank" rel="noopener noreferrer" class="github-cta">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+      View on GitHub
+    </a>
+  </div>
+
+  <!-- ARCHITECTURE -->
+  <div class="case-section">
+    <h2>Architecture</h2>
+    <div class="architecture-diagram">
+      <svg viewBox="0 0 800 240" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#8FAFB0"/>
+          </marker>
+        </defs>
+
+        <!-- Login -->
+        <rect x="30" y="80" width="110" height="60" rx="8" fill="rgba(111,183,173,0.12)" stroke="#6FB7AD" stroke-width="1.5"/>
+        <text x="85" y="106" fill="#6FB7AD" font-size="13" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">Login</text>
+        <text x="85" y="124" fill="#8FAFB0" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">Player Auth</text>
+
+        <!-- Arrow -->
+        <line x1="140" y1="110" x2="180" y2="110" stroke="#8FAFB0" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+        <!-- Round Setup -->
+        <rect x="180" y="80" width="120" height="60" rx="8" fill="rgba(111,183,173,0.12)" stroke="#6FB7AD" stroke-width="1.5"/>
+        <text x="240" y="106" fill="#6FB7AD" font-size="13" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">Round Setup</text>
+        <text x="240" y="124" fill="#8FAFB0" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">Course + Holes</text>
+
+        <!-- Arrow -->
+        <line x1="300" y1="110" x2="340" y2="110" stroke="#8FAFB0" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+        <!-- Shot Entry -->
+        <rect x="340" y="60" width="150" height="100" rx="8" fill="rgba(79,163,209,0.12)" stroke="#4FA3D1" stroke-width="1.5"/>
+        <text x="415" y="88" fill="#4FA3D1" font-size="13" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">Shot Entry</text>
+        <text x="415" y="108" fill="#8FAFB0" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">Live SG Calculation</text>
+        <text x="415" y="122" fill="#8FAFB0" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">Surface + Distance</text>
+        <text x="415" y="136" fill="#8FAFB0" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">In-Memory Cache</text>
+
+        <!-- Arrow -->
+        <line x1="490" y1="110" x2="530" y2="110" stroke="#8FAFB0" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+        <!-- Round Summary -->
+        <rect x="530" y="60" width="130" height="100" rx="8" fill="rgba(217,255,246,0.08)" stroke="#D9FFF6" stroke-width="1.5"/>
+        <text x="595" y="88" fill="#D9FFF6" font-size="13" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">Summary</text>
+        <text x="595" y="108" fill="#8FAFB0" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">GIR / FIR / SG</text>
+        <text x="595" y="122" fill="#8FAFB0" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">Matplotlib Charts</text>
+        <text x="595" y="136" fill="#8FAFB0" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">Atomic DB Save</text>
+
+        <!-- Arrow down to DB -->
+        <line x1="595" y1="160" x2="595" y2="190" stroke="#8FAFB0" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+        <!-- SQLite -->
+        <rect x="540" y="190" width="110" height="40" rx="8" fill="rgba(79,163,209,0.12)" stroke="#4FA3D1" stroke-width="1.5"/>
+        <text x="595" y="214" fill="#4FA3D1" font-size="12" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">SQLite</text>
+
+        <!-- DimAvg lookup arrow -->
+        <line x1="415" y1="160" x2="415" y2="195" stroke="#8FAFB0" stroke-width="1" stroke-dasharray="4 3"/>
+        <rect x="370" y="195" width="90" height="30" rx="6" fill="rgba(79,163,209,0.08)" stroke="#4FA3D1" stroke-width="0.8" opacity="0.6"/>
+        <text x="415" y="214" fill="#8FAFB0" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">DimAvg Lookup</text>
+      </svg>
+    </div>
+    <div class="case-callout">
+      The app uses an in-memory cache pattern — no database writes occur until the round is complete. All shots are persisted atomically in a single transaction on the summary screen.
+    </div>
+  </div>
+
+  <!-- CORE CALCULATION -->
+  <div class="case-section">
+    <h2>Strokes Gained Calculation</h2>
+    <p>The core algorithm computes strokes gained in real-time as each shot is entered. It looks up PGA Tour average strokes-to-hole from both the starting and ending positions, then applies the formula: <code>SG = TourAvg(start) - (1 + TourAvg(end))</code>.</p>
+
+    <div class="code-block">
+      <div class="code-block-header"><span>shot_entry.py</span><span>Python</span></div>
+      <pre><span class="kw">def</span> <span class="fn">calculate_strokes_gained</span>():
+    <span class="str">"""Compute SG live — no DB write, instant UI feedback."""</span>
+    surf_start = surface_start_dd.get()
+    surf_end = surface_end_dd.get()
+    dist_start = <span class="fn">float</span>(distance_start_entry.get())
+
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+
+    <span class="cmt"># Lookup starting position baseline</span>
+    c.execute(
+        <span class="str">"SELECT TourAvg FROM DimAvg WHERE Surface=? AND Distance=?"</span>,
+        (surf_start, <span class="fn">int</span>(dist_start))
+    )
+    start_row = c.fetchone()
+
+    <span class="cmt"># Lookup ending position (or 0 if holed out)</span>
+    <span class="kw">if</span> surf_end == <span class="str">"Hole"</span>:
+        end_val = <span class="num">0</span>
+    <span class="kw">else</span>:
+        dist_end = <span class="fn">float</span>(distance_end_entry.get())
+        c.execute(
+            <span class="str">"SELECT TourAvg FROM DimAvg WHERE Surface=? AND Distance=?"</span>,
+            (surf_end, <span class="fn">int</span>(dist_end))
+        )
+        end_val = c.fetchone()[<span class="num">0</span>]
+
+    <span class="cmt"># Core formula: SG = TourAvg(start) - (1 + TourAvg(end))</span>
+    sg_val = start_row[<span class="num">0</span>] - (<span class="num">1</span> + end_val)
+    <span class="kw">if</span> penalty_var.get():
+        sg_val -= <span class="num">1</span>
+
+    <span class="cmt"># Color-coded feedback: green = gained, red = lost</span>
+    color = GREEN_TEXT <span class="kw">if</span> sg_val > <span class="num">0</span> <span class="kw">else</span> RED_TEXT <span class="kw">if</span> sg_val < <span class="num">0</span> <span class="kw">else</span> TEXT_COLOR
+    sg_label.config(text=<span class="str">f"Strokes Gained: <span class="op">{</span>sg_val<span class="op">:+.2f}</span>"</span>, fg=color)
+    conn.close()</pre>
+    </div>
+  </div>
+
+  <!-- ROUND PERSISTENCE -->
+  <div class="case-section">
+    <h2>Atomic Round Persistence</h2>
+    <p>When the round is complete, all shots are saved in a single atomic transaction — dimension record first (DimRound), then all fact records (FactShots) linked by the generated round ID.</p>
+
+    <div class="code-block">
+      <div class="code-block-header"><span>round_summary.py</span><span>Python</span></div>
+      <pre><span class="kw">def</span> <span class="fn">save_round</span>():
+    <span class="str">"""Atomically persist a complete round."""</span>
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+
+    <span class="cmt"># Insert dimension record</span>
+    c.execute(<span class="str">"""
+        INSERT INTO DimRound
+            (PlayerID, CoursePlayed, RoundDate, HolesPlayed, TeePreference)
+        VALUES (?, ?, date('now'), ?, 'Tips')
+    """</span>, (shots[<span class="num">0</span>][<span class="str">"PlayerID"</span>], round_info[<span class="str">"CoursePlayed"</span>], <span class="fn">len</span>(holes)))
+
+    round_id = c.lastrowid  <span class="cmt"># Auto-generated FK</span>
+
+    <span class="cmt"># Batch insert all shots</span>
+    <span class="kw">for</span> s <span class="kw">in</span> shots:
+        c.execute(<span class="str">"""
+            INSERT INTO FactShots
+                (PlayerID, RoundID, Hole, Par, HoleResult,
+                 Category, SurfaceStart, DistanceStart,
+                 SurfaceEnd, DistanceEnd, ClubUsed,
+                 ShotShape, Penalty, StrokesGained)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """</span>, (s[<span class="str">"PlayerID"</span>], round_id, s[<span class="str">"Hole"</span>], s.get(<span class="str">"Par"</span>),
+              s.get(<span class="str">"HoleResult"</span>), s[<span class="str">"Category"</span>], s[<span class="str">"SurfaceStart"</span>],
+              s[<span class="str">"DistanceStart"</span>], s[<span class="str">"SurfaceEnd"</span>], s[<span class="str">"DistanceEnd"</span>],
+              s[<span class="str">"ClubUsed"</span>], s[<span class="str">"ShotShape"</span>], s[<span class="str">"Penalty"</span>],
+              s[<span class="str">"StrokesGained"</span>]))
+
+    conn.commit()  <span class="cmt"># Atomic transaction</span>
+    conn.close()</pre>
+    </div>
+  </div>
+
+  <!-- ANALYTICS -->
+  <div class="case-section">
+    <h2>Round Analytics</h2>
+    <p>After completing a round, the summary screen computes standard golf KPIs — Greens in Regulation, Fairways in Regulation, strokes gained by category — and renders a Matplotlib breakdown chart.</p>
+
+    <div class="code-block">
+      <div class="code-block-header"><span>round_summary.py</span><span>Python</span></div>
+      <pre><span class="cmt"># Aggregate round data into KPIs</span>
+holes = {}
+<span class="kw">for</span> shot <span class="kw">in</span> shots:
+    holes.setdefault(shot[<span class="str">"Hole"</span>], []).append(shot)
+
+<span class="kw">for</span> hole, shots_list <span class="kw">in</span> holes.items():
+    par = <span class="fn">int</span>(shots_list[<span class="num">0</span>].get(<span class="str">"Par"</span>, <span class="num">0</span>))
+    total_par += par
+    strokes = <span class="fn">len</span>(shots_list) + <span class="fn">sum</span>(s.get(<span class="str">"Penalty"</span>, <span class="num">0</span>) <span class="kw">for</span> s <span class="kw">in</span> shots_list)
+    total_strokes += strokes
+
+    <span class="cmt"># Green in Regulation: reached green in (par - 2) or fewer</span>
+    strokes_to_green = <span class="fn">next</span>(
+        (i + <span class="num">1</span> <span class="kw">for</span> i, s <span class="kw">in</span> <span class="fn">enumerate</span>(shots_list)
+         <span class="kw">if</span> s.get(<span class="str">"SurfaceEnd"</span>) <span class="kw">in</span> (<span class="str">"Green"</span>, <span class="str">"Hole"</span>)),
+        <span class="type">None</span>
+    )
+    <span class="kw">if</span> strokes_to_green <span class="kw">and</span> strokes_to_green <= (par - <span class="num">2</span>):
+        greens_hit += <span class="num">1</span>
+
+gir_pct = (greens_hit / holes_played * <span class="num">100</span>) <span class="kw">if</span> holes_played <span class="kw">else</span> <span class="num">0</span></pre>
+    </div>
+  </div>
+
+  <!-- DATABASE SCHEMA -->
+  <div class="case-section">
+    <h2>Star Schema Design</h2>
+    <p>The database follows a classic star schema pattern: dimension tables for players, rounds, and tour averages, with a central fact table for individual shots.</p>
+
+    <div class="code-block">
+      <div class="code-block-header"><span>Database Schema</span><span>SQLite</span></div>
+      <pre><span class="cmt">-- Dimension: Players</span>
+<span class="kw">CREATE TABLE</span> DimPlayer (
+    PlayerID    <span class="type">INTEGER</span> <span class="kw">PRIMARY KEY</span>,
+    PlayerName  <span class="type">TEXT</span>    <span class="kw">NOT NULL</span>
+);
+
+<span class="cmt">-- Dimension: Rounds</span>
+<span class="kw">CREATE TABLE</span> DimRound (
+    RoundID       <span class="type">INTEGER</span>   <span class="kw">PRIMARY KEY AUTOINCREMENT</span>,
+    PlayerID      <span class="type">INTEGER</span>   <span class="kw">NOT NULL REFERENCES</span> DimPlayer(PlayerID),
+    CoursePlayed  <span class="type">TEXT</span>,
+    RoundDate     <span class="type">TEXT</span>,
+    HolesPlayed   <span class="type">INTEGER</span>
+);
+
+<span class="cmt">-- Dimension: PGA Tour Benchmarks (from CSV)</span>
+<span class="kw">CREATE TABLE</span> DimAvg (
+    Surface   <span class="type">TEXT</span>,
+    Distance  <span class="type">INTEGER</span>,
+    TourAvg   <span class="type">REAL</span>     <span class="cmt">-- Expected strokes to hole</span>
+);
+
+<span class="cmt">-- Fact: Individual Shots</span>
+<span class="kw">CREATE TABLE</span> FactShots (
+    ShotID         <span class="type">INTEGER</span>   <span class="kw">PRIMARY KEY AUTOINCREMENT</span>,
+    PlayerID       <span class="type">INTEGER</span>   <span class="kw">REFERENCES</span> DimPlayer(PlayerID),
+    RoundID        <span class="type">INTEGER</span>   <span class="kw">REFERENCES</span> DimRound(RoundID),
+    Hole           <span class="type">INTEGER</span>,
+    Category       <span class="type">TEXT</span>,      <span class="cmt">-- Driving, Approach, Short Game, Putting</span>
+    SurfaceStart   <span class="type">TEXT</span>,
+    DistanceStart  <span class="type">REAL</span>,
+    SurfaceEnd     <span class="type">TEXT</span>,
+    DistanceEnd    <span class="type">REAL</span>,
+    StrokesGained  <span class="type">REAL</span>
+);</pre>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

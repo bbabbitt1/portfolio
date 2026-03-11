@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CloudFront & Global Accelerator — CDN, Networking & Best Practices</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <div class="container2">
+        <div class="header">
+            <h1>CloudFront & Global Accelerator</h1>
+            <hr>
+        </div>
+
+        <h2>Overview</h2>
+        <p>CloudFront is AWS's Content Delivery Network (CDN) that caches content at edge locations to reduce latency and improve user experience. Global Accelerator provides static Anycast IP addresses and routes traffic over the AWS global network to optimal regional endpoints, improving performance, failover and predictability for global applications.</p>
+
+        <hr class="soft-divide">
+        <h2>CloudFront — Key Features</h2>
+        <ul>
+            <li><strong>Caching at Edge Locations:</strong> Stores cached copies of content close to users to reduce latency for repeated requests.</li>
+            <li><strong>Origins:</strong> S3 (public or private via Origin Access Control), ALB, NLB, EC2, custom HTTP(s) origins and private origins inside a VPC (via ALB/NLB).</li>
+            <li><strong>Cache Control & Policies:</strong> Honor origin headers or use CloudFront Cache Policies to control TTLs, query strings, headers and cookies included in the cache key.</li>
+            <li><strong>Security:</strong> Integrates with AWS Shield (DDoS) and AWS WAF, supports TLS, Signed URLs/Cookies for restricted content, and field-level protections with Lambda@Edge transformations.</li>
+            <li><strong>Edge Compute:</strong> Lambda@Edge (full runtime for request/response transforms) and CloudFront Functions (very fast JS functions for viewer-side manipulations).</li>
+            <li><strong>Geo-Restriction:</strong> Allowlist/denylist countries for content delivery.</li>
+            <li><strong>Price Classes:</strong> Control which edge locations are used to trade cost vs latency (All / 200 / 100).</li>
+            <li><strong>Invalidation:</strong> Force refresh of cached content (supports wildcards). Avoid frequent invalidations by versioning objects.</li>
+            <li><strong>Origin Groups & Failover:</strong> Primary/secondary origin configuration for automatic origin failover.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>CloudFront — Use Cases</h2>
+        <ul>
+            <li>Static website and asset delivery (HTML/CSS/JS/images).</li>
+            <li>Accelerating dynamic or API responses when safe to cache (or using partial caching).</li>
+            <li>Streaming media (HLS/DASH) and large-file downloads.</li>
+            <li>Protecting origins with WAF and Shield; reducing origin load.</li>
+            <li>Edge-based request/response manipulation (image resizing, A/B tests) using Lambda@Edge / CloudFront Functions.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>CloudFront — Best Practices</h2>
+        <ul>
+            <li><strong>Minimize Cache Key Variance:</strong> Only include necessary headers, cookies and query strings to boost cache hit ratio.</li>
+            - Use cache-control headers and fine-tune TTLs at origin or with CloudFront policies.<br>
+            <li><strong>Origin Shield:</strong> Use Origin Shield (regional caching layer) to consolidate origin traffic and reduce origin load.</li>
+            <li><strong>Versioned Object Names:</strong> Fingerprint assets (e.g., app.v1.js → app.v1.abc123.js) to avoid invalidations.</li>
+            <li><strong>Secure Private S3 Origins:</strong> Use Origin Access Control (OAC) or Origin Access Identity (OAI) instead of public buckets; issue Signed URLs/Cookies for restricted downloads.</li>
+            <li><strong>Use CloudFront + WAF + Shield:</strong> Protect from layer 7 attacks at the edge and minimize origin exposure.</li>
+            <li><strong>Edge Compute Choice:</strong> Use CloudFront Functions for small, fast manipulations; use Lambda@Edge for heavier logic requiring libraries or more runtime.</li>
+            <li><strong>Monitoring:</strong> Use CloudFront access logs, CloudWatch metrics (cache hit ratio, 4xx/5xx) and real-user monitoring to tune performance.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>CloudFront — Exam Tips</h2>
+        <ul>
+            - Choose CloudFront for caching, edge security (WAF), signed URLs, and edge transformation.<br>
+            - Prefer versioned object names over frequent invalidations to save cost and accelerate deployments.<br>
+            - CloudFront + S3 static site: use CloudFront + OAC and ACM certificate for HTTPS (S3 website endpoint alone does not provide HTTPS for custom domains).<br>
+            - Price classes reduce edge locations to lower cost at the expense of latency in excluded regions.<br>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Global Accelerator — Key Features</h2>
+        <ul>
+            <li><strong>Anycast Static IPs:</strong> Provides two static Anycast IP addresses (or BYO IPs with Elastic IP) that remain constant for clients.</li>
+            <li><strong>AWS Global Network:</strong> Client traffic enters the nearest AWS edge and traverses the AWS backbone to the best regional endpoint, reducing internet variability.</li>
+            <li><strong>Endpoint Types:</strong> ALB, NLB, EC2 instances, Elastic IPs (and private ALB/NLB endpoints via regional endpoints).</li>
+            <li><strong>Health Checks & Traffic Control:</strong> Built-in health checks, automatic failover and traffic weighting for progressive rollouts (blue/green or canary).</li>
+            <li><strong>Protocol Support:</strong> TCP & UDP friendly — ideal for non-HTTP use cases.</li>
+            <li><strong>Security & Simplicity:</strong> Whitelist two static IPs on client firewalls; integrates with Shield for DDoS protection.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Global Accelerator — Use Cases</h2>
+        <ul>
+            <li>Real-time, latency-sensitive applications (gaming, VoIP, IoT ingestion).</li>
+            <li>Applications that require static IPs for firewall whitelisting.</li>
+            <li>Multi-region active/active or active/passive deployments needing fast failover.</li>
+            <li>Non-HTTP protocols (UDP/TCP) where CloudFront is not suitable.</li>
+            <li>When deterministic routing and consistent performance are required.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Global Accelerator — Best Practices</h2>
+        <ul>
+            <li><strong>Combine with Regional Load Balancing:</strong> Use Global Accelerator fronting ALBs/NLBs in multiple regions to achieve global availability and fast failover.</li>
+            <li><strong>Use Health Checks & Weights:</strong> Configure endpoint groups with health checks and weights for seamless traffic shifting.</li>
+            <li><strong>Whitelist Minimal IPs:</strong> Use the two static Accelerator IPs on customer firewalls to reduce complexity.</li>
+            <li><strong>Cost vs Benefit:</strong> Accelerator adds hourly and data charges — justify its use for static IP needs, non-HTTP traffic or critical global performance SLAs.</li>
+            <li><strong>Monitoring:</strong> Track CloudWatch metrics (client latency, endpoint health, traffic shift) to verify behavior and failover.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Global Accelerator — Exam Tips</h2>
+        <ul>
+            - Pick Global Accelerator when the question mentions static IPs, non-HTTP protocols, or the need for deterministic global routing.<br>
+            - Global Accelerator routes traffic into the AWS backbone (lowers variability) and is ideal for fast regional failover and predictable network performance.<br>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>CloudFront vs Global Accelerator — Decision Guide</h2>
+        <ul>
+            <li><strong>CloudFront:</strong> Best for caching HTTP(s) content, edge transformations, signed URLs, and integration with WAF for application-layer protection.</li>
+            <li><strong>Global Accelerator:</strong> Best for static Anycast IPs, optimized routing for TCP/UDP, predictable performance and simplified client firewall rules.</li>
+            <li><strong>Combined Architectures:</strong> Use CloudFront for static & HTTP caching and Global Accelerator for application endpoints requiring static IPs or consistent network routing. Both can coexist where architectures need caching plus global routing.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Architecture Patterns & Examples</h2>
+        <ul>
+            <li><strong>Secure Static Website:</strong> S3 (private) + CloudFront (OAC) + ACM TLS + WAF = HTTPS + edge security + origin protection.</li>
+            <li><strong>Web APIs with caching:</strong> CloudFront in front of ALB; use path-based cache behaviors and origin shielding.</li>
+            <li><strong>Global Low-Latency App:</strong> Global Accelerator fronting NLBs/ALBs in multiple regions for real-time traffic; use CloudFront for static assets.</li>
+            <li><strong>Games or VoIP:</strong> Global Accelerator + NLB/EC2 for UDP/TCP endpoints, health checks and traffic weighting for regional failover.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Performance & Cost Considerations</h2>
+        <ul>
+            <li>CloudFront pricing varies by edge location; Price Classes can reduce cost by excluding expensive regions at a latency tradeoff.</li>
+            <li>CloudFront costs include data transfer out, requests and optional Lambda@Edge/Function charges; invalidations beyond the free quota are billed.</li>
+            <li>Global Accelerator has an hourly charge per accelerator plus data transfer charges over the AWS backbone; it can reduce client-side variability but increases bill.</li>
+            <li>Tune CloudFront cache hit ratio (cache keys, TTLs, compression) to reduce origin costs and improve latency.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Troubleshooting & Monitoring</h2>
+        <ul>
+            <li><strong>CloudFront:</strong> Use access logs, CloudFront metrics (Requests, BytesDownloaded, 4xx/5xx errors), and real-user metrics to find cache misses, origin errors, or misconfigured behaviors.</li>
+            <li><strong>Global Accelerator:</strong> Check endpoint group health, CloudWatch metrics for latency and traffic, and ensure endpoint weights and health checks are correctly set.</li>
+            <li><strong>Common Issues:</strong> HTTPS certificate errors (ACM region mismatch), origin authentication problems (OAC/OAI), excessive invalidations, and unexpected cache misses due to wide cache key variance.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Common Exam Scenarios & Answers</h2>
+        <ul>
+            <li><strong>Scenario:</strong> "Serve global static assets over HTTPS and protect the origin from spikes." <br>
+                <strong>Answer:</strong> S3 (private) + CloudFront (OAC) + ACM certificate + WAF + Origin Shield.</li>
+
+            <li><strong>Scenario:</strong> "Game servers use UDP and need low, consistent latency globally and a static IP for firewall rules." <br>
+                <strong>Answer:</strong> Global Accelerator fronting NLB/EC2 (UDP) endpoints; enable health checks and traffic weights.</li>
+
+            <li><strong>Scenario:</strong> "Single pair of IPs to whitelist at customer firewalls and fast failover across regions." <br>
+                <strong>Answer:</strong> Global Accelerator with ALB/NLB endpoints in multiple regions; optionally use CloudFront for cached static content.</li>
+
+            <li><strong>Scenario:</strong> "Transform images at the edge and remove PII before serving." <br>
+                <strong>Answer:</strong> CloudFront + Lambda@Edge (or CloudFront Functions for light transforms) to redact/transform on read.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Quick CLI / Practical Notes</h2>
+        <ul>
+            <li>Create a CloudFront distribution for an S3 origin and configure Origin Access Control to restrict bucket access to CloudFront only.</li>
+            <li>Use fingerprinted filenames (versioning) to avoid invalidations when deploying new assets.</li>
+            <li>For Global Accelerator, create endpoint groups per region and set health checks/weights for controlled traffic shifts.</li>
+            <li>When using CloudFront with private ALB/EC2 origins in a VPC, set up an ALB with appropriate security groups and OAC or signed origin requests.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Final Best-Practices Summary</h2>
+        <ul>
+            <li>Use CloudFront for HTTP(s) caching, edge compute, and integration with WAF/Shield.</li>
+            <li>Use Global Accelerator for static IPs, consistent routing over AWS backbone, non-HTTP protocols, and fast global failover.</li>
+            <li>Combine CloudFront & Global Accelerator when you need both caching and static IP/global routing — but balance cost vs benefit.</li>
+            <li>Secure origins (OAC/OAI), use TLS, monitor logs and metrics, and prefer versioned asset names to reduce invalidations.</li>
+        </ul>
+
+    </div>
+</body>
+</html>

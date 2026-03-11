@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Containers on AWS — ECS, Fargate, ECR, EKS, App Runner</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <div class="container2">
+        <div class="header">
+            <h1>Containers on AWS: ECS, Fargate, ECR, EKS</h1>
+            <hr>
+        </div>
+
+        <h2>Overview</h2>
+        <p>Containers enable lightweight, portable application packaging. AWS offers multiple managed container services: ECS (AWS-native orchestration), EKS (Kubernetes), Fargate (serverless containers), ECR (image registry), and App Runner (fully managed deployment). This section covers architecture patterns, scaling strategies, and exam scenarios.</p>
+
+        <hr class="soft-divide">
+        <h2>Docker Fundamentals</h2>
+        <p><strong>Docker</strong> is a containerization platform that packages applications, dependencies, libraries, and runtime into a standardized image. Containers are lightweight, portable, and isolated processes that run consistently across environments.</p>
+
+        <h3>Key Docker Concepts</h3>
+        <ul>
+            <li><strong>Image:</strong> Read-only template containing application code, dependencies, and configuration. Built from a Dockerfile.</li>
+            <li><strong>Container:</strong> Runtime instance of an image. Isolated process with its own filesystem, network namespace, and process space.</li>
+            <li><strong>Registry:</strong> Repository of images (e.g., Docker Hub, ECR). Pull/push images from/to registries.</li>
+            <li><strong>Dockerfile:</strong> Text file with instructions to build an image (FROM, RUN, COPY, EXPOSE, ENTRYPOINT, etc.).</li>
+            <li><strong>Layers:</strong> Docker images are built in layers (immutable, cached). Each instruction creates a new layer.</li>
+        </ul>
+
+        <h3>Docker vs Virtual Machines — Comparison Table</h3>
+        <table style="width:100%; border-collapse:collapse; margin:10px 0;">
+            <tr style="background:#f0f0f0;">
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Aspect</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Containers (Docker)</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Virtual Machines</th>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Isolation</td>
+                <td style="border:1px solid #ddd; padding:8px;">Process-level isolation (shared OS kernel)</td>
+                <td style="border:1px solid #ddd; padding:8px;">Hardware-level isolation (full OS per VM)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Startup Time</td>
+                <td style="border:1px solid #ddd; padding:8px;">Seconds</td>
+                <td style="border:1px solid #ddd; padding:8px;">Minutes (boot OS)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Resource Usage</td>
+                <td style="border:1px solid #ddd; padding:8px;">Lightweight (MB range)</td>
+                <td style="border:1px solid #ddd; padding:8px;">Heavy (GB+ for OS)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Density</td>
+                <td style="border:1px solid #ddd; padding:8px;">100s-1000s per host</td>
+                <td style="border:1px solid #ddd; padding:8px;">Dozens per host</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Portability</td>
+                <td style="border:1px solid #ddd; padding:8px;">Runs anywhere (Docker installed)</td>
+                <td style="border:1px solid #ddd; padding:8px;">Platform-specific</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Security</td>
+                <td style="border:1px solid #ddd; padding:8px;">Shared kernel (potential risk)</td>
+                <td style="border:1px solid #ddd; padding:8px;">Stronger isolation (separate OS)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Orchestration</td>
+                <td style="border:1px solid #ddd; padding:8px;">Requires orchestrator (K8s, ECS, etc.)</td>
+                <td style="border:1px solid #ddd; padding:8px;">Simpler (hypervisor manages)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Use Case</td>
+                <td style="border:1px solid #ddd; padding:8px;">Microservices, CI/CD pipelines, dev/test</td>
+                <td style="border:1px solid #ddd; padding:8px;">Legacy workloads, strict isolation</td>
+            </tr>
+        </table>
+
+        <hr class="soft-divide">
+        <h2>AWS Container Services Overview</h2>
+        <ul>
+            <li><strong>ECS (Elastic Container Service):</strong> AWS-native container orchestration service. Launch and manage Docker containers on EC2 or Fargate.</li>
+            <li><strong>Fargate:</strong> Serverless container compute. AWS manages infrastructure; you only define container specs and pay for usage.</li>
+            <li><strong>ECR (Elastic Container Registry):</strong> Managed Docker image registry. Store, manage, and deploy container images.</li>
+            <li><strong>EKS (Elastic Kubernetes Service):</strong> Managed Kubernetes clusters. Use open-source Kubernetes orchestration on AWS.</li>
+            <li><strong>App Runner:</strong> Fully managed service for deploying web applications from source code or container images.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Amazon ECS (Elastic Container Service)</h2>
+
+        <h3>Launch Types</h3>
+
+        <h4>EC2 Launch Type</h4>
+        <ul>
+            <li>You provision and maintain EC2 instances in an ECS cluster.</li>
+            <li>Each EC2 instance runs the <strong>ECS Agent</strong> (Docker daemon + ECS agent software) to register with the cluster.</li>
+            <li>AWS orchestrates container placement, starting/stopping, but you manage EC2 lifecycle.</li>
+            <li>AWS handles cluster capacity, container orchestration, and task scheduling.</li>
+            <li><strong>Best for:</strong> Cost optimization, full control, long-running workloads, or when you need access to instance.</li>
+        </ul>
+
+        <h4>Fargate Launch Type</h4>
+        <ul>
+            <li><strong>Serverless.</strong> You define task definitions (container specs: image, CPU, RAM). AWS runs tasks without EC2 management.</li>
+            <li>No EC2 provisioning, patching, or capacity planning. Pay only for CPU/RAM consumed.</li>
+            <li>Tasks run in managed AWS infrastructure.</li>
+            <li><strong>Best for:</strong> Microservices, variable workloads, rapid scaling, minimal ops overhead.</li>
+        </ul>
+
+        <h3>IAM Roles for ECS</h3>
+        <ul>
+            <li><strong>ECS Task Execution Role:</strong> Allows ECS agent to pull container images from ECR, push logs to CloudWatch, retrieve secrets from Secrets Manager. IAM permissions: ecr:GetAuthorizationToken, ecr:BatchGetImage, ecr:GetDownloadUrlForLayer, logs:CreateLogStream, logs:PutLogEvents.</li>
+            <li><strong>ECS Task Role:</strong> Permissions for the application running inside the container. Example: S3 access, DynamoDB read/write, SNS publish. Attached to the task definition.</li>
+            <li><strong>Difference:</strong> Task Execution Role = ECS infrastructure needs. Task Role = application needs.</li>
+            <li><strong>Best Practice:</strong> Use separate roles with least privilege. Never embed credentials in images or task definitions.</li>
+        </ul>
+
+        <h3>ECS Load Balancer Integrations</h3>
+        <ul>
+            <li><strong>ALB (Application Load Balancer):</strong> Recommended for most use cases. Layer 7 (HTTP/HTTPS), path-based/host-based routing, dynamic port mapping.</li>
+            <li><strong>NLB (Network Load Balancer):</strong> Recommended only for ultra-high performance, extreme throughput, or non-HTTP protocols (TCP, UDP). Layer 4, extreme performance, low latency.</li>
+            <li><strong>CLB (Classic Load Balancer):</strong> Supported but not recommended (legacy). Use ALB/NLB instead.</li>
+            <li><strong>Target Groups:</strong> ALB/NLB route traffic to ECS task target groups. Dynamic port assignment supported (ephemeral ports).</li>
+        </ul>
+
+        <h3>ECS Data Volumes</h3>
+
+        <h4>EFS (Elastic File System) with ECS</h4>
+        <ul>
+            <li>Mount EFS file systems directly onto ECS tasks (EC2 or Fargate).</li>
+            <li>All tasks across AZs share the same persistent, multi-AZ NFS filesystem.</li>
+            <li><strong>Use case:</strong> Persistent multi-AZ shared storage (databases, caches, shared config).</li>
+            <li><strong>EFS + Fargate:</strong> Serverless container compute with serverless shared storage.</li>
+            <li><strong>Note:</strong> S3 is object storage, cannot be directly mounted as a filesystem. Use S3 API from within container or use EFS/EBS.</li>
+        </ul>
+
+        <h3>ECS Auto Scaling</h3>
+
+        <h4>Task-Level Scaling</h4>
+        <ul>
+            <li>Scale the number of ECS tasks (container instances) using AWS Application Auto Scaling.</li>
+            <li><strong>Metrics:</strong> CPU utilization, memory utilization, request count per target, custom CloudWatch metrics.</li>
+            <li><strong>Policies:</strong>
+                <ul>
+                    <li><strong>Target Tracking:</strong> Maintain a target metric (e.g., 70% CPU). ASG adds/removes tasks automatically.</li>
+                    <li><strong>Step Scaling:</strong> Scale by steps based on alarm thresholds.</li>
+                    <li><strong>Scheduled Scaling:</strong> Scale based on time/date (e.g., scale up during business hours).</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h4>EC2 Instance-Level Scaling</h4>
+        <ul>
+            <li>Separate from task scaling. Scale the EC2 instances in the ECS cluster using Auto Scaling Group (ASG).</li>
+            <li>Monitor EC2 cluster capacity and add instances when task placement fails or capacity is low.</li>
+            <li><strong>Capacity Provider:</strong> Pairs ASG with ECS cluster. Automatically provisions EC2 instances based on task resource needs. Recommended approach for EC2 launch type.</li>
+        </ul>
+
+        <h4>ECS Scaling Example with CloudWatch Metrics</h4>
+        <p><strong>Scenario:</strong> Web API service in ECS. Target: 70% CPU utilization.</p>
+        <ul>
+            <li>Define ECS Service with desired count = 5 tasks.</li>
+            <li>Create Application Auto Scaling target tracking policy: ScaleOutThreshold = 70% CPU, ScaleInThreshold = 30% CPU.</li>
+            <li>CloudWatch monitors <code>CPUUtilization</code> metric for all tasks in the service.</li>
+            <li>When CPU > 70%: ASG increases desired count by 20% (or set increment).</li>
+            <li>When CPU < 30%: ASG decreases desired count (scale down).</li>
+            <li>ECS schedules new tasks on available EC2 capacity (or Fargate if serverless).</li>
+        </ul>
+
+        <h3>ECS Solution Architectures</h3>
+
+        <h4>Microservices with ALB & Auto Scaling</h4>
+        <p><strong>Architecture:</strong> ALB → ECS Service (API tasks, auto-scaled) + ECS Service (DB tasks) + ECS Service (Cache tasks). Each service independently scaled based on metrics. Load balanced across tasks. Logs sent to CloudWatch. Images from ECR.</p>
+
+        <h4>CI/CD Pipeline with ECS</h4>
+        <p><strong>Architecture:</strong> CodePipeline → build app → build Docker image → push to ECR → CodeDeploy triggers ECS deployment → new tasks launched from updated image → old tasks terminated (rolling update). Zero-downtime deployment.</p>
+
+        <h4>Hybrid: EC2 + Fargate</h4>
+        <p><strong>Architecture:</strong> ECS Cluster with mixed launch types. Long-running, cost-optimized tasks on EC2. Bursty, scaling-intensive tasks on Fargate. Single cluster, single control plane.</p>
+
+        <hr class="soft-divide">
+        <h2>Amazon ECR (Elastic Container Registry)</h2>
+
+        <h3>Key Features</h3>
+        <ul>
+            <li><strong>Image Registry:</strong> Store Docker images (public or private repositories).</li>
+            <li><strong>Fully Integrated:</strong> Native integration with ECS, EKS, Lambda. One-click push/pull.</li>
+            <li><strong>Backed by S3:</strong> Images stored in S3 (transparent to users). Highly durable and available.</li>
+            <li><strong>Access Control:</strong> IAM-based access. Fine-grained permissions (push, pull, delete).</li>
+            <li><strong>Image Scanning:</strong> Automatic vulnerability scanning (ECR uses Clair, Grype engines). Detects CVEs in dependencies.</li>
+            <li><strong>Image Tagging & Versioning:</strong> Tag images (latest, v1.0, stable). Track versions and rollbacks.</li>
+            <li><strong>Lifecycle Policies:</strong> Automatically delete old/untagged images. Reduce storage costs.</li>
+        </ul>
+
+        <h3>ECR Best Practices</h3>
+        <ul>
+            <li>Use specific image tags in production (not latest; can change unexpectedly).</li>
+            <li>Enable image scanning to catch vulnerabilities early.</li>
+            <li>Implement lifecycle policies to clean up unused images.</li>
+            <li>Use IAM roles (not hardcoded credentials) for ECR access.</li>
+            <li>Cross-region replication for disaster recovery or multi-region deployments.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Amazon EKS (Elastic Kubernetes Service)</h2>
+
+        <h3>Kubernetes Basics</h3>
+        <p><strong>Kubernetes:</strong> Open-source orchestration system for automating deployment, scaling, and management of containerized applications. Abstracts underlying infrastructure.</p>
+
+        <ul>
+            <li><strong>Control Plane:</strong> Manages cluster state (API Server, Scheduler, Controller Manager, etcd).</li>
+            <li><strong>Worker Nodes:</strong> Run containers. Receive instructions from control plane.</li>
+            <li><strong>Pods:</strong> Smallest deployable unit. Usually one container per pod.</li>
+            <li><strong>Services:</strong> Expose pods via stable DNS/IP.</li>
+            <li><strong>Cloud-Agnostic:</strong> Same Kubernetes API across AWS, GCP, Azure, on-prem.</li>
+        </ul>
+
+        <h3>EKS Features</h3>
+        <ul>
+            <li>AWS-managed Kubernetes control plane. High availability and security.</li>
+            <li>Integrates with IAM, CloudWatch, CloudTrail, VPC security groups.</li>
+            <li><strong>Use case:</strong> When company already uses Kubernetes on-premises or multi-cloud. Familiar API, no vendor lock-in.</li>
+        </ul>
+
+        <h3>EKS Node Types</h3>
+
+        <h4>Managed Node Groups</h4>
+        <ul>
+            <li>AWS creates and manages EC2 instances for you (provisioning, patching, updates).</li>
+            <li>Supports on-demand and spot instances. Launch templates for customization.</li>
+            <li><strong>Best for:</strong> Reduced operational overhead, automatic updates.</li>
+        </ul>
+
+        <h4>Self-Managed Nodes</h4>
+        <ul>
+            <li>You create and manage EC2 instances. Use pre-built EKS AMI or custom AMI. Register instances to cluster.</li>
+            <li>Full control over instance configuration, patching, scaling.</li>
+            <li><strong>Best for:</strong> Advanced use cases, custom configurations, cost optimization (spot instances).</li>
+        </ul>
+
+        <h4>Fargate Pods</h4>
+        <ul>
+            <li>Serverless. No node management. AWS runs pods on managed infrastructure.</li>
+            <li>Pay only for pod resource requests (CPU, memory).</li>
+            <li><strong>Best for:</strong> Variable workloads, reduced ops, quick scaling.</li>
+        </ul>
+
+        <h3>EKS Data Volumes (Storage)</h3>
+        <ul>
+            <li><strong>Storage Classes:</strong> Define provisioning parameters for persistent volumes in EKS.</li>
+            <li><strong>CSI (Container Storage Interface) Drivers:</strong> EKS uses CSI-compliant drivers to interface with AWS storage services.</li>
+            <li><strong>Supported Storage:</strong></li>
+            <ul>
+                <li><strong>EBS:</strong> Block storage. Attach to pods. Single-AZ.</li>
+                <li><strong>EFS:</strong> Multi-AZ NFS. Shared across pods and nodes.</li>
+                <li><strong>FSx for Lustre:</strong> High-performance parallel filesystem. HPC, ML workloads.</li>
+                <li><strong>FSx for NetApp ONTAP:</strong> Multi-protocol storage for enterprise workloads.</li>
+            </ul>
+        </ul>
+
+        <h3>ECS vs EKS — Comparison</h3>
+        <table style="width:100%; border-collapse:collapse; margin:10px 0;">
+            <tr style="background:#f0f0f0;">
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Aspect</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">ECS</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">EKS</th>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Orchestrator</td>
+                <td style="border:1px solid #ddd; padding:8px;">AWS-native</td>
+                <td style="border:1px solid #ddd; padding:8px;">Kubernetes (open-source)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Learning Curve</td>
+                <td style="border:1px solid #ddd; padding:8px;">Easier for AWS-only teams</td>
+                <td style="border:1px solid #ddd; padding:8px;">Steeper but portable</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Cloud Portability</td>
+                <td style="border:1px solid #ddd; padding:8px;">AWS-locked</td>
+                <td style="border:1px solid #ddd; padding:8px;">Cloud-agnostic</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Community</td>
+                <td style="border:1px solid #ddd; padding:8px;">AWS-specific</td>
+                <td style="border:1px solid #ddd; padding:8px;">Large open-source community</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Setup Simplicity</td>
+                <td style="border:1px solid #ddd; padding:8px;">Simpler (AWS-optimized)</td>
+                <td style="border:1px solid #ddd; padding:8px;">More complex</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Native AWS Integration</td>
+                <td style="border:1px solid #ddd; padding:8px;">Deep (IAM, CloudWatch, etc.)</td>
+                <td style="border:1px solid #ddd; padding:8px;">Good but requires additional setup</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Cost</td>
+                <td style="border:1px solid #ddd; padding:8px;">Cheaper for simple workloads</td>
+                <td style="border:1px solid #ddd; padding:8px;">Similar or slightly higher due to control plane</td>
+            </tr>
+        </table>
+
+        <hr class="soft-divide">
+        <h2>AWS App Runner</h2>
+        <p>Fully managed service for deploying web applications and APIs without container or infrastructure management.</p>
+
+        <h3>Key Features</h3>
+        <ul>
+            <li><strong>Source-to-Deploy:</strong> Connect GitHub/GitLab repo or use container image. Auto-builds, deploys, scales.</li>
+            <li><strong>Serverless Compute:</strong> No EC2/Fargate management. AWS handles everything.</li>
+            <li><strong>Auto Scaling:</strong> Scale based on traffic automatically.</li>
+            <li><strong>Load Balancing:</strong> Built-in ALB per application.</li>
+            <li><strong>HTTPS/TLS:</strong> Automatic SSL certificates.</li>
+            <li><strong>VPC Access:</strong> Connect to private databases, cache, queues.</li>
+            <li><strong>Environment Variables & Secrets:</strong> Inject secrets from Secrets Manager.</li>
+        </ul>
+
+        <h3>Use Cases</h3>
+        <ul>
+            <li>Web applications and APIs (blogs, dashboards, REST APIs).</li>
+            <li>Microservices that need simple deployment.</li>
+            <li>Rapid prototyping and MVPs.</li>
+            <li>CI/CD pipelines for automated deployments.</li>
+            <li>When you want to focus on code, not infrastructure.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>AWS App2Container</h2>
+        <p>CLI tool for migrating and modernizing Java and .NET applications to containers (Docker).</p>
+
+        <h3>Key Features</h3>
+        <ul>
+            <li><strong>Lift & Shift:</strong> Migrate legacy Java/.NET apps from on-premises, bare metal, VMs (any cloud) to AWS without code changes.</li>
+            <li><strong>No Code Changes:</strong> Automatically analyzes app dependencies, generates Dockerfile, optimizes container.</li>
+            <li><strong>Workflow:</strong></li>
+            <ul>
+                <li>Run App2Container on source system (on-prem or VM).</li>
+                <li>Generate Dockerfile and container image.</li>
+                <li>Push image to ECR.</li>
+                <li>Deploy to ECS, EKS, or App Runner.</li>
+            </ul>
+            <li><strong>CI/CD Support:</strong> Pre-built pipelines for CodePipeline, Jenkins, GitLab, GitHub Actions.</li>
+        </ul>
+
+        <h3>Use Cases</h3>
+        <ul>
+            <li>Modernizing legacy Java/ASP.NET applications.</li>
+            <li>Multi-cloud migration (minimize re-write).</li>
+            <li>Accelerating container adoption in enterprise.</li>
+            <li>Running legacy apps on Kubernetes or serverless.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Exam-Style Questions & Answers</h2>
+
+        <ol>
+            <li>
+                <strong>Q:</strong> Your team wants to run containerized microservices with minimal infrastructure management. You need auto-scaling based on request volume and multi-AZ high availability. Which launch type?
+                <br><strong>A:</strong> Fargate. Serverless, handles auto-scaling automatically, multi-AZ by default, no EC2 management needed.
+            </li>
+
+            <li>
+                <strong>Q:</strong> Your company runs Kubernetes on-premises and wants to migrate to AWS with minimal learning curve and keep portability. Which service?
+                <br><strong>A:</strong> EKS. Uses same Kubernetes API, portable across clouds, managed control plane on AWS.
+            </li>
+
+            <li>
+                <strong>Q:</strong> Your ECS application needs persistent, multi-AZ shared storage accessible by tasks in any AZ. Which service?
+                <br><strong>A:</strong> EFS. Mount EFS on ECS tasks. All tasks across AZs share same filesystem. NFS-based, highly available.
+            </li>
+
+            <li>
+                <strong>Q:</strong> You want to deploy a simple web app with zero infrastructure management. CI/CD from GitHub, auto-scaling, HTTPS built-in. Which service?
+                <br><strong>A:</strong> App Runner. Fully managed, source-to-deploy, auto-scaling, load-balancing, HTTPS out-of-the-box.
+            </li>
+
+            <li>
+                <strong>Q:</strong> Your ECS Service has 5 tasks. CPU utilization is at 85% (target is 70%). What happens with target tracking auto-scaling?
+                <br><strong>A:</strong> Application Auto Scaling creates additional tasks. ECS schedules them on available EC2 capacity (or Fargate). Desired count increases until CPU drops to ~70%.
+            </li>
+
+            <li>
+                <strong>Q:</strong> You're migrating a legacy Java app (on-prem) to containers on AWS. No code changes allowed. Which tool?
+                <br><strong>A:</strong> App2Container. Analyzes app, generates Dockerfile, creates container image, pushes to ECR, enables deployment to ECS/EKS/App Runner.
+            </li>
+
+            <li>
+                <strong>Q:</strong> Your ECS task needs S3 read access. Which IAM role should have the S3 permission?
+                <br><strong>A:</strong> ECS Task Role (application permissions). Task Execution Role is for ECS infrastructure (ECR pull, CloudWatch logs, etc.).
+            </li>
+
+            <li>
+                <strong>Q:</strong> Your ECS Cluster with EC2 launch type experiences frequent "task placement failed" errors. What's the issue and how do you fix it?
+                <br><strong>A:</strong> Not enough EC2 capacity. Use ECS Capacity Provider paired with Auto Scaling Group to auto-provision EC2 instances when task placement fails.
+            </li>
+
+            <li>
+                <strong>Q:</strong> You need to scan ECS task images for vulnerabilities before deployment. Where does the scan happen?
+                <br><strong>A:</strong> ECR (Elastic Container Registry). Enable image scanning in ECR. Scans for CVEs, reports vulnerabilities before image is pulled.
+            </li>
+        </ol>
+
+        <hr class="soft-divide">
+        <h2>Container Service Selection Matrix</h2>
+        <table style="width:100%; border-collapse:collapse; margin:10px 0;">
+            <tr style="background:#f0f0f0;">
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Requirement</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Best Service</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Why</th>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Serverless containers, minimal ops</td>
+                <td style="border:1px solid #ddd; padding:8px;">Fargate</td>
+                <td style="border:1px solid #ddd; padding:8px;">No infrastructure management, auto-scaling built-in</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Cost-optimized, full control</td>
+                <td style="border:1px solid #ddd; padding:8px;">ECS on EC2</td>
+                <td style="border:1px solid #ddd; padding:8px;">Manage EC2 instances, use spot instances for cost savings</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Kubernetes, portable</td>
+                <td style="border:1px solid #ddd; padding:8px;">EKS</td>
+                <td style="border:1px solid #ddd; padding:8px;">Open-source, cloud-agnostic, familiar API</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Simple web app, quick deploy</td>
+                <td style="border:1px solid #ddd; padding:8px;">App Runner</td>
+                <td style="border:1px solid #ddd; padding:8px;">Source-to-deploy, zero infrastructure</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Migrate legacy Java/.NET</td>
+                <td style="border:1px solid #ddd; padding:8px;">App2Container → ECS/EKS</td>
+                <td style="border:1px solid #ddd; padding:8px;">No code changes, automated containerization</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Store container images</td>
+                <td style="border:1px solid #ddd; padding:8px;">ECR</td>
+                <td style="border:1px solid #ddd; padding:8px;">AWS-native registry, image scanning, lifecycle policies</td>
+            </tr>
+        </table>
+
+        <hr class="soft-divide">
+        <h2>Best Practices & Design Checklist</h2>
+        <ul>
+            <li><strong>Use Task Execution Role & Task Role:</strong> Never embed credentials. Use separate IAM roles for infrastructure and application needs.</li>
+            <li><strong>Enable Image Scanning:</strong> ECR → detect vulnerabilities early before deployment.</li>
+            <li><strong>Implement Auto-Scaling:</strong> Use target tracking (preferred) or step scaling for task-level scaling. For EC2, use Capacity Providers.</li>
+            <li><strong>Multi-AZ Deployments:</strong> ECS Services across multiple AZs for high availability. Use ALB for load balancing.</li>
+            <li><strong>EFS for Persistent Storage:</strong> Use EFS with ECS/Fargate for shared, multi-AZ storage. Avoid attaching EBS (single-AZ, single-instance).</li>
+            <li><strong>Container Logging:</strong> Send logs to CloudWatch from containers. Use awslogs driver in task definition.</li>
+            <li><strong>Service Discovery:</strong> ECS Service integrates with Route 53 auto-registration. Use service names for inter-service communication.</li>
+            <li><strong>Blue-Green Deployments:</strong> Create new task set, shift traffic via ALB, verify, then terminate old tasks. Zero downtime.</li>
+            <li><strong>Secrets Management:</strong> Store secrets in AWS Secrets Manager or Parameter Store. Reference in task definition, not hardcoded.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Closing Notes</h2>
+        <p>Containers are essential for modern AWS architectures. Exam questions often test your ability to choose the right service (ECS vs EKS vs App Runner), design auto-scaling strategies, manage IAM roles, and integrate storage. Key differentiators: ECS for AWS-native simplicity, EKS for Kubernetes portability, Fargate for serverless, App Runner for simplicity, App2Container for legacy migration. Master task roles, scaling policies, multi-AZ patterns, and storage integration for exam success.</p>
+
+    </div>
+</body>
+</html>

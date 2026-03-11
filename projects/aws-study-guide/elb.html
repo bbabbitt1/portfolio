@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>High Availability and Scalability:ELB & ASG</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <div class=container2>
+        <div class="header">
+          <h1>High Availability & Scalability: ELB & ASG</h1>
+          <hr>  
+        </div>
+        <p><Strong>Availability:</Strong> the resilience to system failure.</p> 
+        <p><strong>Scalability</strong>: the ability of an application/system to handle greater loads by adapting. There are two types of scalability - vertical and horizontal. In this section, we will explore horizontal scalability as it is very closely linked to Availability.</p>
+        <hr class = "soft-divide">
+        <h2>Elastic Load Balancer (ELB)</h2>
+        <p>Elastic Load Balancing (ELB) automatically distributes incoming application traffic across multiple targets, such as Amazon EC2 instances, containers, and IP addresses, in one or more Availability Zones. It helps ensure high availability and fault tolerance for your applications.</p>
+        <ul>
+            <li><strong>Types of ELB:</strong>
+                <ul>
+                    <li><strong>Application Load Balancer (ALB):</strong> Operates at the application layer (Layer 7) and is ideal for HTTP and HTTPS traffic. It provides advanced routing features, such as host-based and path-based routing.</li>
+                    <ul>
+                        <li>Layer 7 (HTTP/HTTPS)</li>
+                        <li>Best suited for microservices and container-based architectures.</li>
+                        <li>Supports WebSocket and HTTP/2 protocols.</li>
+                        <li>Can route traffic based on content of the request (e.g., URL path, host headers).</li>
+                        <li>Supports advanced routing features like redirects and fixed responses.</li>
+                        <li>Has a port mapping feature to redirect to a dynamic port in ECS</li>
+                        <li><strong>Target Groups</strong></li>
+                        <ul>
+                            <li>EC2 Instances (managed by autoscaling group) - HTTP</li>
+                            <li>ECS tasks - HTTP</li>
+                            <li>Lambda Functions - HTTP request is translated into a JSON event</li>
+                            <li>IP Addresses - must be private</li>
+                        </ul>
+                        <li><strong>Good to know:</strong></li>
+                        <ul>
+                            <li>Fixed Hostname</li>
+                            <li>App servers don't see IP of client directly</li>
+                            <li>True IP of the client is inserted in the header <span style="font-family: monospace;">X-Forwarded-For</span></li>
+                            <li>Can also get Port (<span style="font-family: monospace;">X-Forwarded-Port</span>) and protocol (<span style="font-family: monospace;">X-Forwarded-Proto</span>)</li>
+                        </ul>
+                    </ul>
+                    <li><strong>Network Load Balancer (NLB):</strong> Operates at the transport layer (Layer 4) and is designed for high-performance applications that require ultra-low latency. It can handle millions of requests per second while maintaining high throughput.</li>
+                    <ul>
+                        <li>Layer 4 (TCP/UDP)</li>
+                        <li>Best suited for TCP, UDP, and TLS traffic.</li>
+                        <li>Can handle sudden and volatile traffic patterns - millions of requests per second with low latency</li>
+                        <li>Preserves the source IP address of the client.</li>
+                        <li>NLB has one static IP per AZ, and supports assigning Elastic IP - helpful for whitelisting specific IPs.</li>
+                        <li>Extremely high performance, non-HTTP protocols</li>
+                        <li><strong>Target Groups:</strong></li>
+                        <ul>
+                            <li>EC2 Instances (managed by autoscaling group) - TCP/UDP</li>
+                            <li>IP Addresses - must be private</li>
+                            <li>Application Load Balancer</li>
+                            <li>Health Checks support TCP, HTTP and HTTPS protocols</li>
+                        </ul>
+                    </ul>
+                    <li><strong>Gateway Load Balancer (GWLB)</strong></li>
+                    <ul>
+                        <li>Operates at Layer 3 (Network Layer)</li>
+                        <li><strong>Target Groups:</strong> EC2 Instances & Private IPs.</li>
+                        <li>Used to deploy, scale, and manage third-party virtual appliances, such as firewalls, intrusion detection and prevention systems, and deep packet inspection systems.</li>
+                        <li>Combines a transparent network gateway (using the GENEVE protocol) with a load balancer.</li>
+                        <li>Allows you to scale and manage virtual appliances centrally</li>
+                    </ul>
+                    <li><strong>Classic Load Balancer (CLB):</strong> Operates at both the application and transport layers. It is suitable for applications that were built within the EC2-Classic network.</li>
+                    <ul>
+                        <li><span style="font-style: italic; color: red;">Deprecated - Use ALB or NLB instead</span></li>
+                        <li>Supports HTTP, HTTPS, TCP, SSL protocols</li>
+                    </ul>
+                </ul>
+            </li>
+            <li><strong>Key Features of ELB:</strong>
+                <ul>
+                    <li>Managed by AWS - AWS handles maintenance and updates</li>
+                    <li><strong>Automatic Scaling:</strong> ELB can automatically scale its capacity to handle incoming traffic based on demand.</li>
+                    <li><strong>Health Checks:</strong> ELB performs health checks on registered targets to ensure traffic is only routed to healthy instances.</li>
+                    <li><strong>SSL Termination:</strong> ELB can offload SSL/TLS termination, reducing the load on backend instances.</li>
+                    <li><strong>Sticky Sessions (Session Affinity):</strong> ELB supports session stickiness, allowing requests from a user to be directed to the same instance.</li>
+                    <li><strong>Connection Draining (Deregistration Delay):</strong> Allows existing requests to complete before removing an instance.</li>
+                    <li><strong>Cross-Zone Load Balancing:</strong> Distribute traffic evenly across all AZs (ALB enabled by default, NLB disabled by default).</li>
+                </ul>
+            </li>
+
+            <li><strong>Load Balancer Security Groups</strong></li>
+            <ul>
+                <li>Security groups act as a virtual firewall for your load balancer to control inbound and outbound traffic.</li>
+                <li>You can specify rules based on protocols, ports, and source/destination IP addresses.</li>
+                <li>Ensure that the security group allows traffic from the load balancer to the backend instances on the required ports.</li>
+                <li><strong>Best Practice:</strong> Backend instances should only accept traffic from the load balancer security group, not directly from the internet.</li>
+            </ul>
+
+            <li><strong>ELB Pricing</strong></li>
+            <ul>
+                <li>Charged per hour that the load balancer is running</li>
+                <li>Additional charges for data processed</li>
+                <li>NLB has higher throughput capacity and costs more than ALB</li>
+            </ul>
+        </ul>
+
+        <hr class = "soft-divide">
+        <h2>Auto Scaling Groups (ASG)</h2>
+        <p>Auto Scaling Groups automatically launch or terminate EC2 instances based on demand to maintain optimal application performance and availability.</p>
+
+        <ul>
+            <li><strong>Core Concepts</strong></li>
+            <ul>
+                <li><strong>Minimum Size:</strong> Minimum number of instances that must be running at all times</li>
+                <li><strong>Maximum Size:</strong> Maximum number of instances that can be launched</li>
+                <li><strong>Desired Capacity:</strong> Target number of instances (between minimum and maximum)</li>
+                <li><strong>Launch Template/Launch Configuration:</strong> Specifies the EC2 instance configuration (AMI, instance type, security groups, etc.)</li>
+                <ul>
+                    <li><strong>Launch Template (Recommended):</strong> More flexible, supports versioning, can be used for both on-demand and spot instances</li>
+                    <li><strong>Launch Configuration (Legacy):</strong> Immutable, cannot be modified after creation</li>
+                </ul>
+            </ul>
+
+            <li><strong>Scaling Policies</strong></li>
+            <ul>
+                <li><strong>Target Tracking Scaling:</strong></li>
+                <ul>
+                    <li>Simplest and most popular scaling policy</li>
+                    <li>Scale based on a target metric (e.g., CPU utilization at 70%, network traffic, custom metric)</li>
+                    <li>ASG automatically adjusts instances to maintain the target</li>
+                </ul>
+                <li><strong>Simple Scaling:</strong></li>
+                <ul>
+                    <li>Scale based on CloudWatch alarms (e.g., scale up when CPU > 80%)</li>
+                    <li>Add or remove a fixed number of instances</li>
+                    <li>Requires manual setup of alarms</li>
+                </ul>
+                <li><strong>Step Scaling:</strong></li>
+                <ul>
+                    <li>More granular control - different actions based on alarm values</li>
+                    <li>Example: Add 1 instance if CPU 70-80%, add 2 instances if CPU 80-90%</li>
+                </ul>
+                <li><strong>Scheduled Scaling:</strong></li>
+                <ul>
+                    <li>Scale at specific times (e.g., scale up during business hours, down at night)</li>
+                    <li>Useful for predictable traffic patterns</li>
+                </ul>
+            </ul>
+
+            <li><strong>Lifecycle Hooks</strong></li>
+            <ul>
+                <li>Allow you to perform custom actions during instance launch or termination</li>
+                <li><strong>Launch Hooks:</strong> Pause the instance before it enters service (e.g., for configuration, monitoring setup)</li>
+                <li><strong>Termination Hooks:</strong> Pause the instance before termination (e.g., for graceful shutdown, log collection)</li>
+            </ul>
+
+            <li><strong>Connection Draining with ASG</strong></li>
+            <ul>
+                <li>When an instance is marked for termination, the load balancer stops sending new requests</li>
+                <li>Existing connections are allowed to complete (deregistration delay)</li>
+                <li>Prevents abrupt disconnection of users</li>
+            </ul>
+
+            <li><strong>Health Checks in ASG</strong></li>
+            <ul>
+                <li><strong>EC2 Health Check:</strong> Instance status checks (default)</li>
+                <li><strong>ELB Health Check:</strong> Application-level health verification through the load balancer</li>
+                <li>If an instance fails health check, ASG automatically replaces it</li>
+                <li><strong>Grace Period:</strong> Time to wait before starting health checks on new instances (default 300 seconds)</li>
+            </ul>
+
+            <li><strong>ASG with Load Balancers</strong></li>
+            <ul>
+                <li>ASG can automatically attach/detach instances to/from a load balancer</li>
+                <li>Instances are registered in target groups when launched</li>
+                <li>Instances are deregistered when terminated</li>
+                <li>Load balancer performs health checks and routes traffic accordingly</li>
+            </ul>
+        </ul>
+
+        <hr class = "soft-divide">
+        <h2>ELB vs ASG Comparison</h2>
+        <ul>
+            <li><strong>ELB (Load Balancer):</strong> Distributes traffic across instances in real-time</li>
+            <li><strong>ASG (Auto Scaling):</strong> Automatically adjusts the number of instances based on demand</li>
+            <li><strong>Together:</strong> ELB routes traffic to healthy instances, ASG ensures optimal capacity</li>
+        </ul>
+
+        <hr class = "soft-divide">
+        <h2>ELB & ASG Best Practices</h2>
+        <ul>
+            <li><strong>Availability & Resilience:</strong></li>
+            <ul>
+                <li>Always use ELB with ASG for high availability</li>
+                <li>Deploy instances across multiple Availability Zones</li>
+                <li>Enable cross-zone load balancing to distribute traffic evenly</li>
+                <li>Use at least 2 AZs for redundancy</li>
+            </ul>
+
+            <li><strong>Health Checks:</strong></li>
+            <ul>
+                <li>Enable ELB health checks in ASG (not just EC2 health checks)</li>
+                <li>Set appropriate health check grace period (not too short to avoid premature termination)</li>
+                <li>Configure meaningful health check endpoints (e.g., /health, /status)</li>
+            </ul>
+
+            <li><strong>Scaling Policies:</strong></li>
+            <ul>
+                <li>Use Target Tracking Scaling for most use cases (simpler and effective)</li>
+                <li>Set realistic minimum and maximum capacity based on actual needs</li>
+                <li>Avoid setting desired capacity equal to maximum (leaves no room for spikes)</li>
+                <li>Use multiple metrics for scaling decisions (CPU + memory + custom metrics)</li>
+            </ul>
+
+            <li><strong>Performance Optimization:</strong></li>
+            <ul>
+                <li>Choose the right ELB type for your workload (ALB for web, NLB for high-performance)</li>
+                <li>Use connection pooling in backend applications to reduce overhead</li>
+                <li>Monitor load balancer metrics and adjust capacity as needed</li>
+                <li>Consider using multiple target groups for different application tiers</li>
+            </ul>
+
+            <li><strong>Cost Optimization:</strong></li>
+            <ul>
+                <li>Use spot instances in ASG with mixed instance types to reduce costs</li>
+                <li>Set appropriate scaling cooldown periods to avoid frequent scaling actions</li>
+                <li>Review and adjust minimum/maximum capacity regularly</li>
+            </ul>
+
+            <li><strong>Security:</strong></li>
+            <ul>
+                <li>Use security groups to restrict traffic to load balancer and backend instances</li>
+                <li>Enable SSL/TLS termination at the load balancer</li>
+                <li>Use IAM roles for EC2 instances instead of hardcoding credentials</li>
+                <li>Enable logging on load balancers for audit and troubleshooting</li>
+            </ul>
+        </ul>
+
+        <hr class = "soft-divide">
+        <h2>Common Exam Scenarios & Solutions</h2>
+        <ul>
+            <li><strong>Scenario: High traffic spikes at certain times of day</strong></li>
+            <ul>
+                <li><strong>Solution:</strong> Use ASG with target tracking scaling based on CPU utilization + scheduled scaling for predictable patterns</li>
+            </ul>
+
+            <li><strong>Scenario: Need to handle sudden traffic spike without losing requests</strong></li>
+            <ul>
+                <li><strong>Solution:</strong> Use NLB for ultra-high performance + ASG with aggressive scaling policies</li>
+                <li>Ensure health check grace period is sufficient to allow new instances to come online</li>
+            </ul>
+
+            <li><strong>Scenario: Application needs zero-downtime deployment</strong></li>
+            <ul>
+                <li><strong>Solution:</strong> Use blue-green deployment with ASG + ALB + weighted target groups</li>
+                <li>Route traffic gradually from old (blue) to new (green) version</li>
+            </ul>
+
+            <li><strong>Scenario: Multi-region deployment with automatic failover</strong></li>
+            <ul>
+                <li><strong>Solution:</strong> ELB in each region + ASG for local scaling + Route 53 for cross-region routing + failover policy</li>
+            </ul>
+
+            <li><strong>Scenario: Microservices architecture with multiple services</strong></li>
+            <ul>
+                <li><strong>Solution:</strong> Use ALB with path-based routing to different target groups (each managed by separate ASG)</li>
+                <li>Example: /api/* routes to API servers, /ui/* routes to UI servers</li>
+            </ul>
+
+            <li><strong>Scenario: Need to gracefully handle instance termination</strong></li>
+            <ul>
+                <li><strong>Solution:</strong> Use connection draining (deregistration delay) + ASG lifecycle hooks for cleanup tasks</li>
+            </ul>
+
+            <li><strong>Scenario: Application requires session persistence</strong></li>
+            <ul>
+                <li><strong>Solution:</strong> Enable sticky sessions (session affinity) on ALB</li>
+                <li>Consider using external session store (ElastiCache, DynamoDB) for better scalability</li>
+            </ul>
+
+            <li><strong>Scenario: Non-HTTP protocol (e.g., real-time gaming, IoT data)</strong></li>
+            <ul>
+                <li><strong>Solution:</strong> Use NLB for TCP/UDP traffic + ASG for horizontal scaling</li>
+            </ul>
+
+            <li><strong>Scenario: Content-based routing based on URL/host</strong></li>
+            <ul>
+                <li><strong>Solution:</strong> Use ALB with host-based or path-based routing rules</li>
+                <li>Allows serving different content from different backend servers</li>
+            </ul>
+
+            <li><strong>Scenario: High-availability database layer</strong></li>
+            <ul>
+                <li><strong>Solution:</strong> NLB is NOT for databases (use Route 53 failover + database replication instead)</li>
+                <li>NLB is only for application servers, not stateful services like databases</li>
+            </ul>
+        </ul>
+
+        <hr class = "soft-divide">
+        <h2>Troubleshooting ELB & ASG</h2>
+        <ul>
+            <li><strong>Instances not receiving traffic:</strong></li>
+            <ul>
+                <li>Check if instance is healthy (health check passing)</li>
+                <li>Verify security groups allow traffic from load balancer</li>
+                <li>Check target group registration</li>
+            </ul>
+
+            <li><strong>Scaling not happening:</strong></li>
+            <ul>
+                <li>Verify CloudWatch alarms are triggering (for Simple/Step scaling)</li>
+                <li>Check ASG capacity limits (minimum/maximum)</li>
+                <li>Review scaling policy configuration</li>
+                <li>Check IAM permissions for ASG to launch instances</li>
+            </ul>
+
+            <li><strong>Instances terminating unexpectedly:</strong></li>
+            <ul>
+                <li>Check health check configuration (may be too aggressive)</li>
+                <li>Review grace period - may be too short</li>
+                <li>Check instance logs for application errors</li>
+            </ul>
+
+            <li><strong>High latency or connection issues:</strong></li>
+            <ul>
+                <li>Verify cross-zone load balancing is enabled (for ALB)</li>
+                <li>Check if backend instances have sufficient resources</li>
+                <li>Review load balancer access logs for patterns</li>
+            </ul>
+        </ul>
+
+        <hr class = "soft-divide">
+        <h2>Exam Key Takeaways</h2>
+        <ul>
+            <li><strong>ALB</strong> = Layer 7, HTTP/HTTPS, best for web applications and microservices</li>
+            <li><strong>NLB</strong> = Layer 4, TCP/UDP, best for extreme performance and non-HTTP protocols</li>
+            <li><strong>GWLB</strong> = Layer 3, best for virtual appliances and network services</li>
+            <li><strong>ASG</strong> automatically scales instances based on policies and works seamlessly with ELB</li>
+            <li>Always use <strong>Target Tracking Scaling</strong> unless exam specifies otherwise</li>
+            <li><strong>ELB + ASG + Multi-AZ</strong> = High availability architecture</li>
+            <li>Use <strong>Route 53</strong> for multi-region failover with ELB</li>
+            <li>Session affinity and connection draining prevent data loss during scaling events</li>
+        </ul>
+
+    </div>
+</body>
+</html>

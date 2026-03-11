@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AWS Disaster Recovery & Migration — DMS, MGN, Backup, Data Transfer</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <div class="container2">
+        <div class="header">
+            <h1>Disaster Recovery & Migration: Critical Strategies for Business Continuity</h1>
+            <hr>
+        </div>
+
+        <h2>Overview</h2>
+        <p>Disaster recovery and migration are cornerstone topics for AWS Solutions Architect exams. A disaster is any event with negative impact on business continuity or finances. AWS enables organizations to prepare for disasters and migrate infrastructure at scale. This section covers recovery strategies, Recovery Point Objective (RPO), Recovery Time Objective (RTO), database migration services, backup strategies, and large-scale data transfer patterns.</p>
+
+        <hr class="soft-divide">
+        <h2>Disaster Recovery Fundamentals</h2>
+
+        <h3>What is Disaster Recovery?</h3>
+        <p>Disaster recovery is about preparing for and recovering from disruptive events. A disaster can be a natural event (earthquake, hurricane), infrastructure failure (data center outage), security breach (ransomware), or human error (accidental deletion). Disaster recovery planning ensures business continuity and minimizes financial/reputational damage.</p>
+
+        <h3>Disaster Recovery Scenarios</h3>
+        <ul>
+            <li><strong>On-Premises to On-Premises:</strong> Traditional disaster recovery. Maintain a secondary data center on-premises with backup infrastructure. Very expensive due to real estate, hardware, staffing, and redundancy costs. Being phased out in favor of cloud solutions.</li>
+            <li><strong>On-Premises to AWS Cloud (Hybrid Recovery):</strong> Primary workloads on-premises; backup/standby infrastructure in AWS. Cost-effective: pay for AWS resources only when needed for disaster recovery. Increasingly common for organizations with existing on-premises investments.</li>
+            <li><strong>AWS Region A to AWS Region B (Multi-Region):</strong> Replicate workloads across AWS regions. Highest availability/redundancy. Suitable for globally distributed applications or organizations with strict business continuity requirements.</li>
+        </ul>
+
+        <h3>Key Disaster Recovery Metrics</h3>
+
+        <h4>Recovery Point Objective (RPO)</h4>
+        <p><strong>RPO</strong> defines the maximum acceptable data loss in case of disaster. It answers: "How much data can we afford to lose?" RPO is expressed as a time interval and depends on data criticality and business tolerance.</p>
+        <ul>
+            <li><strong>Example 1:</strong> E-commerce company: RPO = 1 hour. Means if disaster occurs at 3:00 PM, they can restore data from 2:00 PM backup. Data from 2:00-3:00 PM is lost. Acceptable because transaction volume in one hour is modest and can be manually recovered.</li>
+            <li><strong>Example 2:</strong> Financial trading platform: RPO = 1 minute. Every minute of lost trades impacts millions in revenue. Continuous replication (near-zero RPO) required.</li>
+            <li><strong>Lower RPO = More Expensive:</strong> Achieving 1-minute RPO requires continuous replication, multi-region architecture, and monitoring. Achieving 24-hour RPO can use daily snapshots (cheaper).</li>
+            <li><strong>RPO is determined by business requirements, not technology.</strong></li>
+        </ul>
+
+        <h4>Recovery Time Objective (RTO)</h4>
+        <p><strong>RTO</strong> defines the maximum acceptable downtime in case of disaster. It answers: "How quickly must we recover?" RTO is expressed as a time interval and depends on business impact and acceptable revenue loss.</p>
+        <ul>
+            <li><strong>Example 1:</strong> Internal HR system: RTO = 24 hours. If down, employees can't access payroll/benefits for a day. Acceptable. No customer impact.</li>
+            <li><strong>Example 2:</strong> Customer-facing e-commerce website: RTO = 15 minutes. Every hour down = significant lost sales and reputation damage. Must recover very quickly.</li>
+            <li><strong>Example 3:</strong> Backup system: RTO = 72 hours. Backups aren't customer-facing, so longer downtime acceptable.</li>
+            <li><strong>Lower RTO = More Expensive:</strong> Achieving 15-minute RTO requires automated failover, pre-warmed standby infrastructure, multi-region setup. Achieving 24-hour RTO can use on-demand infrastructure provisioning (cheaper).</li>
+            <li><strong>RTO is determined by business requirements, not technology.</strong></li>
+        </ul>
+
+        <h3>Disaster Recovery Strategies & Tradeoffs</h3>
+        <p>Four primary disaster recovery strategies exist, each with different RPO/RTO and cost profiles:</p>
+
+        <table style="width:100%; border-collapse:collapse; margin:10px 0;">
+            <tr style="background:#f0f0f0;">
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Strategy</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Description</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">RPO</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">RTO</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Cost</th>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Backup & Restore</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Copy data periodically (daily/weekly). In disaster, restore from most recent backup to new infrastructure (provisions from scratch on-demand).</td>
+                <td style="border:1px solid #ddd; padding:8px;">Hours (24h typical)</td>
+                <td style="border:1px solid #ddd; padding:8px;">Hours-to-Days (infrastructure provisioning + restore time)</td>
+                <td style="border:1px solid #ddd; padding:8px;">$$ (Lowest)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Pilot Light</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Maintain a minimal version of the application running in secondary region. Only critical data replicated (not full application). On disaster, scale up pilot light to full capacity.</td>
+                <td style="border:1px solid #ddd; padding:8px;">Hours (continuous replication for critical data only)</td>
+                <td style="border:1px solid #ddd; padding:8px;">Minutes-to-Hours (scale existing infrastructure + restore non-critical data)</td>
+                <td style="border:1px solid #ddd; padding:8px;">$$$ (Moderate)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Warm Standby</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Maintain a scaled-down but fully functional version of application in secondary region. All data continuously replicated. In disaster, scale up standby to handle full production load.</td>
+                <td style="border:1px solid #ddd; padding:8px;">Minutes (continuous replication)</td>
+                <td style="border:1px solid #ddd; padding:8px;">Minutes (just switch traffic, scale up existing infrastructure)</td>
+                <td style="border:1px solid #ddd; padding:8px;">$$$$ (High)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;"><strong>Multi-Site / Hot Site</strong></td>
+                <td style="border:1px solid #ddd; padding:8px;">Active-active setup. Full application running in multiple regions. Traffic split between regions. In disaster, remaining region(s) handle all traffic automatically.</td>
+                <td style="border:1px solid #ddd; padding:8px;">Near-Zero (continuous replication, potentially sub-minute lag)</td>
+                <td style="border:1px solid #ddd; padding:8px;">Seconds-to-Minutes (automatic failover via DNS/load balancer)</td>
+                <td style="border:1px solid #ddd; padding:8px;">$$$$$ (Highest)</td>
+            </tr>
+        </table>
+
+        <h3>Disaster Recovery Strategy Selection (Exam Context)</h3>
+        <ul>
+            <li><strong>"Need to recover within hours, can accept 24 hours of data loss"</strong> → Backup & Restore (cheapest option).</li>
+            <li><strong>"Need to recover within 30 minutes, can accept 1-2 hours of data loss"</strong> → Pilot Light (scale minimal standby).</li>
+            <li><strong>"Need to recover within 5 minutes, must replicate all data in real-time"</strong> → Warm Standby (scale down secondary region).</li>
+            <li><strong>"No downtime acceptable, must be active-active"</strong> → Multi-Site / Hot Site (most expensive, but maximum availability).</li>
+            <li><strong>"Application has 4-hour RTO and 2-hour RPO"</strong> → Pilot Light or Warm Standby depending on data sync frequency and existing infrastructure.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>AWS Database Migration Service (DMS)</h2>
+
+        <h3>Service Overview</h3>
+        <p>AWS Database Migration Service (DMS) enables quick, secure, and resilient database migration to AWS. The source database remains available during migration (minimal downtime), supporting both homogeneous migrations (Oracle to Oracle) and heterogeneous migrations (Oracle to PostgreSQL). DMS uses Change Data Capture (CDC) for continuous data replication, making it ideal for zero-downtime migrations.</p>
+
+        <h3>Key Characteristics</h3>
+        <ul>
+            <li><strong>Self-Healing & Resilient:</strong> DMS automatically retries failed operations, handles network interruptions, and resumes replication from the last checkpoint.</li>
+            <li><strong>Source Database Remains Available:</strong> Minimal impact on production systems. Replication runs in background without locking source database.</li>
+            <li><strong>Architecture:</strong> DMS requires an EC2 instance to run replication tasks. This instance connects to both source and target databases, performing data extraction/transformation/loading.</li>
+            <li><strong>Change Data Capture (CDC):</strong> After initial full load, CDC captures ongoing changes to source database and applies them to target. Enables continuous synchronization for zero-downtime migrations.</li>
+        </ul>
+
+        <h3>DMS Sources & Targets</h3>
+        <table style="width:100%; border-collapse:collapse; margin:10px 0;">
+            <tr style="background:#f0f0f0;">
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Source Databases</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Target Databases</th>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">
+                    • Oracle (on-premises, RDS)<br>
+                    • SQL Server (on-premises, RDS)<br>
+                    • MySQL (on-premises, RDS)<br>
+                    • PostgreSQL (on-premises, RDS)<br>
+                    • MariaDB<br>
+                    • MongoDB<br>
+                    • Db2<br>
+                    • SAP HANA<br>
+                    • DynamoDB<br>
+                    • S3
+                </td>
+                <td style="border:1px solid #ddd; padding:8px;">
+                    • RDS (MySQL, PostgreSQL, Oracle, SQL Server, MariaDB)<br>
+                    • Aurora (MySQL, PostgreSQL)<br>
+                    • DynamoDB<br>
+                    • ElastiCache (Redis)<br>
+                    • DocumentDB<br>
+                    • Kinesis Data Streams<br>
+                    • Neptune<br>
+                    • Redshift<br>
+                    • S3<br>
+                    • OpenSearch<br>
+                    • Kafka
+                </td>
+            </tr>
+        </table>
+
+        <h3>DMS Multi-AZ Deployments</h3>
+        <p>When Multi-AZ is enabled on DMS replication instances:</p>
+        <ul>
+            <li><strong>Synchronous Standby Replica:</strong> DMS provisions and maintains a standby replication instance in a different AZ.</li>
+            <li><strong>Advantages:</strong>
+                <ul>
+                    <li>Provides data redundancy (if primary fails, standby takes over automatically).</li>
+                    <li>Eliminates input/output (I/O) freezes during maintenance or failover.</li>
+                    <li>Minimizes latency spikes during replication.</li>
+                </ul>
+            </li>
+            <li><strong>Best Practice:</strong> Enable Multi-AZ for production migrations to ensure continuous replication without interruption.</li>
+        </ul>
+
+        <h3>DMS Use Case Architecture</h3>
+        <p><strong>Scenario:</strong> Migrate 500 GB Oracle database on-premises to AWS RDS PostgreSQL with zero downtime.</p>
+        <ul>
+            <li><strong>Step 1:</strong> Provision DMS replication instance (Multi-AZ for reliability).</li>
+            <li><strong>Step 2:</strong> Create source endpoint (on-prem Oracle) and target endpoint (RDS PostgreSQL).</li>
+            <li><strong>Step 3:</strong> Full load: DMS copies all data from Oracle to RDS. Takes hours depending on data volume and network.</li>
+            <li><strong>Step 4:</strong> Change Data Capture (CDC): DMS continuously monitors Oracle transaction logs and applies changes to RDS in real-time.</li>
+            <li><strong>Step 5:</strong> Validation: Verify row counts and checksums between Oracle and RDS match.</li>
+            <li><strong>Step 6:</strong> Cutover: Once replication lag = 0, update application connection strings to point to RDS PostgreSQL. No data loss.</li>
+            <li><strong>Result:</strong> Zero-downtime migration from Oracle to PostgreSQL on AWS.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>AWS Schema Conversion Tool (SCT)</h2>
+
+        <h3>Purpose & Function</h3>
+        <p>AWS Schema Conversion Tool (SCT) automatically converts database schemas from one engine to another. It translates DDL (Data Definition Language: CREATE TABLE, CREATE INDEX, etc.) statements, stored procedures, functions, and views from source database syntax to target database syntax.</p>
+
+        <h3>Exam Use Case</h3>
+        <p><strong>Scenario:</strong> Your company wants to migrate from Oracle (expensive licensing) to PostgreSQL (open-source, lower cost) on RDS. However, the application uses Oracle-specific syntax (PL/SQL procedures, Oracle-specific functions, etc.). Simply copying the schema won't work—you need to convert PL/SQL to PostgreSQL PL/pgSQL.</p>
+        <ul>
+            <li><strong>Solution:</strong> Use SCT to automatically convert Oracle schema to PostgreSQL schema. SCT translates:
+                <ul>
+                    <li>Oracle PL/SQL procedures → PostgreSQL PL/pgSQL procedures.</li>
+                    <li>Oracle-specific functions → PostgreSQL equivalents (e.g., DECODE → CASE).</li>
+                    <li>Oracle views and indexes → PostgreSQL syntax.</li>
+                    <li>Generates a conversion report highlighting any manual adjustments needed.</li>
+                </ul>
+            </li>
+            <li><strong>Workflow:</strong> SCT (schema conversion) + DMS (data migration) = complete heterogeneous migration from Oracle to PostgreSQL.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>RDS & Aurora MySQL Migrations</h2>
+
+        <h3>RDS MySQL to Aurora MySQL</h3>
+
+        <h4>Option 1: DB Snapshots (Fastest)</h4>
+        <ul>
+            <li>Take snapshot of RDS MySQL instance.</li>
+            <li>Restore snapshot as Aurora MySQL cluster.</li>
+            <li><strong>Pros:</strong> Fast (minutes), simple process, no ongoing sync needed.</li>
+            <li><strong>Cons:</strong> Downtime during snapshot → restore process. Old backup method; less recommended.</li>
+        </ul>
+
+        <h4>Option 2: Aurora Read Replica (Recommended for Zero Downtime)</h4>
+        <ul>
+            <li>Create Aurora read replica of RDS MySQL instance.</li>
+            <li>Wait until replication lag = 0 (source and replica fully synchronized).</li>
+            <li>Promote Aurora read replica to standalone Aurora cluster (becomes primary).</li>
+            <li><strong>Pros:</strong> Zero downtime, continuous synchronization, can test on replica before cutover.</li>
+            <li><strong>Cons:</strong> Takes time (replication lag), additional costs during replication, requires monitoring to detect when lag = 0.</li>
+            <li><strong>Best Practice:</strong> Use for production migrations requiring zero downtime.</li>
+        </ul>
+
+        <h3>External MySQL (On-Premises or Other Cloud) to Aurora MySQL</h3>
+
+        <h4>Option 1: Percona XtraBackup</h4>
+        <ul>
+            <li>Create full backup using Percona XtraBackup tool on external MySQL server.</li>
+            <li>Upload backup file to S3.</li>
+            <li>Restore from S3 into Aurora.</li>
+        </ul>
+
+        <h4>Option 2: AWS S3 for Continuous Migration</h4>
+        <ul>
+            <li>Create Aurora MySQL database from S3 backup file.</li>
+            <li>Aurora natively supports loading from S3.</li>
+            <li><strong>Best when:</strong> One-time migration from external MySQL source.</li>
+        </ul>
+
+        <h4>When to Use DMS</h4>
+        <ul>
+            <li>When both RDS MySQL and target Aurora are running (allows continuous sync).</li>
+            <li>When heterogeneous migration needed (MySQL to Aurora is homogeneous, so DMS optional).</li>
+            <li>When zero-downtime requirement and continuous CDC needed.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>RDS & Aurora PostgreSQL Migrations</h2>
+
+        <h3>RDS PostgreSQL to Aurora PostgreSQL</h3>
+
+        <h4>Option 1: DB Snapshots</h4>
+        <ul>
+            <li>Take snapshot of RDS PostgreSQL → restore as Aurora PostgreSQL cluster.</li>
+            <li><strong>Simple but involves downtime.</strong></li>
+        </ul>
+
+        <h4>Option 2: Aurora Read Replica (Recommended)</h4>
+        <ul>
+            <li>Create Aurora read replica of RDS PostgreSQL.</li>
+            <li>Wait until replication lag = 0.</li>
+            <li>Promote to standalone Aurora cluster.</li>
+            <li><strong>Zero downtime, tested approach.</strong></li>
+        </ul>
+
+        <h3>External PostgreSQL (On-Premises or Other Cloud) to Aurora PostgreSQL</h3>
+
+        <h4>Option 1: Backup to S3</h4>
+        <ul>
+            <li>Create backup of external PostgreSQL using pg_dump or similar tool.</li>
+            <li>Upload to S3.</li>
+            <li>Restore into Aurora PostgreSQL.</li>
+        </ul>
+
+        <h4>Option 2: AWS_S3 Aurora Extension</h4>
+        <ul>
+            <li>Aurora PostgreSQL has built-in aws_s3 extension.</li>
+            <li>Import data directly from S3 files using SQL commands (e.g., <code>SELECT aws_s3.table_import_from_s3(...)</code>).</li>
+            <li><strong>Native S3 integration; recommended for Aurora.</strong></li>
+        </ul>
+
+        <h3>When to Use DMS</h3>
+        <ul>
+            <li>Continuous replication with Change Data Capture (CDC) when both databases are running.</li>
+            <li>Zero-downtime migration with real-time synchronization.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>AWS Backup Service</h2>
+
+        <h3>Service Overview</h3>
+        <p>AWS Backup is a centrally managed, policy-based service that automates and manages backups across AWS. It eliminates the need for custom scripts, manual processes, and service-specific backup tools. AWS Backup provides a unified backup experience with consistent policies, centralized monitoring, and compliance enforcement.</p>
+
+        <h3>Supported Services</h3>
+        <ul>
+            <li><strong>Databases:</strong> RDS, Aurora, DynamoDB, DocumentDB, Neptune, Redshift</li>
+            <li><strong>Storage:</strong> EBS, EFS, S3</li>
+            <li><strong>Compute:</strong> EC2, VMware Cloud on AWS</li>
+            <li><strong>Other:</strong> FSx, Storage Gateway, Amazon Timestream</li>
+        </ul>
+
+        <h3>Key Features</h3>
+        <ul>
+            <li><strong>Backup Plans:</strong> Define backup policies with:
+                <ul>
+                    <li><strong>Backup Frequency:</strong> Hourly, 12-hour, daily, weekly, monthly, or custom cron expression.</li>
+                    <li><strong>Backup Window:</strong> Time of day for backup to occur (avoids peak hours).</li>
+                    <li><strong>Transition to Cold Storage:</strong> After X days/weeks/months, transition backup to cheaper cold storage (Glacier). Never transition, or custom schedule.</li>
+                    <li><strong>Retention Period:</strong> Keep backup indefinitely (FOREVER) or delete after X days/weeks/months/years.</li>
+                </ul>
+            </li>
+            <li><strong>Cross-Region Backups:</strong> Replicate backups to another region for disaster recovery across regions.</li>
+            <li><strong>Cross-Account Backups:</strong> Back up resources in one AWS account and restore in another account (for organizational backup consolidation).</li>
+            <li><strong>Point-in-Time Recovery (PITR):</strong> For supported services (RDS, DynamoDB), restore to any point within retention window.</li>
+            <li><strong>On-Demand & Scheduled:</strong> Trigger backups immediately or on schedule.</li>
+            <li><strong>Tag-Based Policies:</strong> Apply backup policies to resources based on tags (e.g., all resources tagged "production=true" get daily backups).</li>
+        </ul>
+
+        <h3>AWS Backup Vault Lock</h3>
+        <p>Backup Vault Lock enforces a WORM (Write Once, Read Many) state for all backups stored in the vault. Once enabled:</p>
+        <ul>
+            <li><strong>No Deletion Allowed:</strong> Backups cannot be deleted, even by root user or with IAM admin policies. Protects against ransomware, malicious insiders, and accidental deletions.</li>
+            <li><strong>Immutable Retention:</strong> Retention periods cannot be shortened. Ensures backups meet compliance requirements (e.g., HIPAA requires backups for 7 years).</li>
+            <li><strong>Use Case:</strong> "How do we prevent ransomware from encrypting and deleting our backups?" → AWS Backup Vault Lock makes backups immutable. Even if ransomware infects AWS accounts, it cannot delete or modify locked backups.</li>
+            <li><strong>Additional Layer of Defense:</strong> Vault Lock is an enforcement mechanism on top of IAM policies. Provides defense-in-depth against accidental/malicious modifications.</li>
+        </ul>
+
+        <h3>Backup Plan Example (Exam Context)</h3>
+        <p><strong>Scenario:</strong> Production RDS PostgreSQL database must comply with regulations requiring 7-year data retention. Daily backups needed. Backups should move to cheaper storage after 30 days.</p>
+        <ul>
+            <li><strong>Backup Plan:</strong>
+                <ul>
+                    <li>Backup Frequency: Daily at 2:00 AM UTC</li>
+                    <li>Transition to Cold Storage: After 30 days → Glacier</li>
+                    <li>Retention: 7 years (2555 days)</li>
+                    <li>Vault Lock: Enabled to prevent tampering</li>
+                </ul>
+            </li>
+            <li><strong>Result:</strong> Daily backups for 30 days in "hot" storage (fast retrieval). Then moved to Glacier for 7 years (much cheaper). Vault Lock prevents any deletion or modification.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Application Migration Service (MGN)</h2>
+
+        <h3>Service Overview</h3>
+        <p>AWS Application Migration Service (MGN) is a comprehensive lift-and-shift migration solution for moving applications to AWS at scale. It simplifies migration by automating the rehosting of physical, virtual, and cloud-based servers to run natively on AWS EC2 with minimal code changes and reduced downtime.</p>
+
+        <h3>Discovery Phase: Understanding Your Data Center</h3>
+        <p>Before migration, you must discover and map servers, dependencies, and resource utilization. AWS provides two discovery options:</p>
+
+        <h4>AWS Agentless Discovery Connector</h4>
+        <ul>
+            <li><strong>Method:</strong> Deploy lightweight VM in data center (acts as network gateway). Discovers servers by network sniffing without installing agents on each server.</li>
+            <li><strong>Advantages:</strong> No agent installation needed, works in air-gapped networks, quick to deploy.</li>
+            <li><strong>Disadvantages:</strong> Less detailed per-server data, network-dependent discovery.</li>
+        </ul>
+
+        <h4>AWS Application Discovery Agent</h4>
+        <ul>
+            <li><strong>Method:</strong> Install lightweight agent on each server (Windows/Linux).</li>
+            <li><strong>Collects:</strong> Server utilization data (CPU, memory, network), running processes, installed software, network connections, dependency mapping.</li>
+            <li><strong>Advantages:</strong> Detailed per-server metrics, accurate dependency mapping, identifies network patterns.</li>
+            <li><strong>Disadvantages:</strong> Requires agent installation on hundreds/thousands of servers (operational overhead).</li>
+        </ul>
+
+        <h3>Discovery Data & Migration Hub</h3>
+        <ul>
+            <li><strong>Server Utilization Data:</strong> CPU/memory/disk/network metrics help right-size EC2 instances (avoid oversizing).</li>
+            <li><strong>Dependency Mapping:</strong> Identify which servers communicate with each other. Critical for application grouping and network planning.</li>
+            <li><strong>Application Dependencies:</strong> Understand if Server A depends on Server B. Determines migration order (migrate dependencies first).</li>
+            <li><strong>Migration Hub Dashboard:</strong> Visualize all discovered servers, dependencies, and migration progress.</li>
+        </ul>
+
+        <h3>Lift-and-Shift Migration</h3>
+        <p>After discovery, MGN orchestrates the lift-and-shift migration:</p>
+        <ul>
+            <li><strong>Step 1 - Server Replication:</strong> Continuous replication of server data (OS, applications, configuration) from on-premises to AWS. Happens in background without impacting production.</li>
+            <li><strong>Step 2 - Test Waves:</strong> Create test instances to verify applications work on AWS before cutover. Resolve any compatibility issues.</li>
+            <li><strong>Step 3 - Cutover:</strong> On defined date/time, route production traffic to AWS instances. Can be a single cutover (all servers) or phased (groups of servers).</li>
+            <li><strong>Step 4 - Post-Cutover:</strong> Monitor migrated applications for issues. Once stable, decommission on-premises servers.</li>
+        </ul>
+
+        <h3>Platform & Database Support</h3>
+        <ul>
+            <li><strong>Operating Systems:</strong> Windows Server 2003+, Linux (all major distributions).</li>
+            <li><strong>Databases:</strong> SQL Server, Oracle, MySQL, PostgreSQL, MariaDB, MongoDB, etc. (replication-based migration to EC2 or RDS).</li>
+            <li><strong>Applications:</strong> Legacy monoliths, ERP systems (SAP, Oracle), databases, web servers—any application that runs on servers.</li>
+        </ul>
+
+        <h3>Minimal Downtime & Cost Benefits</h3>
+        <ul>
+            <li><strong>Minimal Downtime:</strong> Replication reduces cutover time to minutes. Only brief outage during traffic switch.</li>
+            <li><strong>Reduced Costs:</strong> AWS charges only for resources used during migration. No need to maintain secondary on-premises data center.</li>
+            <li><strong>Exam Pattern:</strong> "Migrate 500 servers from data center to AWS" → MGN with discovery + replication + cutover.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Transferring Large Datasets into AWS</h2>
+
+        <h3>Scenario Analysis: 200 TB Data Transfer</h3>
+        <p>Your organization needs to transfer 200 TB of data into AWS. You have three options with different tradeoffs:</p>
+
+        <h4>Option 1: Over Internet / Site-to-Site VPN</h4>
+        <ul>
+            <li><strong>Setup:</strong> Immediate (connect VPN, start transfer).</li>
+            <li><strong>Calculation:</strong>
+                <ul>
+                    <li>200 TB × 1000 GB/TB × 1000 MB/GB × 8 Mb/byte = 1.6 billion Mb</li>
+                    <li>At 100 Mbps internet: 1.6 billion Mb ÷ 100 Mbps = 16 million seconds</li>
+                    <li>Convert to days: 16 million seconds ÷ (60 × 60 × 24) = 185 days</li>
+                </ul>
+            </li>
+            <li><strong>Pros:</strong> Immediate setup, no hardware procurement.</li>
+            <li><strong>Cons:</strong> Takes 6 months; not practical for large transfers.</li>
+        </ul>
+
+        <h4>Option 2: AWS Direct Connect 1 Gbps</h4>
+        <ul>
+            <li><strong>Setup:</strong> 1+ months for Direct Connect provisioning (requires coordination with AWS and ISP).</li>
+            <li><strong>Calculation:</strong> Same 1.6 billion Mb, but 1 Gbps (10x faster than 100 Mbps internet):</li>
+            <ul>
+                <li>1.6 billion Mb ÷ 1000 Mbps = 1.6 million seconds</li>
+                <li>1.6 million seconds ÷ (60 × 60 × 24) = 18.5 days</li>
+            </ul>
+            <li><strong>Pros:</strong> 10x faster than internet. Stable, dedicated connection.</li>
+            <li><strong>Cons:</strong> Long setup time, monthly costs (~$0.30/hour in US regions).</li>
+        </ul>
+
+        <h4>Option 3: AWS Snowball</h4>
+        <ul>
+            <li><strong>Setup:</strong> Order Snowball device (1-2 days). AWS ships within 5 business days.</li>
+            <li><strong>Process:</strong>
+                <ul>
+                    <li>Receive Snowball (petabyte-scale rugged device).</li>
+                    <li>Connect to your data center network (no special integration required).</li>
+                    <li>Copy 200 TB of data to Snowball (local network speed: often 100+ Mbps).</li>
+                    <li>Ship back to AWS (1-2 weeks depending on region).</li>
+                    <li>AWS loads data into S3 automatically.</li>
+                </ul>
+            </li>
+            <li><strong>Timeline:</strong> 1-2 days to order + 5 days shipping + local copy time (depends on network) + 1-2 weeks return shipping = ~2-3 weeks total.</li>
+            <li><strong>Cost:</strong> ~$300 per Snowball + data transfer cost (~$0.025 per GB after 10 TB).</li>
+            <li><strong>Pros:</strong> Fastest practical option for large transfers (1-3 weeks). Works anywhere (no network upgrades needed).</li>
+            <li><strong>Cons:</strong> Physical shipping, requires data loading process.</li>
+        </ul>
+
+        <h3>Decision Matrix</h3>
+        <table style="width:100%; border-collapse:collapse; margin:10px 0;">
+            <tr style="background:#f0f0f0;">
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Data Size</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Scenario</th>
+                <th style="border:1px solid #ddd; padding:8px; text-align:left;">Recommended</th>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">< 100 GB</td>
+                <td style="border:1px solid #ddd; padding:8px;">Small one-time transfer</td>
+                <td style="border:1px solid #ddd; padding:8px;">Internet / VPN (hours)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">100 GB - 1 TB</td>
+                <td style="border:1px solid #ddd; padding:8px;">Moderate one-time transfer</td>
+                <td style="border:1px solid #ddd; padding:8px;">Direct Connect or Snowball (days)</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">1-100 TB</td>
+                <td style="border:1px solid #ddd; padding:8px;">Large initial migration</td>
+                <td style="border:1px solid #ddd; padding:8px;">Snowball (1-3 weeks) + DMS for ongoing</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">> 100 TB</td>
+                <td style="border:1px solid #ddd; padding:8px;">Massive data center migration</td>
+                <td style="border:1px solid #ddd; padding:8px;">Multiple Snowballs + Direct Connect for ongoing</td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #ddd; padding:8px;">Ongoing Replication</td>
+                <td style="border:1px solid #ddd; padding:8px;">Continuous sync (DMS, DataSync, etc.)</td>
+                <td style="border:1px solid #ddd; padding:8px;">Direct Connect or VPN + DMS/DataSync</td>
+            </tr>
+        </table>
+
+        <h3>Snowball + DMS Combination Pattern</h3>
+        <p><strong>Scenario:</strong> Migrate a 500 GB on-premises MySQL database and 2 TB of file data to AWS.</p>
+        <ul>
+            <li><strong>Initial Load:</strong> Order Snowball, copy database backup + files → ship to AWS. Takes 2-3 weeks, but minimal network impact.</li>
+            <li><strong>Continuous Sync:</strong> After initial Snowball load, set up DMS for Change Data Capture (CDC) on source MySQL. DMS continuously replicates changes over VPN/Direct Connect.</li>
+            <li><strong>Cutover:</strong> Once DMS replication lag = 0, switch application to RDS (or Aurora). No data loss.</li>
+            <li><strong>Benefit:</strong> Large initial transfer done cost-effectively (Snowball), ongoing sync handled by DMS with minimal network bandwidth.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>VMware Cloud on AWS</h2>
+
+        <h3>Service Overview</h3>
+        <p>VMware Cloud on AWS is a fully managed service that allows organizations using VMware vSphere on-premises to extend their data center into AWS while keeping the same VMware tools and workflows. This is critical for organizations with significant VMware investments that want to migrate to AWS without rewriting applications or re-architecting infrastructure.</p>
+
+        <h3>Key Capabilities</h3>
+        <ul>
+            <li><strong>Same VMware Tools:</strong> Use vCenter, vSAN, NSX (networking) exactly as you do on-premises. No learning curve. Applications are unaware of running on AWS.</li>
+            <li><strong>Managed by AWS & VMware:</strong> AWS manages the infrastructure; VMware manages software. Joint responsibility.</li>
+            <li><strong>Network Extension:</strong> Extend on-premises networks into AWS using NSX-T. Virtual machines can migrate between on-prem and AWS with same IP addresses, no re-configuration needed.</li>
+            <li><strong>Storage Options:</strong> vSAN storage (same as on-premises) or cloud-native storage (S3, EBS).</li>
+            <li><strong>Hybrid Workload Support:</strong> Run legacy VMware workloads on AWS while gradually migrating to cloud-native services (Kubernetes, serverless).</li>
+        </ul>
+
+        <h3>Use Cases</h3>
+        <ul>
+            <li><strong>Data Center Overflow:</strong> Extend on-premises capacity during peak demand without building new facilities.</li>
+            <li><strong>Disaster Recovery:</strong> Replicate VMware workloads to VMware Cloud on AWS for disaster recovery (warm standby or hot site).</li>
+            <li><strong>Application Migration:</strong> Lift-and-shift VMware VMs to AWS without re-architecting.</li>
+            <li><strong>Consolidation:</strong> Gradually migrate from on-premises VMware to AWS while maintaining operational consistency.</li>
+            <li><strong>Exam Pattern:</strong> "Customer uses VMware on-premises and wants to migrate to AWS without rewriting applications" → VMware Cloud on AWS.</li>
+        </ul>
+
+        <h3>VMware Cloud on AWS vs MGN</h3>
+        <ul>
+            <li><strong>VMware Cloud on AWS:</strong> For organizations with existing VMware infrastructure wanting to extend to AWS. Keeps VMware tooling and workflows intact.</li>
+            <li><strong>MGN (Application Migration Service):</strong> For lift-and-shift of physical/virtual/cloud servers to EC2 without requiring VMware. Converts non-VMware servers to EC2.</li>
+            <li><strong>Choose VMware Cloud on AWS</strong> if: Existing VMware investment, want to reuse vCenter, need hybrid VMware on-prem + cloud.</li>
+            <li><strong>Choose MGN</strong> if: Non-VMware servers, want native AWS (not VMware), simpler rehosting to EC2.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Exam-Style Questions & Answers</h2>
+
+        <ol>
+            <li>
+                <strong>Q: Your financial services company runs critical trading systems. The business requires RPO of 1 minute and RTO of 15 minutes. Which disaster recovery strategy minimizes cost while meeting requirements?</strong>
+                <br><br>
+                <strong>A:</strong> Warm Standby with multi-region setup. 1-minute RPO requires continuous data replication (rules out Backup & Restore with hourly/daily backups). 15-minute RTO requires pre-warmed infrastructure ready to receive traffic (rules out Pilot Light which requires scaling time). Warm Standby maintains a scaled-down version in secondary region, allowing quick scale-up and traffic switch within 15 minutes. Multi-Site would be overkill (higher cost, active-active unnecessary for financial systems).
+            </li>
+
+            <li>
+                <strong>Q: You're migrating a 300 GB PostgreSQL database from on-premises to AWS RDS with zero downtime. The migration must complete within 2 weeks. Which approach?</strong>
+                <br><br>
+                <strong>A:</strong> Use AWS DMS with Change Data Capture (CDC). (1) Create DMS replication instance. (2) Full load: copy 300 GB from on-premises PostgreSQL to RDS. Takes hours to a day depending on network. (3) CDC: DMS monitors on-premises transaction logs and continuously replicates changes to RDS. (4) When replication lag = 0, update application connection string. Zero downtime, completes within 2 weeks. Alternative: Aurora read replica if migrating to Aurora (even simpler), but not applicable if target is RDS.
+            </li>
+
+            <li>
+                <strong>Q: Your organization needs to migrate 1.5 TB of data to AWS. You have a 100 Mbps internet connection and a 2-month timeline. Cost is primary concern. What's the most cost-effective approach?</strong>
+                <br><br>
+                <strong>A:</strong> AWS Snowball. At 100 Mbps, 1.5 TB would take ~17 hours over internet (theoretically possible in 2 months). However, Snowball is far more practical: (1) Order/ship (1-2 weeks), (2) load data locally to Snowball, (3) return to AWS (1-2 weeks). Total: 2-3 weeks, well within 2-month timeline. Cost: ~$300 Snowball + data transfer. Far cheaper than Direct Connect (which costs $0.30/hour, ~$200+/month for 2 months). Internet transfer free but slow and ties up bandwidth.
+            </li>
+
+            <li>
+                <strong>Q: Your legacy application has been attacked with ransomware. The attacker deleted production database backups. How do you prevent this in the future?</strong>
+                <br><br>
+                <strong>A:</strong> AWS Backup with Vault Lock enabled. (1) Configure AWS Backup for daily snapshots of production database. (2) Enable Vault Lock on the backup vault—makes all backups immutable (cannot be deleted, even by root user or IAM admin). (3) Transition backups to Glacier after 30 days for cost savings. (4) Even if ransomware compromises AWS accounts, it cannot delete or modify locked backups. Vault Lock provides defense-in-depth against ransomware and malicious insiders.
+            </li>
+
+            <li>
+                <strong>Q: You're migrating 500 VMware virtual machines to AWS. You want to maintain VMware tooling and avoid rewriting applications. What's the best approach?</strong>
+                <br><br>
+                <strong>A:</strong> VMware Cloud on AWS. Extends on-premises VMware infrastructure to AWS. VMs migrate using vCenter with same IP addresses, no application re-configuration. Maintains vSAN storage, NSX networking, same management tools. Alternative: MGN could migrate VMs to EC2, but would lose VMware tooling and require more application testing. VMware Cloud on AWS is purpose-built for this scenario.
+            </li>
+
+            <li>
+                <strong>Q: Your company uses AWS Config to monitor compliance. A critical security group rule was accidentally modified (SSH port 22 opened to 0.0.0.0/0). How do you prevent this in the future and ensure automatic remediation?</strong>
+                <br><br>
+                <strong>A:</strong> Combine CloudTrail + EventBridge + AWS Config. (1) AWS Config rule: checks that security groups don't allow SSH from 0.0.0.0/0. (2) EventBridge: triggers on CloudTrail ModifySecurityGroupRules event. (3) Lambda: validates if new rule violates policy. If yes, invoke SSM automation to revoke overly permissive rule + send SNS alert. (4) AWS Config auto-remediation: independently checks compliance, flags non-compliant groups, applies remediation (revoke rule). Layered approach: EventBridge provides real-time prevention, AWS Config provides continuous compliance monitoring.
+            </li>
+
+            <li>
+                <strong>Q: Your RDS MySQL database is encrypted with AWS Key Management Service (KMS). You need to share a snapshot with another AWS account for disaster recovery testing. How do you grant cross-account access?</strong>
+                <br><br>
+                <strong>A:</strong> (1) Modify KMS key policy to authorize the target account to decrypt with that key. (2) Share the encrypted RDS snapshot with the target account. (3) In target account, create a copy of the snapshot and re-encrypt with a KMS key in the target account. (4) Create RDS instance from copied snapshot. Sharing encrypted snapshots requires both snapshot sharing AND KMS key permissions. Without KMS key policy update, target account cannot decrypt the snapshot.
+            </li>
+
+            <li>
+                <strong>Q: Your organization has multiple applications with different RPO/RTO requirements. How do you design a disaster recovery strategy that's cost-efficient?</strong>
+                <br><br>
+                <strong>A:</strong> Tiered approach based on criticality: (1) Mission-critical trading app: Hot Site / Multi-Site (active-active, < 1 min RTO, near-zero RPO). (2) Customer-facing e-commerce: Warm Standby (scaled-down secondary region, 15-30 min RTO, < 5 min RPO). (3) Internal tools (HR, finance non-critical): Pilot Light (minimal standby, 1-4 hour RTO, 1-2 hour RPO). (4) Archives/backups: Backup & Restore (24+ hour RTO, 1 day RPO). This tiered approach aligns costs to business requirements—only pay for high availability where it matters most.
+            </li>
+
+            <li>
+                <strong>Q: AWS DMS reports replication lag of 5 seconds between on-premises Oracle and RDS PostgreSQL. What does this mean, and is it acceptable?</strong>
+                <br><br>
+                <strong>A:</strong> Replication lag = time between a change occurring on source (on-premises Oracle) and that change appearing on target (RDS PostgreSQL). 5-second lag is good but not zero. Acceptable if: (1) application can tolerate 5 seconds of stale data in secondary region, or (2) you haven't reached cutover yet (lag will decrease as network stabilizes). For cutover: wait until lag = 0 (source and target fully synchronized). Once lag = 0, application can switch to RDS with confidence of no data loss.
+            </li>
+
+            <li>
+                <strong>Q: You need to design a multi-region active-active setup for a global application. Data must be encrypted with customer-managed KMS keys. How do you ensure encryption keys are available in both regions?</strong>
+                <br><br>
+                <strong>A:</strong> Use AWS KMS Multi-Region Keys. (1) Create a primary multi-region key in Region A. (2) Replicate the key to Region B. (3) Applications in Region A encrypt/decrypt using the key (locally). (4) Applications in Region B also encrypt/decrypt using the replica key (with no latency—key is local). (5) DynamoDB Global Tables or Aurora Global Database replicates encrypted data. Both keys (primary and replica) can independently encrypt/decrypt, ensuring low-latency access in each region. Compare: if you used separate keys per region, replicating encrypted data would require decryption with Region A key, then re-encryption with Region B key (complex, expensive). Multi-region keys make it seamless.
+            </li>
+        </ol>
+
+        <hr class="soft-divide">
+        <h2>Best Practices & Architecture Checklist</h2>
+        <ul>
+            <li><strong>Define RPO & RTO First:</strong> Before choosing a strategy, understand business requirements. RPO/RTO determine strategy cost and complexity.</li>
+            <li><strong>Test Disaster Recovery:</strong> Run regular DR drills. Test failover to secondary region. Verify RTO/RPO in practice, not just theory.</li>
+            <li><strong>Backup Vault Lock:</strong> Enable for critical data to protect against ransomware and malicious deletions. Invest in immutability.</li>
+            <li><strong>Cross-Region Replication:</strong> For applications requiring multi-region presence, use Aurora Global Database, DynamoDB Global Tables, or S3 cross-region replication.</li>
+            <li><strong>DMS for Large Migrations:</strong> When migrating production databases with zero-downtime requirements, use DMS with CDC.</li>
+            <li><strong>Right-Sizing:</strong> Use Application Discovery Agent data to avoid over-provisioning EC2 instances during migration.</li>
+            <li><strong>Snowball for Bulk Transfers:</strong> For > 100 GB transfers, Snowball is faster and cheaper than internet/VPN.</li>
+            <li><strong>Multi-Region KMS Keys:</strong> For multi-region deployments with encryption, use KMS multi-region keys for local key access in each region.</li>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Closing Notes</h2>
+        <p>Disaster recovery and migration are critical architectural skills. Exam questions test your ability to: (1) define RPO/RTO and select appropriate strategy, (2) choose migration tools (DMS, MGN, Snowball, DMS), (3) implement backup strategies with AWS Backup, (4) manage encryption across regions with KMS, (5) troubleshoot replication and failover issues. Master the cost-benefit tradeoffs: Backup & Restore is cheapest but slowest; Hot Site is fastest but most expensive. Understand when to use DMS (continuous sync), Snowball (bulk transfer), MGN (lift-and-shift), and VMware Cloud on AWS (maintain VMware). These skills directly impact your ability to design resilient, recoverable architectures on AWS.</p>
+
+    </div>
+</body>
+</html>

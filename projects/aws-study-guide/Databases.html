@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS Databases</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <div class="container2">
+        <div class="header">
+            <h1>AWS Databases</h1>
+            <hr>
+        </div>
+
+        <h2>Database Fundamentals</h2>
+        <p>Databases are critical components of modern applications. AWS offers various database services optimized for different use cases, workloads, and data models.</p>
+        <ul>
+            <li><strong>Database Types:</strong></li>
+            <ul>
+                <li><strong>Relational (SQL):</strong> Structured data with predefined schemas, ACID compliance, complex queries</li>
+                <li><strong>NoSQL:</strong> Unstructured/semi-structured data, flexible schemas, horizontal scalability</li>
+                <li><strong>Key-Value:</strong> Fast access to data using a unique key</li>
+                <li><strong>Document:</strong> JSON-like documents, flexible structure</li>
+                <li><strong>Graph:</strong> Relationships between data points</li>
+                <li><strong>Search:</strong> Full-text search and log analysis</li>
+                <li><strong>Time-Series:</strong> Time-stamped data points for monitoring and analytics</li>
+            </ul>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>RDS (Relational Database Service)</h2>
+        <p>RDS is a managed relational database service that handles database administration tasks like backups, patching, and replication.</p>
+
+        <ul>
+            <li><strong>Supported Engines:</strong></li>
+            <ul>
+                <li>PostgreSQL</li>
+                <li>MySQL</li>
+                <li>MariaDB</li>
+                <li>Oracle</li>
+                <li>SQL Server</li>
+            </ul>
+
+            <li><strong>Key Characteristics:</strong></li>
+            <ul>
+                <li>Managed service - AWS handles maintenance, backups, and updates</li>
+                <li>Multi-AZ deployments for high availability</li>
+                <li>Automated backups with point-in-time recovery</li>
+                <li>Read replicas for scaling read operations</li>
+                <li>Automatic failover in Multi-AZ setup</li>
+                <li>SSL/TLS encryption in transit</li>
+                <li>Encryption at rest using AWS KMS</li>
+                <li>Enhanced Monitoring available</li>
+            </ul>
+
+            <li><strong>Multi-AZ (Availability Zone) Deployments:</strong></li>
+            <ul>
+                <li><strong>What it does:</strong> Maintains a synchronous standby replica in a different AZ</li>
+                <li><strong>Automatic Failover:</strong> If primary fails, RDS automatically promotes the standby</li>
+                <li><strong>Failover Time:</strong> 1-2 minutes typically</li>
+                <li><strong>Zero data loss:</strong> Synchronous replication ensures no data loss</li>
+                <li><strong>Performance impact:</strong> Slight latency increase due to synchronous writes</li>
+                <li><strong>Use Cases:</strong> Production databases requiring high availability and durability</li>
+                <li style="font-style: italic;"><strong>Note:</strong> Multi-AZ is about availability, NOT scalability</li>
+            </ul>
+
+            <li><strong>Read Replicas:</strong></li>
+            <ul>
+                <li><strong>Purpose:</strong> Scale read capacity by distributing read traffic</li>
+                <li><strong>Replication:</strong> Asynchronous replication (can have slight lag)</li>
+                <li><strong>Locations:</strong> Can be in the same AZ, cross-AZ, or cross-region</li>
+                <li><strong>Promotion:</strong> Can be promoted to standalone database</li>
+                <li><strong>Multiple Replicas:</strong> Up to 5 read replicas per database</li>
+                <li><strong>Cost:</strong> Charged for each read replica</li>
+                <li><strong>Use Cases:</strong> Analytics, reporting, application scaling</li>
+                <li style="font-style: italic;"><strong>Key Difference from Multi-AZ:</strong> Read replicas are asynchronous and scale reads; Multi-AZ is synchronous and provides failover</li>
+            </ul>
+
+            <li><strong>Backups & Restores:</strong></li>
+            <ul>
+                <li><strong>Automated Backups:</strong> Daily backups retained for 7 days (configurable 1-35 days)</li>
+                <li><strong>Point-in-Time Recovery:</strong> Restore to any point within backup retention period</li>
+                <li><strong>Manual Snapshots:</strong> User-initiated backups retained until deleted</li>
+                <li><strong>Backup Window:</strong> Defined time for automated backups (can impact performance)</li>
+                <li><strong>Storage:</strong> Backups stored in S3 (managed by AWS)</li>
+            </ul>
+
+            <li><strong>Performance Insights:</strong></li>
+            <ul>
+                <li>Monitors database performance in real-time</li>
+                <li>Identifies bottlenecks and slow queries</li>
+                <li>Provides recommendations for optimization</li>
+            </ul>
+
+            <li><strong>RDS Proxy:</strong></li>
+            <ul>
+                <li>Manages database connection pooling</li>
+                <li>Reduces connection overhead</li>
+                <li>Improves application scalability</li>
+                <li>Useful for applications that create many short-lived connections</li>
+            </ul>
+
+            <li><strong>RDS Best Practices:</strong></li>
+            <ul>
+                <li>Use Multi-AZ for production databases</li>
+                <li>Enable automated backups</li>
+                <li>Use read replicas to scale read operations</li>
+                <li>Enable encryption at rest and in transit</li>
+                <li>Monitor performance using Performance Insights and CloudWatch</li>
+                <li>Use security groups to restrict database access</li>
+                <li>Regular patching and maintenance windows</li>
+                <li>Use RDS Proxy for connection pooling in high-concurrency scenarios</li>
+            </ul>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Aurora</h2>
+        <p>Aurora is AWS's proprietary database engine that combines the speed of commercial databases with the simplicity and cost-effectiveness of open-source databases.</p>
+
+        <ul>
+            <li><strong>Aurora Engines:</strong></li>
+            <ul>
+                <li>Aurora MySQL (MySQL compatible)</li>
+                <li>Aurora PostgreSQL (PostgreSQL compatible)</li>
+            </ul>
+
+            <li><strong>Key Characteristics:</strong></li>
+            <ul>
+                <li><strong>High Performance:</strong> 5x faster than MySQL, 3x faster than PostgreSQL</li>
+                <li><strong>High Availability:</strong> Built-in replication across 3 AZs</li>
+                <li><strong>Self-Healing:</strong> Automatically detects and repairs corrupted data blocks</li>
+                <li><strong>Auto-Scaling:</strong> Storage automatically scales up to 128 TB</li>
+                <li><strong>Read Replicas:</strong> Up to 15 Aurora replicas (vs. 5 for RDS)</li>
+                <li><strong>Backup & Recovery:</strong> Continuous backup to S3, point-in-time recovery</li>
+                <li><strong>Global Database:</strong> Cross-region read replicas with RPO < 1 second</li>
+                <li><strong>Serverless Option:</strong> Auto-scaling compute capacity (Aurora Serverless)</li>
+            </ul>
+
+            <li><strong>Aurora Architecture:</strong></li>
+            <ul>
+                <li><strong>Shared Storage Cluster Volume:</strong> All replicas share the same storage</li>
+                <li><strong>Primary Instance:</strong> Handles write operations</li>
+                <li><strong>Read Replicas:</strong> Handle read operations, can be promoted to primary</li>
+                <li><strong>Self-Healing:</strong> Replicas can automatically read from secondary storage if needed</li>
+            </ul>
+
+            <li><strong>Aurora Serverless:</strong></li>
+            <ul>
+                <li><strong>What it does:</strong> Automatically scales compute capacity based on demand</li>
+                <li><strong>No instance management:</strong> You don't manage database instances</li>
+                <li><strong>Pay-per-use:</strong> Charged for compute capacity used (ACUs - Aurora Capacity Units)</li>
+                <li><strong>Cold starts:</strong> Can have 30-40 second delay when scaling up from zero</li>
+                <li><strong>Best for:</strong> Variable workloads, dev/test, infrequent usage</li>
+                <li><strong>Not ideal for:</strong> Consistent workloads, real-time applications requiring low latency</li>
+            </ul>
+
+            <li><strong>Aurora Global Database:</strong></li>
+            <ul>
+                <li><strong>RPO (Recovery Point Objective):</strong> < 1 second</li>
+                <li><strong>RTO (Recovery Time Objective):</strong> < 1 minute</li>
+                <li><strong>Primary Region:</strong> Handles all writes</li>
+                <li><strong>Secondary Regions:</strong> Read-only replicas with < 1 second lag</li>
+                <li><strong>Promotion:</strong> Secondary can be promoted to primary in case of disaster</li>
+                <li><strong>Use Case:</strong> Disaster recovery, global applications</li>
+            </ul>
+
+            <li><strong>Aurora vs RDS Comparison:</strong></li>
+            <ul>
+                <li><strong>Performance:</strong> Aurora is faster (3-5x)</li>
+                <li><strong>Cost:</strong> Aurora can be more expensive but offers better performance</li>
+                <li><strong>Read Replicas:</strong> Aurora supports 15 vs RDS 5</li>
+                <li><strong>Storage:</strong> Aurora auto-scales; RDS requires manual scaling</li>
+                <li><strong>Availability:</strong> Both support Multi-AZ, Aurora has 3 AZ replication built-in</li>
+            </ul>
+
+            <li><strong>Aurora Best Practices:</strong></li>
+            <ul>
+                <li>Use Aurora for production applications requiring high performance</li>
+                <li>Use Aurora Global Database for disaster recovery</li>
+                <li>Use Aurora Serverless for variable or unpredictable workloads</li>
+                <li>Monitor performance with Performance Insights</li>
+                <li>Use parameter groups for configuration management</li>
+            </ul>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>DynamoDB</h2>
+        <p>DynamoDB is a fully managed NoSQL database service that provides fast, predictable performance with seamless scalability.</p>
+
+        <ul>
+            <li><strong>Key Characteristics:</strong></li>
+            <ul>
+                <li><strong>Fully Managed:</strong> AWS handles all operational aspects</li>
+                <li><strong>NoSQL Database:</strong> Document and key-value data model</li>
+                <li><strong>Distributed & Scalable:</strong> Scales horizontally across partitions</li>
+                <li><strong>Performance:</strong> Single-digit millisecond latency at any scale</li>
+                <li><strong>Consistency Models:</strong> Eventually consistent (default) or Strongly consistent</li>
+                <li><strong>Global Tables:</strong> Multi-region, multi-master replication</li>
+                <li><strong>Encryption:</strong> Encryption at rest and in transit</li>
+                <li><strong>Backup & Recovery:</strong> Point-in-time recovery, on-demand backups</li>
+            </ul>
+
+            <li><strong>Core Concepts:</strong></li>
+            <ul>
+                <li><strong>Table:</strong> Collection of items (similar to a table in SQL)</li>
+                <li><strong>Item:</strong> A record with attributes (similar to a row)</li>
+                <li><strong>Attribute:</strong> A key-value pair (similar to a column)</li>
+                <li><strong>Primary Key:</strong> Uniquely identifies each item</li>
+                <ul>
+                    <li><strong>Partition Key:</strong> Determines which partition the item is stored in</li>
+                    <li><strong>Sort Key:</strong> Optional, sorts items within a partition</li>
+                </ul>
+            </ul>
+
+            <li><strong>Capacity Modes:</strong></li>
+            <ul>
+                <li><strong>Provisioned Mode:</strong></li>
+                <ul>
+                    <li>You specify read and write capacity units (RCUs, WCUs)</li>
+                    <li>Predictable performance at specified throughput</li>
+                    <li>1 RCU = 1 strongly consistent read per second OR 2 eventually consistent reads</li>
+                    <li>1 WCU = 1 write per second (1 KB)</li>
+                    <li>Cost-effective for predictable workloads</li>
+                    <li><strong>Auto-scaling:</strong> Can enable auto-scaling of capacity</li>
+                </ul>
+                <li><strong>On-Demand Mode:</strong></li>
+                <ul>
+                    <li>Pay per request basis</li>
+                    <li>No capacity planning needed</li>
+                    <li>Scales automatically to handle traffic spikes</li>
+                    <li>More expensive per request but good for unpredictable workloads</li>
+                    <li>Good for development, testing, or highly variable workloads</li>
+                </ul>
+            </ul>
+
+            <li><strong>Consistency Models:</strong></li>
+            <ul>
+                <li><strong>Eventually Consistent Reads (Default):</strong></li>
+                <ul>
+                    <li>Consumes half the RCUs of strongly consistent reads</li>
+                    <li>May return stale data if read immediately after write</li>
+                    <li>Good for use cases where slight delays are acceptable</li>
+                </ul>
+                <li><strong>Strongly Consistent Reads:</strong></li>
+                <ul>
+                    <li>Returns the most recent data</li>
+                    <li>Uses full RCU cost</li>
+                    <li>Cannot be used with global secondary indexes</li>
+                    <li>Good for financial transactions or real-time data requirements</li>
+                </ul>
+            </ul>
+
+            <li><strong>Indexes:</strong></li>
+            <ul>
+                <li><strong>Local Secondary Index (LSI):</strong></li>
+                <ul>
+                    <li>Same partition key as the table, different sort key</li>
+                    <li>Must be created at table creation time</li>
+                    <li>Maximum 10 GB size per partition key value</li>
+                    <li>Shares throughput with the table</li>
+                </ul>
+                <li><strong>Global Secondary Index (GSI):</strong></li>
+                <ul>
+                    <li>Different partition key and sort key from the table</li>
+                    <li>Can be created/deleted anytime</li>
+                    <li>No size limit</li>
+                    <li>Has its own provisioned throughput (or on-demand)</li>
+                    <li>Eventually consistent only</li>
+                </ul>
+            </ul>
+
+            <li><strong>Transactions:</strong></li>
+            <ul>
+                <li>DynamoDB supports transactional reads and writes</li>
+                <li>All-or-nothing operations across multiple items</li>
+                <li>Useful for maintaining data consistency</li>
+                <li>Costs: Transactional operations cost 2x normal operations</li>
+            </ul>
+
+            <li><strong>TTL (Time To Live):</strong></li>
+            <ul>
+                <li>Automatically deletes items after a specified time</li>
+                <li>Useful for cleaning up old data (sessions, temporary data)</li>
+                <li>Deletion is asynchronous (items may not be deleted immediately)</li>
+            </ul>
+
+            <li><strong>Global Tables:</strong></li>
+            <ul>
+                <li>Fully replicated across multiple regions</li>
+                <li>Multi-master - writes can happen in any region</li>
+                <li>Low latency reads and writes from any region</li>
+                <li>Automatic conflict resolution</li>
+                <li>Use Case: Global applications requiring low latency</li>
+            </ul>
+
+            <li><strong>DynamoDB Streams:</strong></li>
+            <ul>
+                <li>Captures changes to items in a DynamoDB table</li>
+                <li>Can trigger Lambda functions for real-time processing</li>
+                <li>Useful for replicating data to other systems, analytics, notifications</li>
+            </ul>
+
+            <li><strong>DynamoDB Best Practices:</strong></li>
+            <ul>
+                <li>Use partition key with high cardinality to distribute data evenly</li>
+                <li>Avoid hot partitions (uneven data distribution)</li>
+                <li>Use on-demand mode for variable workloads</li>
+                <li>Use provisioned mode for predictable workloads with auto-scaling</li>
+                <li>Enable encryption at rest and in transit</li>
+                <li>Use point-in-time recovery for disaster recovery</li>
+                <li>Monitor CloudWatch metrics for throttling</li>
+                <li>Use DynamoDB Streams for real-time processing</li>
+            </ul>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>ElastiCache</h2>
+        <p>ElastiCache is a fully managed in-memory caching service that improves application performance by caching frequently accessed data.</p>
+
+        <ul>
+            <li><strong>Supported Engines:</strong></li>
+            <ul>
+                <li><strong>Redis:</strong> In-memory data structure store, supports complex data types</li>
+                <li><strong>Memcached:</strong> Distributed memory caching system, simple key-value store</li>
+            </ul>
+
+            <li><strong>Redis vs Memcached:</strong></li>
+            <ul>
+                <li><strong>Data Types:</strong> Redis supports strings, lists, sets, hashes; Memcached only supports strings</li>
+                <li><strong>Persistence:</strong> Redis can persist data to disk; Memcached is in-memory only</li>
+                <li><strong>Replication:</strong> Redis supports replication and failover; Memcached does not</li>
+                <li><strong>Transactions:</strong> Redis supports transactions; Memcached does not</li>
+                <li><strong>Pub/Sub:</strong> Redis supports pub/sub messaging; Memcached does not</li>
+                <li><strong>Use Case:</strong> Redis for complex queries and persistence; Memcached for simple caching</li>
+            </ul>
+
+            <li><strong>Key Characteristics:</strong></li>
+            <ul>
+                <li>Fully managed - AWS handles maintenance and patching</li>
+                <li>Automatic failover with Multi-AZ</li>
+                <li>Automatic backups (Redis only)</li>
+                <li>Encryption at rest and in transit</li>
+                <li>Automatic cluster discovery</li>
+                <li>Sub-millisecond latency</li>
+            </ul>
+
+            <li><strong>Redis Cluster Mode:</strong></li>
+            <ul>
+                <li><strong>Disabled (Single Node or Multi-AZ):</strong></li>
+                <ul>
+                    <li>Primary node with optional replica for failover</li>
+                    <li>All data on a single node</li>
+                    <li>Limited by single node memory capacity</li>
+                </ul>
+                <li><strong>Enabled (Multi-Node):</strong></li>
+                <ul>
+                    <li>Data is partitioned across multiple nodes</li>
+                    <li>Horizontal scaling for larger datasets</li>
+                    <li>Each node is a partition leader or replica</li>
+                </ul>
+            </ul>
+
+            <li><strong>Eviction Policies:</strong></li>
+            <ul>
+                <li><strong>LRU (Least Recently Used):</strong> Evict least recently used keys when memory is full</li>
+                <li><strong>LFU (Least Frequently Used):</strong> Evict least frequently used keys</li>
+                <li><strong>TTL-based:</strong> Evict keys based on time-to-live</li>
+                <li><strong>No eviction:</strong> Write operations fail if memory is full</li>
+            </ul>
+
+            <li><strong>Use Cases:</strong></li>
+            <ul>
+                <li>Session caching</li>
+                <li>Real-time leaderboards</li>
+                <li>Rate limiting</li>
+                <li>Caching database queries</li>
+                <li>Queue implementations</li>
+                <li>Real-time analytics</li>
+            </ul>
+
+            <li><strong>ElastiCache Best Practices:</strong></li>
+            <ul>
+                <li>Use Redis for complex use cases, Memcached for simple caching</li>
+                <li>Enable Multi-AZ for high availability</li>
+                <li>Monitor memory utilization and eviction metrics</li>
+                <li>Set appropriate TTLs for cached data</li>
+                <li>Use security groups to restrict access</li>
+                <li>Enable automatic backups (Redis)</li>
+                <li>Monitor CloudWatch metrics for performance insights</li>
+            </ul>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Other AWS Database Services</h2>
+
+        <ul>
+            <li><strong>Redshift</strong></li>
+            <ul>
+                <li>Fully managed data warehouse service for OLAP (Online Analytical Processing)</li>
+                <li>Designed for complex analytical queries on large datasets</li>
+                <li>Columnar storage for efficient compression and query performance</li>
+                <li>Petabyte-scale data warehouse</li>
+                <li>Use Case: Business intelligence, data analytics, historical data analysis</li>
+            </ul>
+
+            <li><strong>Neptune</strong></li>
+            <ul>
+                <li>Fully managed graph database service</li>
+                <li>Designed for highly connected data and complex relationships</li>
+                <li>ACID transactions and multi-AZ replication</li>
+                <li>Use Case: Social networks, recommendation engines, knowledge graphs</li>
+            </ul>
+
+            <li><strong>DocumentDB</strong></li>
+            <ul>
+                <li>MongoDB-compatible document database</li>
+                <li>Fully managed with automatic scaling</li>
+                <li>Multi-AZ with automatic failover</li>
+                <li>ACID transactions for document-level consistency</li>
+                <li>Use Case: Document storage, content management, IoT data</li>
+            </ul>
+
+            <li><strong>Timestream</strong></li>
+            <ul>
+                <li>Fully managed time-series database</li>
+                <li>Optimized for metrics and events with timestamp</li>
+                <li>Automatic scaling and retention policies</li>
+                <li>Use Case: IoT sensors, application monitoring, financial data</li>
+            </ul>
+
+            <li><strong>ElasticSearch/OpenSearch</strong></li>
+            <ul>
+                <li>Search and analytics engine for full-text search, log analysis</li>
+                <li>Distributed search clusters</li>
+                <li>Use Case: Log analysis, full-text search, security analytics</li>
+            </ul>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Choosing the Right Database</h2>
+
+        <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+            <tr style="background-color: #f0f0f0;">
+                <th style="border: 1px solid #ddd; padding: 10px; text-align: left;"><strong>Use Case</strong></th>
+                <th style="border: 1px solid #ddd; padding: 10px; text-align: left;"><strong>Best AWS Service</strong></th>
+            </tr>
+            <tr>
+                <td style="border: 1px solid #ddd; padding: 10px;">Relational data with complex queries</td>
+                <td style="border: 1px solid #ddd; padding: 10px;">RDS or Aurora</td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid #ddd; padding: 10px;">High-performance relational database</td>
+                <td style="border: 1px solid #ddd; padding: 10px;">Aurora</td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid #ddd; padding: 10px;">NoSQL key-value store with high performance</td>
+                <td style="border: 1px solid #ddd; padding: 10px;">DynamoDB</td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid #ddd; padding: 10px;">In-memory caching and session storage</td>
+                <td style="border: 1px solid #ddd; padding: 10px;">ElastiCache</td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid #ddd; padding: 10px;">Data warehouse and analytics</td>
+                <td style="border: 1px solid #ddd; padding: 10px;">Redshift</td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid #ddd; padding: 10px;">Document storage (MongoDB-like)</td>
+                <td style="border: 1px solid #ddd; padding: 10px;">DocumentDB</td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid #ddd; padding: 10px;">Graph data and relationships</td>
+                <td style="border: 1px solid #ddd; padding: 10px;">Neptune</td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid #ddd; padding: 10px;">Time-series and metrics data</td>
+                <td style="border: 1px solid #ddd; padding: 10px;">Timestream</td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid #ddd; padding: 10px;">Full-text search and log analysis</td>
+                <td style="border: 1px solid #ddd; padding: 10px;">OpenSearch/ElasticSearch</td>
+            </tr>
+        </table>
+
+        <hr class="soft-divide">
+        <h2>Common Exam Scenarios</h2>
+
+        <ul>
+            <li><strong>Scenario: Need a relational database that can automatically handle traffic spikes</strong></li>
+            <ul>
+                <li><strong>Solution:</strong> Aurora with auto-scaling or on-demand capacity</li>
+            </ul>
+
+            <li><strong>Scenario: Database needs to be accessible from multiple regions with low latency</strong></li>
+            <ul>
+                <li><strong>Solution:</strong> DynamoDB Global Tables or Aurora Global Database</li>
+            </ul>
+
+            <li><strong>Scenario: Need disaster recovery with RPO < 1 second and RTO < 1 minute</strong></li>
+            <ul>
+                <li><strong>Solution:</strong> Aurora Global Database (built-in replication)</li>
+            </ul>
+
+            <li><strong>Scenario: Scaling read capacity without affecting write performance</strong></li>
+            <ul>
+                <li><strong>Solution:</strong> Use RDS read replicas or Aurora read replicas</li>
+            </ul>
+
+            <li><strong>Scenario: Unpredictable workload with sporadic traffic bursts</strong></li>
+            <ul>
+                <li><strong>Solution:</strong> DynamoDB on-demand mode or Aurora Serverless</li>
+            </ul>
+
+            <li><strong>Scenario: High-speed caching layer for frequently accessed data</strong></li>
+            <ul>
+                <li><strong>Solution:</strong> ElastiCache (Redis or Memcached)</li>
+            </ul>
+
+            <li><strong>Scenario: Need ACID transactions with complex relationships</strong></li>
+            <ul>
+                <li><strong>Solution:</strong> RDS or Aurora for relational data; DocumentDB for document data</li>
+            </ul>
+
+            <li><strong>Scenario: Application performing millions of small read/write operations</strong></li>
+            <ul>
+                <li><strong>Solution:</strong> DynamoDB with provisioned mode and auto-scaling</li>
+            </ul>
+
+            <li><strong>Scenario: Need to analyze petabytes of historical data for business intelligence</strong></li>
+            <ul>
+                <li><strong>Solution:</strong> Redshift for data warehouse</li>
+            </ul>
+
+            <li><strong>Scenario: Database failover must be automatic with minimal downtime</strong></li>
+            <ul>
+                <li><strong>Solution:</strong> RDS Multi-AZ, Aurora (3 AZ replication), or DynamoDB Global Tables</li>
+            </ul>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Database Migration & Backup Strategies</h2>
+
+        <ul>
+            <li><strong>AWS Database Migration Service (DMS):</strong></li>
+            <ul>
+                <li>Migrate databases from on-premises or other clouds to AWS</li>
+                <li>Minimal downtime migrations</li>
+                <li>Supports homogeneous and heterogeneous migrations</li>
+                <li>Continuous replication during cutover</li>
+            </ul>
+
+            <li><strong>Backup Strategies:</strong></li>
+            <ul>
+                <li><strong>Automated Backups:</strong> Built into RDS, Aurora, DynamoDB</li>
+                <li><strong>Manual Snapshots:</strong> User-initiated backups</li>
+                <li><strong>Cross-Region Backups:</strong> Copy backups to another region for disaster recovery</li>
+                <li><strong>Point-in-Time Recovery:</strong> Restore to any point within retention period</li>
+            </ul>
+
+            <li><strong>RTO/RPO Considerations:</strong></li>
+            <ul>
+                <li><strong>RPO (Recovery Point Objective):</strong> How much data loss is acceptable?</li>
+                <ul>
+                    <li>Aurora Global Database: < 1 second</li>
+                    <li>RDS Multi-AZ: Synchronous (no data loss)</li>
+                    <li>DynamoDB Global Tables: < 1 second</li>
+                </ul>
+                <li><strong>RTO (Recovery Time Objective):</strong> How quickly must recovery happen?</li>
+                <ul>
+                    <li>Aurora failover: < 1 minute</li>
+                    <li>RDS Multi-AZ failover: 1-2 minutes</li>
+                    <li>DynamoDB regional failover: < 1 minute</li>
+                </ul>
+            </ul>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Database Performance & Optimization</h2>
+
+        <ul>
+            <li><strong>RDS Optimization:</strong></li>
+            <ul>
+                <li>Use read replicas to distribute read load</li>
+                <li>Enable Performance Insights for bottleneck identification</li>
+                <li>Use appropriate instance types for workload</li>
+                <li>Monitor slow query logs</li>
+                <li>Use parameter groups to tune database settings</li>
+            </ul>
+
+            <li><strong>DynamoDB Optimization:</strong></li>
+            <ul>
+                <li>Use high-cardinality partition keys to avoid hot partitions</li>
+                <li>Monitor consumed throughput vs provisioned capacity</li>
+                <li>Use indexes for query patterns not covered by main table</li>
+                <li>Enable DynamoDB Accelerator (DAX) for caching</li>
+                <li>Use batch operations to reduce API calls</li>
+            </ul>
+
+            <li><strong>General Best Practices:</strong></li>
+            <ul>
+                <li>Enable encryption at rest and in transit</li>
+                <li>Implement proper backup and recovery procedures</li>
+                <li>Monitor CloudWatch metrics and set up alarms</li>
+                <li>Use security groups and IAM policies for access control</li>
+                <li>Regular testing of disaster recovery procedures</li>
+            </ul>
+        </ul>
+
+        <hr class="soft-divide">
+        <h2>Exam Key Takeaways</h2>
+
+        <ul>
+            <li><strong>RDS:</strong> Managed relational database with Multi-AZ and read replicas</li>
+            <li><strong>Aurora:</strong> High-performance relational database, use for production workloads</li>
+            <li><strong>DynamoDB:</strong> Fully managed NoSQL, scales automatically, good for unpredictable workloads</li>
+            <li><strong>ElastiCache:</strong> In-memory caching for performance, use Redis for complex use cases</li>
+            <li><strong>Redshift:</strong> Data warehouse for analytics, not for OLTP</li>
+            <li><strong>Multi-AZ:</strong> Availability, NOT scalability (synchronous replication for failover)</li>
+            <li><strong>Read Replicas:</strong> Scalability for reads (asynchronous replication)</li>
+            <li><strong>Aurora Global Database:</strong> Best RTO/RPO for multi-region deployment</li>
+            <li><strong>DynamoDB Capacity Modes:</strong> Provisioned (predictable) vs On-Demand (variable)</li>
+            <li><strong>Choose based on use case:</strong> Relational vs NoSQL, consistency vs performance, OLTP vs OLAP</li>
+        </ul>
+
+    </div>
+</body>
+</html>

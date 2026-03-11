@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EC2 Instance Storage</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <div class="container2">
+        <div class="header">
+          <h1>EC2 - Instance Storage</h1>
+          <hr>  
+        </div>
+        <h2>EC2 Instance Storage</h2>
+        <p>EC2 instances can use different types of storage options, each with its own characteristics and use cases. The primary storage options for EC2 instances include:</p>
+        <ul>
+            <li><strong>Instance Store (Ephemeral Storage):</strong>
+                <ul>
+                    <li>When high-performance hardware disk is needed! Great I/O performance.</li>
+                    <li>Temporary storage that is physically attached to the host computer.</li>
+                    <li>Caveat - Data is lost when the instance is stopped or terminated.</li>
+                    <li>Best suited for temporary data, caches, or scratch space.</li>
+                </ul>
+            </li>
+            <li><strong>Elastic Block Store (EBS):</strong>
+                <ul>
+                    <li>Persistent block storage that can be attached to EC2 instances.</li>
+                    <li>Bound to a specific AZ</li>
+                    <li>Data persists independently of the instance's lifecycle. Can be detached and attached to EC2 instances very easily.</li>
+                    <li>Supports features like snapshots, encryption, and resizing.</li>
+                    <li><strong>EBS Snapshots:</strong></li>
+                    <ul>
+                        <li>Move to an archive tier for 75% savings.</li>
+                        <li>Recycle bin Rules to retain deleted snapshots</li>
+                        <li>Fast Snapshot Restore - force full initialization of snapshot to have no latency on the first use.</li>
+                        <li>Point-in-time backups of EBS volumes.</li>
+                        <li>Stored in S3 for durability.</li>
+                        <li>Can be used to create new EBS volumes or restore existing ones.</li>
+                    </ul>
+                    <li><strong>Multi-Attach</strong></li>
+                    <ul>
+                        <li>Attach a single io1 or io2 volume to multiple EC2 instances within the same AZ.</li>
+                        <li>Useful for clustered applications that require shared storage.</li>
+                        <li>Achieve higher application availability in clustered Linux applications OR applications that must manage concurrent.</li>
+                        <li>Does not allow for attaching across AZs</li>
+                        <li>Up to 16 EC2 Instances at a time.</li>
+
+                    </ul>
+                    <li><strong>EBS Encryption</strong></li>
+                    <ul>
+                        <li>Data at rest, data in transit, and all snapshots are encrypted.</li>
+                        <li>Uses AWS KMS for key management.</li>
+                        <li>No performance impact when using encryption.</li>
+                        <li>Copying an unencrypted snapshot allows encryption.</li>
+                        <li>Snapshots of encrypted volumes are encrypted.</li>
+                        <li>Encrypting Unencrypted EBS Volumes</li>
+                        <ul>
+                            <li>Create a snapshot of the unencrypted volume.</li>
+                            <li>Copy the snapshot and enable encryption during the copy process.</li>
+                            <li>Create a new encrypted volume from the encrypted snapshot.</li>
+                            <li>Replace the unencrypted volume with the new encrypted volume on the EC2 instance.</li>
+                        </ul>
+                    </ul>
+                    <li><strong>EBS Volume Types:</strong></li>
+                    <ul>
+                        <li>Note: Only gp2/gp3 and io1/io2 Block Express can be used as boot volumes.</li>
+                        <li>General Purpose SSD (gp2, gp3)</li>
+                            <ul>
+                                <li>Balanced price and performance for a wide variety of workloads.</li>
+                                <li>Baseline performance with the ability to burst.</li>
+                                <li>gp3</li>
+                                    <ul>
+                                        <li>Higher baseline performance than gp2.</li>
+                                        <li>Allows independent scaling of IOPS and throughput.</li>
+                                    </ul>
+                                <li>gp2</li>
+                                    <ul>
+                                        <li>Performance scales with volume size.Max IOPS is 16,000</li>
+                                    </ul>
+                            </ul>
+                        <li>Provisioned IOPS SSD (io1, io2)</li>
+                            <ul>
+                                <li>High-performance SSD designed for I/O-intensive applications.</li>
+                                <li>Provisioned IOPS for consistent performance.</li>
+                                <li>Great for databases workloads (sensitive to storage perf and consistency)</li>
+                            </ul>
+                        <li>Throughput Optimized HDD (st1)</li>
+                            <ul>
+                                <li>Low-cost HDD designed for frequently accessed, throughput-intensive workloads.</li>
+                            </ul>
+                        <li>Cold HDD (sc1)</li>
+                            <ul>
+                                <li>Lowest cost HDD designed for less frequently accessed data.</li>
+                            </ul>
+                        <li>Magnetic (standard) - legacy</li>
+                            <ul>
+                                <li>Previous generation magnetic storage.</li>
+                            </ul>
+                    </ul>
+                </ul>
+            </li>
+            <li><strong>Elastic File System:</strong>
+                <ul>
+                    <li>MANAGED(!) Object storage service that can be accessed from EC2 instances.</li>
+                    <li>Ideal for storing large amounts of unstructured data.</li>
+                    <li>Provides high durability and availability.</li>
+                    <li>3x cost of EBS</li>
+                    <li>Can be mounted concurrently on multiple EC2 instances.</li>
+                    <li>Use Cases:</li>
+                    <ul>
+                        <li>Content management, web serving, data sharing, and home directories.</li>
+                    </ul>
+                    <li>Only compatible with Linux AMI - not windows</li>
+                    <li>Scales automatically!</li>
+                    <li>EFS Scale</li>
+                    <ul>
+                        <li>Storage scales from GBs to PBs automatically as files are added or removed.</li>
+                        <li>No need to provision storage in advance.</li>
+                    </ul>
+                    <li>Performance Mode</li>
+                    <ul>
+                        <li>General Purpose - default, suitable for most workloads.</li>
+                        <li>Max I/O - higher throughput and IOPS for large-scale applications.</li>
+                    </ul>
+                    <li>Throughput Mode</li>
+                    <ul>
+                        <li>Bursty - default, suitable for most workloads.</li>
+                        <li>Provisioned - allows you to specify a specific throughput level.</li>
+                        <li>Elastic - scales throughput based on workloads - up to 3GiBs for reads a 1GiBs for writes</li>
+                    </ul>
+                    <li>Storage Classes</li>
+                    <ul>
+                        <li>Standard - for frequently accessed files.</li>
+                        <li>Infrequent Access (IA) - for files accessed less frequently, lower cost.</li>
+                        <li>Intelligent Tiering - automatically moves files between Standard and IA based on access patterns.</li>
+                    </ul>
+                    <li>Availability and Durability</li>
+                    <ul>
+                        <li>Data is stored across multiple AZs within a region.</li>
+                        <li>Designed for 99.999999999% (11 nines) durability.</li>
+                    </ul>
+                </ul>
+            </li>
+            <li><Strong>AMI</Strong></li>
+            <ul>
+                <li>Built for specific regions and can be copied across regions.</li>
+                <li>Amazon Machine Image - template for creating EC2 instances.</li>
+                <li>Includes OS, application server, and applications.</li>
+                <li>Can be customized and shared.</li>
+                <li>Types of AMIs</li>
+                <ul>
+                    <li>Amazon Provided AMIs</li>
+                    <li>AWS Marketplace AMIs</li>
+                    <li>Community AMIs</li>
+                    <li>Custom AMIs</li>
+                </ul>
+            </ul>
+        <li><strong>EBS vs EFS</strong></li>
+        <ul>
+            <li>EBS is block storage, while EFS is file storage.</li>
+            <li>EBS is attached to a single EC2 instance, while EFS can be mounted on multiple instances.</li>
+            <li>EBS is suitable for high-performance applications, while EFS is ideal for shared file storage.</li>
+        </ul>
+        </ul>
+    </div>
+</body>
+</html>
