@@ -21,19 +21,18 @@
   <div class="project-hero">
     <h1>Blast Motion Putting Pipeline</h1>
     <p class="hero-desc">
-      A full-stack data platform for golf putting analytics. An automated Python pipeline scrapes putting sensor data from the Blast Connect API, loads it into PostgreSQL, and exposes it through a FastAPI backend consumed by a Next.js frontend. Airflow orchestrates the pipeline on a 2-hour schedule.
+      A serverless ETL pipeline that extracts putting stroke data from Blast Motion sensors via the Blast Connect API, loads it into Azure SQL, and refreshes a Power BI dashboard. Deployed as an Azure Function with timer and HTTP triggers, orchestrated via Power Automate for on-demand mobile sync.
     </p>
     <div class="hero-tags">
       <span class="tag">Python</span>
-      <span class="tag">Airflow</span>
-      <span class="tag">FastAPI</span>
-      <span class="tag">PostgreSQL</span>
+      <span class="tag">Azure Functions</span>
+      <span class="tag">Azure SQL</span>
+      <span class="tag">Power Automate</span>
+      <span class="tag">Power BI</span>
+      <span class="tag">GitHub Actions</span>
       <span class="tag">SQLAlchemy</span>
-      <span class="tag">Next.js</span>
-      <span class="tag">JWT Auth</span>
-      <span class="tag">dbt</span>
     </div>
-    <a href="https://github.com/bbabbitt1" target="_blank" rel="noopener noreferrer" class="github-cta">
+    <a href="https://github.com/bbabbitt1/blast-motion-putting" target="_blank" rel="noopener noreferrer" class="github-cta">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
       View on GitHub
     </a>
@@ -44,72 +43,96 @@
     <h2>Architecture</h2>
     <div class="architecture-diagram">
       <svg viewBox="0 0 800 320" xmlns="http://www.w3.org/2000/svg">
-        <!-- Background -->
         <defs>
           <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
             <path d="M 0 0 L 10 5 L 0 10 z" fill="#8FAFB0"/>
           </marker>
         </defs>
 
-        <!-- Airflow wrapper -->
-        <rect x="20" y="20" width="480" height="280" rx="12" fill="none" stroke="#8FAFB0" stroke-width="1.5" stroke-dasharray="8 4" opacity="0.35"/>
-        <text x="40" y="48" fill="#8FAFB0" font-size="13" font-family="Inter, sans-serif" font-weight="600" opacity="0.6">Airflow — every 2 hours</text>
+        <!-- Azure wrapper -->
+        <rect x="180" y="20" width="600" height="280" rx="12" fill="none" stroke="#8FAFB0" stroke-width="1.5" stroke-dasharray="8 4" opacity="0.35"/>
+        <text x="200" y="48" fill="#8FAFB0" font-size="13" font-family="Inter, sans-serif" font-weight="600" opacity="0.6">Azure</text>
 
         <!-- Blast Connect API -->
-        <rect x="50" y="120" width="120" height="60" rx="8" fill="rgba(79,163,209,0.12)" stroke="#4FA3D1" stroke-width="1.5"/>
-        <text x="110" y="146" fill="#4FA3D1" font-size="13" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">Blast Connect</text>
-        <text x="110" y="164" fill="#8FAFB0" font-size="11" text-anchor="middle" font-family="Inter, sans-serif">REST API</text>
+        <rect x="20" y="120" width="120" height="60" rx="8" fill="rgba(79,163,209,0.12)" stroke="#4FA3D1" stroke-width="1.5"/>
+        <text x="80" y="146" fill="#4FA3D1" font-size="13" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">Blast Connect</text>
+        <text x="80" y="164" fill="#8FAFB0" font-size="11" text-anchor="middle" font-family="Inter, sans-serif">REST API</text>
 
         <!-- Arrow -->
-        <line x1="170" y1="150" x2="220" y2="150" stroke="#8FAFB0" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <line x1="140" y1="150" x2="200" y2="150" stroke="#8FAFB0" stroke-width="1.5" marker-end="url(#arrow)"/>
 
-        <!-- Python Pipeline -->
-        <rect x="220" y="100" width="140" height="100" rx="8" fill="rgba(111,183,173,0.12)" stroke="#6FB7AD" stroke-width="1.5"/>
-        <text x="290" y="132" fill="#6FB7AD" font-size="13" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">Python Pipeline</text>
-        <text x="290" y="152" fill="#8FAFB0" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">CSRF Auth</text>
-        <text x="290" y="166" fill="#8FAFB0" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">High Watermark</text>
-        <text x="290" y="180" fill="#8FAFB0" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">Upsert (idempotent)</text>
+        <!-- Azure Function -->
+        <rect x="200" y="100" width="160" height="100" rx="8" fill="rgba(111,183,173,0.12)" stroke="#6FB7AD" stroke-width="1.5"/>
+        <text x="280" y="128" fill="#6FB7AD" font-size="13" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">Azure Function</text>
+        <text x="280" y="148" fill="#8FAFB0" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">Timer: nightly 5AM UTC</text>
+        <text x="280" y="162" fill="#8FAFB0" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">HTTP: on-demand POST</text>
+        <text x="280" y="176" fill="#8FAFB0" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">Python 3.11 pipeline</text>
 
         <!-- Arrow -->
-        <line x1="360" y1="150" x2="410" y2="150" stroke="#8FAFB0" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <line x1="360" y1="150" x2="420" y2="150" stroke="#8FAFB0" stroke-width="1.5" marker-end="url(#arrow)"/>
 
-        <!-- PostgreSQL -->
-        <rect x="410" y="120" width="120" height="60" rx="8" fill="rgba(79,163,209,0.12)" stroke="#4FA3D1" stroke-width="1.5"/>
-        <text x="470" y="146" fill="#4FA3D1" font-size="13" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">PostgreSQL</text>
-        <text x="470" y="164" fill="#8FAFB0" font-size="11" text-anchor="middle" font-family="Inter, sans-serif">src schema</text>
+        <!-- Azure SQL -->
+        <rect x="420" y="120" width="120" height="60" rx="8" fill="rgba(79,163,209,0.12)" stroke="#4FA3D1" stroke-width="1.5"/>
+        <text x="480" y="146" fill="#4FA3D1" font-size="13" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">Azure SQL</text>
+        <text x="480" y="164" fill="#8FAFB0" font-size="11" text-anchor="middle" font-family="Inter, sans-serif">src schema</text>
 
-        <!-- Arrow down to FastAPI -->
-        <line x1="470" y1="180" x2="470" y2="220" stroke="#8FAFB0" stroke-width="1.5" marker-end="url(#arrow)"/>
-        <!-- Arrow right to FastAPI -->
-        <line x1="530" y1="150" x2="580" y2="150" stroke="#8FAFB0" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <!-- Arrow to Power BI -->
+        <line x1="540" y1="150" x2="600" y2="150" stroke="#8FAFB0" stroke-width="1.5" marker-end="url(#arrow)"/>
 
-        <!-- dbt -->
-        <rect x="410" y="225" width="120" height="50" rx="8" fill="rgba(217,255,246,0.08)" stroke="#D9FFF6" stroke-width="1" opacity="0.7"/>
-        <text x="470" y="248" fill="#D9FFF6" font-size="12" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600" opacity="0.8">dbt</text>
-        <text x="470" y="264" fill="#8FAFB0" font-size="10" text-anchor="middle" font-family="Inter, sans-serif" opacity="0.6">mart models</text>
+        <!-- Power BI -->
+        <rect x="600" y="120" width="120" height="60" rx="8" fill="rgba(217,255,246,0.08)" stroke="#D9FFF6" stroke-width="1.5"/>
+        <text x="660" y="146" fill="#D9FFF6" font-size="13" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">Power BI</text>
+        <text x="660" y="164" fill="#8FAFB0" font-size="11" text-anchor="middle" font-family="Inter, sans-serif">Dashboard</text>
 
-        <!-- FastAPI -->
-        <rect x="580" y="100" width="120" height="100" rx="8" fill="rgba(111,183,173,0.12)" stroke="#6FB7AD" stroke-width="1.5"/>
-        <text x="640" y="132" fill="#6FB7AD" font-size="13" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">FastAPI</text>
-        <text x="640" y="152" fill="#8FAFB0" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">JWT Auth</text>
-        <text x="640" y="166" fill="#8FAFB0" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">Rounds / Putts</text>
-        <text x="640" y="180" fill="#8FAFB0" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">Shots Gained Calc</text>
+        <!-- Power Automate -->
+        <rect x="200" y="240" width="160" height="50" rx="8" fill="rgba(217,255,246,0.08)" stroke="#D9FFF6" stroke-width="1" opacity="0.7"/>
+        <text x="280" y="262" fill="#D9FFF6" font-size="12" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600" opacity="0.8">Power Automate</text>
+        <text x="280" y="278" fill="#8FAFB0" font-size="10" text-anchor="middle" font-family="Inter, sans-serif" opacity="0.6">mobile button trigger</text>
 
-        <!-- Arrow to Next.js -->
-        <line x1="700" y1="150" x2="720" y2="150" stroke="#8FAFB0" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <!-- Arrow from Power Automate to Function -->
+        <line x1="280" y1="240" x2="280" y2="200" stroke="#8FAFB0" stroke-width="1.5" marker-end="url(#arrow)"/>
 
-        <!-- Next.js -->
-        <rect x="720" y="120" width="60" height="60" rx="8" fill="rgba(217,255,246,0.08)" stroke="#D9FFF6" stroke-width="1.5"/>
-        <text x="750" y="146" fill="#D9FFF6" font-size="12" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">Next.js</text>
-        <text x="750" y="164" fill="#8FAFB0" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">Frontend</text>
+        <!-- GitHub Actions -->
+        <rect x="420" y="240" width="120" height="50" rx="8" fill="rgba(217,255,246,0.08)" stroke="#D9FFF6" stroke-width="1" opacity="0.7"/>
+        <text x="480" y="262" fill="#D9FFF6" font-size="12" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600" opacity="0.8">GitHub Actions</text>
+        <text x="480" y="278" fill="#8FAFB0" font-size="10" text-anchor="middle" font-family="Inter, sans-serif" opacity="0.6">CI/CD deploy</text>
+
+        <!-- Arrow from GH Actions to Function -->
+        <line x1="440" y1="240" x2="340" y2="200" stroke="#8FAFB0" stroke-width="1" stroke-dasharray="4 3" opacity="0.5"/>
       </svg>
+    </div>
+  </div>
+
+  <!-- AZURE FUNCTION TRIGGERS -->
+  <div class="case-section">
+    <h2>Azure Function Triggers</h2>
+    <p>The pipeline runs as a serverless Azure Function with two triggers: a nightly timer and an on-demand HTTP endpoint secured with a function key.</p>
+
+    <div class="code-block">
+      <div class="code-block-header"><span>function_app.py</span><span>Python</span></div>
+      <pre><span class="kw">import</span> azure.functions <span class="kw">as</span> func
+
+app = func.FunctionApp()
+
+<span class="cmt"># Nightly sync at 5 AM UTC</span>
+<span class="op">@</span>app.timer_trigger(schedule=<span class="str">"0 0 5 * * *"</span>, arg_name=<span class="str">"timer"</span>)
+<span class="kw">def</span> <span class="fn">blast_timer_trigger</span>(timer: func.TimerRequest) -> <span class="type">None</span>:
+    <span class="kw">from</span> main <span class="kw">import</span> run_pipeline
+    result = run_pipeline()
+
+<span class="cmt"># On-demand via POST (secured with function key)</span>
+<span class="op">@</span>app.route(route=<span class="str">"run-pipeline"</span>, auth_level=func.AuthLevel.FUNCTION)
+<span class="kw">def</span> <span class="fn">blast_http_trigger</span>(req: func.HttpRequest) -> func.HttpResponse:
+    <span class="kw">from</span> main <span class="kw">import</span> run_pipeline
+    result = run_pipeline()
+    <span class="kw">return</span> func.HttpResponse(<span class="str">f"Pipeline complete: <span class="op">{</span>result<span class="op">}</span>"</span>)</pre>
     </div>
   </div>
 
   <!-- PIPELINE RUNNER -->
   <div class="case-section">
     <h2>Pipeline Runner</h2>
-    <p>The pipeline authenticates via CSRF token, fetches new sessions using a high watermark, cleans the data, and upserts into PostgreSQL — all within a single atomic transaction.</p>
+    <p>The pipeline authenticates via CSRF token, fetches new sessions using a high watermark, cleans the data, and upserts into Azure SQL — returning a summary for the Power Automate notification.</p>
 
     <div class="code-block">
       <div class="code-block-header"><span>main.py</span><span>Python</span></div>
@@ -128,59 +151,27 @@
         <span class="cmt"># Step 4: Incremental load via high watermark</span>
         engine = get_engine()
         max_session_id = <span class="fn">int</span>(get_high_watermark(engine))
-        logger.info(<span class="str">f"High watermark: <span class="op">{</span>max_session_id<span class="op">}</span>"</span>)
 
         <span class="cmt"># Step 5: Only process new data</span>
         new_sessions = [s <span class="kw">for</span> s <span class="kw">in</span> sessions_list <span class="kw">if</span> <span class="fn">int</span>(s[<span class="str">'id'</span>]) > max_session_id]
 
         <span class="kw">if not</span> new_sessions:
-            logger.info(<span class="str">"No new sessions — exiting"</span>)
-        <span class="kw">else</span>:
-            <span class="cmt"># Step 6-7: Extract & transform</span>
-            all_putts = get_putts(session, new_sessions)
-            df_putts = clean_putts_df(pd.DataFrame(all_putts))
-            sessions_df = clean_sessions_df(pd.DataFrame(new_sessions))
+            <span class="kw">return</span> <span class="str">"No new sessions found"</span>
 
-            <span class="cmt"># Step 8: Atomic load</span>
-            <span class="kw">with</span> engine.begin() <span class="kw">as</span> conn:
-                upsert_sessions(sessions_df, engine)
-                upsert_putts(df_putts, engine)
-                logger.info(<span class="str">"Transaction committed"</span>)
-    <span class="kw">except</span> <span class="type">BlastAuthError</span> <span class="kw">as</span> e:
-        logger.error(<span class="str">f"Auth failed: <span class="op">{</span>e<span class="op">}</span>"</span>)
-        <span class="kw">raise</span></pre>
+        <span class="cmt"># Step 6-7: Extract & transform</span>
+        all_putts = get_putts(session, new_sessions)
+        df_putts = clean_putts_df(pd.DataFrame(all_putts))
+        sessions_df = clean_sessions_df(pd.DataFrame(new_sessions))
+
+        <span class="cmt"># Step 8: Atomic load to Azure SQL</span>
+        <span class="kw">with</span> engine.begin() <span class="kw">as</span> conn:
+            upsert_sessions(sessions_df, engine)
+            upsert_putts(df_putts, engine)
+            <span class="kw">return</span> <span class="str">f"Synced <span class="op">{</span><span class="fn">len</span>(new_sessions)<span class="op">}</span> sessions, <span class="op">{</span><span class="fn">len</span>(df_putts)<span class="op">}</span> putts"</span></pre>
     </div>
   </div>
 
-  <!-- AIRFLOW DAG -->
-  <div class="case-section">
-    <h2>Airflow DAG</h2>
-    <p>Scheduled every 2 hours with automatic retry. A single PythonOperator wraps the pipeline runner.</p>
-
-    <div class="code-block">
-      <div class="code-block-header"><span>blast_dag.py</span><span>Python</span></div>
-      <pre><span class="kw">with</span> DAG(
-    dag_id=<span class="str">'blast_motion_putting'</span>,
-    default_args={
-        <span class="str">'owner'</span>: <span class="str">'bbabbitt1'</span>,
-        <span class="str">'retries'</span>: <span class="num">1</span>,
-        <span class="str">'retry_delay'</span>: timedelta(minutes=<span class="num">5</span>),
-    },
-    description=<span class="str">'Fetches putting data from Blast Connect → PostgreSQL'</span>,
-    schedule=<span class="str">'0 */2 * * *'</span>,
-    start_date=datetime(<span class="num">2026</span>, <span class="num">3</span>, <span class="num">1</span>),
-    catchup=<span class="num">False</span>,
-    tags=[<span class="str">'blast'</span>, <span class="str">'putting'</span>, <span class="str">'golf'</span>]
-) <span class="kw">as</span> dag:
-
-    fetch_and_load = PythonOperator(
-        task_id=<span class="str">'fetch_and_load_putts'</span>,
-        python_callable=run_pipeline,
-    )</pre>
-    </div>
-  </div>
-
-  <!-- HIGH WATERMARK -->
+  <!-- INCREMENTAL LOADING -->
   <div class="case-section">
     <h2>Incremental Loading</h2>
     <p>The pipeline uses a high watermark query to avoid reprocessing data. Only sessions with IDs greater than the current max are fetched from the API.</p>
@@ -196,57 +187,25 @@
   <!-- UPSERT -->
   <div class="case-section">
     <h2>Idempotent Upserts</h2>
-    <p>Uses PostgreSQL's <code>ON CONFLICT DO NOTHING</code> for safe, repeatable writes. If the pipeline runs twice, no duplicates are created.</p>
+    <p>Uses SQL Server's <code>IF NOT EXISTS</code> pattern for safe, repeatable writes. If the pipeline runs twice, no duplicates are created.</p>
 
     <div class="code-block">
       <div class="code-block-header"><span>utils.py</span><span>Python</span></div>
       <pre><span class="kw">def</span> <span class="fn">upsert_sessions</span>(df: pd.DataFrame, engine) -> <span class="type">None</span>:
-    records = df.to_dict(orient=<span class="str">'records'</span>)
     <span class="kw">with</span> engine.begin() <span class="kw">as</span> conn:
-        stmt = insert(get_sessions_table(engine)).values(records)
-        stmt = stmt.on_conflict_do_nothing(
-            index_elements=[<span class="str">'blast_session_id'</span>]
-        )
-        conn.execute(stmt)
-        logger.info(<span class="str">f"Upserted <span class="op">{</span><span class="fn">len</span>(records)<span class="op">}</span> sessions"</span>)</pre>
+        <span class="kw">for</span> _, row <span class="kw">in</span> df.iterrows():
+            conn.execute(text(<span class="str">"""
+                IF NOT EXISTS (SELECT 1 FROM src.blast_sessions
+                    WHERE blast_session_id = :blast_session_id)
+                INSERT INTO src.blast_sessions
+                    (blast_session_id, session_type_id, session_name)
+                VALUES (:blast_session_id, :session_type_id, :session_name)
+            """</span>), row.to_dict())
+        logger.info(<span class="str">f"Upserted <span class="op">{</span><span class="fn">len</span>(df)<span class="op">}</span> sessions"</span>)</pre>
     </div>
   </div>
 
-  <!-- FASTAPI -->
-  <div class="case-section">
-    <h2>FastAPI Backend</h2>
-    <p>The analysis platform exposes a REST API with JWT authentication, CRUD endpoints for rounds and putts, and real-time strokes gained calculation.</p>
-
-    <div class="code-block">
-      <div class="code-block-header"><span>services/shots_gained.py</span><span>Python</span></div>
-      <pre><span class="kw">def</span> <span class="fn">calculate_shots_gained</span>(
-    db: Session,
-    distance_ft: <span class="type">float</span>,
-    made: <span class="type">bool</span>,
-    distance_remaining_ft: <span class="type">float</span> | <span class="type">None</span>,
-    skill_level: <span class="type">str</span> = <span class="str">"tour"</span>,
-) -> <span class="type">float</span> | <span class="type">None</span>:
-    <span class="str">"""SG = Expected_Putts(start) - Expected_Putts(end) - 1"""</span>
-    expected_start = get_expected_putts(db, distance_ft, skill_level)
-    <span class="kw">if</span> expected_start <span class="kw">is</span> <span class="type">None</span>:
-        <span class="kw">return</span> <span class="type">None</span>
-
-    <span class="kw">if</span> made:
-        <span class="kw">return</span> <span class="fn">round</span>(expected_start - <span class="num">1.0</span>, <span class="num">3</span>)
-
-    <span class="kw">if</span> distance_remaining_ft <span class="kw">is</span> <span class="type">None</span>:
-        <span class="kw">return</span> <span class="type">None</span>
-
-    expected_end = get_expected_putts(db, distance_remaining_ft, skill_level)
-    <span class="kw">return</span> <span class="fn">round</span>(expected_start - expected_end - <span class="num">1.0</span>, <span class="num">3</span>)</pre>
-    </div>
-
-    <div class="case-callout">
-      The shots gained dimension table includes benchmarks across 5 skill levels (tour, scratch, low/mid/high handicap), allowing users to compare their putting against any tier.
-    </div>
-  </div>
-
-  <!-- RETRY LOGIC -->
+  <!-- RESILIENT HTTP -->
   <div class="case-section">
     <h2>Resilient HTTP Client</h2>
     <p>The pipeline includes exponential backoff with jitter for transient failures, and fails fast on auth or rate-limit errors.</p>
@@ -275,32 +234,47 @@
     </div>
   </div>
 
+  <!-- POWER AUTOMATE -->
+  <div class="case-section">
+    <h2>Mobile Orchestration</h2>
+    <p>Power Automate provides a one-tap mobile workflow: trigger the pipeline, refresh the Power BI dataset, and receive a push notification with sync results.</p>
+
+    <div class="case-callout">
+      Button tap &rarr; HTTP POST to Azure Function &rarr; Pipeline syncs putts &rarr; Power BI dataset refresh &rarr; Push notification: "Pipeline complete: Synced 3 sessions, 15 putts"
+    </div>
+  </div>
+
+  <!-- DASHBOARD OUTPUT -->
+  <div class="case-section">
+    <h2>Dashboard Output</h2>
+    <p>The Power BI dashboard surfaces 9 key putting metrics with trend lines, target ranges, and status indicators across configurable putt windows (25, 50, 100, or all).</p>
+    <img src="../screenshots/putting dashboard.png" alt="Putting Analytics Dashboard showing 9 metric cards: Tempo, Face Angle at Impact, Loft Change, Back Stroke Time, Back Stroke Rotation, Back Stroke Length, Forward Stroke Time, Forward Stroke Rotation, and Impact Speed" class="case-image" loading="lazy">
+  </div>
+
   <!-- DATABASE SCHEMA -->
   <div class="case-section">
     <h2>Database Schema</h2>
-    <p>Two-schema design: <code>src</code> for raw sensor data ingested by the pipeline, <code>raw</code> for user-entered context (rounds, practice sessions, putts with shots gained).</p>
+    <p>Azure SQL Database with a <code>src</code> schema for raw sensor data. Sessions and putts are linked by session ID, with 11 stroke metrics captured per putt.</p>
 
     <div class="code-block">
-      <div class="code-block-header"><span>SQL Migrations</span><span>PostgreSQL</span></div>
-      <pre><span class="cmt">-- Pipeline target tables (src schema)</span>
-<span class="kw">CREATE TABLE IF NOT EXISTS</span> src.blast_sessions (
-    blast_session_id    <span class="type">INT</span>           <span class="kw">PRIMARY KEY</span>,
-    session_type_id     <span class="type">INT</span>           <span class="kw">NOT NULL</span>,
-    session_name        <span class="type">VARCHAR(255)</span>  <span class="kw">NOT NULL</span>,
-    created_at          <span class="type">TIMESTAMP</span>     <span class="kw">DEFAULT</span> CURRENT_TIMESTAMP
+      <div class="code-block-header"><span>SQL Migrations</span><span>Azure SQL</span></div>
+      <pre><span class="kw">CREATE TABLE</span> src.blast_sessions (
+    blast_session_id    <span class="type">INT</span>             <span class="kw">PRIMARY KEY</span>,
+    session_type_id     <span class="type">INT</span>             <span class="kw">NOT NULL</span>,
+    session_name        <span class="type">NVARCHAR(255)</span>   <span class="kw">NOT NULL</span>,
+    created_at          <span class="type">DATETIME2</span>       <span class="kw">DEFAULT</span> <span class="fn">GETUTCDATE</span>()
 );
 
-<span class="cmt">-- User context tables (raw schema)</span>
-<span class="kw">CREATE TABLE IF NOT EXISTS</span> raw.blast_context_putt (
-    putt_id             <span class="type">UUID</span>          <span class="kw">PRIMARY KEY DEFAULT</span> gen_random_uuid(),
-    round_id            <span class="type">UUID</span>          <span class="kw">REFERENCES</span> raw.blast_context_round(round_id),
-    distance_ft         <span class="type">NUMERIC(5,1)</span>,
-    made                <span class="type">BOOLEAN</span>,
-    break_type          <span class="type">VARCHAR(20)</span>,
-    slope_type          <span class="type">VARCHAR(20)</span>,
-    shots_gained        <span class="type">NUMERIC(6,3)</span>,
-    skill_level_compared <span class="type">VARCHAR(50)</span>,
-    created_at          <span class="type">TIMESTAMP</span>     <span class="kw">DEFAULT</span> CURRENT_TIMESTAMP
+<span class="kw">CREATE TABLE</span> src.blast_putts (
+    blast_id                <span class="type">UNIQUEIDENTIFIER</span>  <span class="kw">PRIMARY KEY</span>,
+    session_id              <span class="type">INT</span>               <span class="kw">NOT NULL REFERENCES</span> src.blast_sessions,
+    putt_date               <span class="type">DATETIME2</span>         <span class="kw">NOT NULL</span>,
+    back_stroke_time        <span class="type">DECIMAL(6,2)</span>,
+    forward_stroke_time     <span class="type">DECIMAL(6,2)</span>,
+    tempo                   <span class="type">DECIMAL(6,2)</span>,
+    impact_stroke_speed     <span class="type">DECIMAL(6,2)</span>,
+    face_angle_at_impact    <span class="type">DECIMAL(6,2)</span>,
+    <span class="cmt">-- + 6 more stroke metrics</span>
 );</pre>
     </div>
   </div>

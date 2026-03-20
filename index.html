@@ -104,11 +104,13 @@
         <span class="skill-chip">dbt</span>
         <span class="skill-chip">Snowflake</span>
         <span class="skill-chip">AWS</span>
+        <span class="skill-chip">Azure</span>
         <span class="skill-chip">BigQuery</span>
         <span class="skill-chip">Data Modeling</span>
         <span class="skill-chip">ETL / ELT</span>
         <span class="skill-chip">C#</span>
         <span class="skill-chip">CI/CD</span>
+        <span class="skill-chip">Power Automate</span>
       </div>
     </section>
 
@@ -274,33 +276,34 @@
           <div class="project-thumb">
             <div class="thumb-viz" style="padding:6px 8px">
               <svg viewBox="0 0 120 70" style="width:100%;height:100%">
-                <!-- Pipeline flow: boxes connected by arrows -->
+                <!-- Pipeline flow: Blast API → Azure Function → Azure SQL → Power BI -->
                 <rect x="2" y="28" width="22" height="14" rx="2" fill="none" stroke="#4FA3D1" stroke-width="1.2"/>
                 <text x="13" y="37" fill="#4FA3D1" font-size="5" text-anchor="middle" font-family="monospace">API</text>
-                <line x1="24" y1="35" x2="32" y2="35" stroke="#8FAFB0" stroke-width="0.8" marker-end="url(#arrowhead)"/>
+                <line x1="24" y1="35" x2="32" y2="35" stroke="#8FAFB0" stroke-width="0.8"/>
                 <rect x="32" y="28" width="22" height="14" rx="2" fill="none" stroke="#6FB7AD" stroke-width="1.2"/>
-                <text x="43" y="37" fill="#6FB7AD" font-size="5" text-anchor="middle" font-family="monospace">ETL</text>
+                <text x="43" y="37" fill="#6FB7AD" font-size="4" text-anchor="middle" font-family="monospace">Func</text>
                 <line x1="54" y1="35" x2="62" y2="35" stroke="#8FAFB0" stroke-width="0.8"/>
                 <rect x="62" y="28" width="22" height="14" rx="2" fill="none" stroke="#4FA3D1" stroke-width="1.2"/>
-                <text x="73" y="37" fill="#4FA3D1" font-size="4.5" text-anchor="middle" font-family="monospace">PG</text>
+                <text x="73" y="37" fill="#4FA3D1" font-size="4.5" text-anchor="middle" font-family="monospace">SQL</text>
                 <line x1="84" y1="35" x2="92" y2="35" stroke="#8FAFB0" stroke-width="0.8"/>
                 <rect x="92" y="28" width="24" height="14" rx="2" fill="none" stroke="#D9FFF6" stroke-width="1.2"/>
-                <text x="104" y="37" fill="#D9FFF6" font-size="4.5" text-anchor="middle" font-family="monospace">API+UI</text>
-                <!-- Airflow wrapper -->
-                <rect x="0" y="8" width="88" height="52" rx="4" fill="none" stroke="#8FAFB0" stroke-width="0.6" stroke-dasharray="3 2" opacity="0.4"/>
-                <text x="44" y="16" fill="#8FAFB0" font-size="4" text-anchor="middle" font-family="monospace" opacity="0.6">Airflow</text>
+                <text x="104" y="37" fill="#D9FFF6" font-size="4" text-anchor="middle" font-family="monospace">PBI</text>
+                <!-- Azure wrapper -->
+                <rect x="28" y="8" width="92" height="52" rx="4" fill="none" stroke="#8FAFB0" stroke-width="0.6" stroke-dasharray="3 2" opacity="0.4"/>
+                <text x="74" y="16" fill="#8FAFB0" font-size="4" text-anchor="middle" font-family="monospace" opacity="0.6">Azure</text>
               </svg>
             </div>
           </div>
           <div>
             <p class="project-name">Blast Motion Putting Pipeline <span class="arrow-icon">↗</span></p>
-            <p class="project-desc">Full-stack data platform: Python ETL pipeline with Airflow orchestration, PostgreSQL warehouse, FastAPI backend, and Next.js frontend for golf putting analytics.</p>
+            <p class="project-desc">Serverless ETL pipeline: Azure Function extracts Blast Motion sensor data on schedule and on-demand, loads to Azure SQL, with Power Automate mobile trigger and Power BI refresh.</p>
             <div class="project-tags">
               <span class="tag">Python</span>
-              <span class="tag">Airflow</span>
-              <span class="tag">FastAPI</span>
-              <span class="tag">PostgreSQL</span>
-              <span class="tag">Next.js</span>
+              <span class="tag">Azure Functions</span>
+              <span class="tag">Azure SQL</span>
+              <span class="tag">Power Automate</span>
+              <span class="tag">Power BI</span>
+              <span class="tag">CI/CD</span>
             </div>
           </div>
         </a>
@@ -601,6 +604,25 @@
       <!-- POWER BI ──────────────────────────────────────────── -->
       <h3 class="category-label">Power BI</h3>
       <div class="projects-grid">
+
+        <!-- Putting Analytics Dashboard -->
+        <a href="https://app.powerbi.com/view?r=eyJrIjoiNDk4N2U4OTYtYjRjMi00OTczLTgwYTctNTQxZWQ3NWRhNjJhIiwidCI6ImQ4MjJiODRiLTgwZjYtNDljNS04ZGNjLTU0OWU4MjRkMGRkYyIsImMiOjJ9"
+           target="_blank" rel="noopener noreferrer" class="project-card" aria-label="Putting Analytics Dashboard">
+          <div class="project-thumb">
+            <div class="thumb-viz" style="padding:8px">
+              <svg viewBox="0 0 100 60" preserveAspectRatio="none" style="width:100%;height:100%">
+                <polyline points="5,45 15,42 25,38 35,40 45,32 55,28 65,30 75,24 85,20 95,22"
+                  fill="none" stroke="#4FA3D1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <polyline points="5,55 15,52 25,54 35,48 45,50 55,44 65,46 75,42 85,38 95,40"
+                  fill="none" stroke="#6FB7AD" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3 2" opacity="0.6"/>
+              </svg>
+            </div>
+          </div>
+          <div>
+            <p class="project-name">Putting Analytics Dashboard <span class="arrow-icon">↗</span></p>
+            <p class="project-desc">Real-time putting stroke analytics from Blast Motion sensors — tracking 9 key metrics with trend lines, target ranges, and configurable putt windows.</p>
+          </div>
+        </a>
 
         <!-- Financial Scatter Plot -->
         <a href="https://app.powerbi.com/view?r=eyJrIjoiODZlMTkxM2ItMzIyZS00M2U5LWExMjEtYmJhMzllZTdhODc2IiwidCI6ImQ4MjJiODRiLTgwZjYtNDljNS04ZGNjLTU0OWU4MjRkMGRkYyIsImMiOjJ9"

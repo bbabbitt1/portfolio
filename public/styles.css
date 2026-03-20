@@ -637,6 +637,13 @@ body {
   line-height: 1.65;
 }
 
+.case-image {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid rgba(143,175,176,0.18);
+  margin-bottom: 20px;
+}
+
 /* ── FOOTER ───────────────────────────────────────────────── */
 
 .page-footer {
