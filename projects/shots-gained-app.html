@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shots Gained Tracker | Barry Babbitt</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../public/styles.css">
+  <style>
+    /* ── Phone Mockup Frame ──────────────────────────── */
+    .phone-frame {
+      background: #080d1a;
+      border: 3px solid #1e2a3a;
+      border-radius: 32px;
+      padding: 18px 8px 14px;
+      display: inline-block;
+      position: relative;
+      box-shadow:
+        0 0 0 1px rgba(79,163,209,0.08),
+        0 12px 40px rgba(0,0,0,0.5);
+    }
+    .phone-frame::before {
+      content: '';
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 48px;
+      height: 4px;
+      background: #1e2a3a;
+      border-radius: 2px;
+    }
+    .phone-frame img {
+      display: block;
+      width: 100%;
+      border-radius: 18px;
+    }
+    .phone-frame figcaption {
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      text-align: center;
+      margin-top: 10px;
+      font-weight: 500;
+    }
+
+    /* ── Phone Showcase Grid ─────────────────────────── */
+    .phone-showcase {
+      display: flex;
+      gap: 28px;
+      justify-content: center;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      margin: 24px 0;
+    }
+    .phone-showcase .phone-frame {
+      width: 220px;
+      flex-shrink: 0;
+    }
+    .phone-showcase-single {
+      display: flex;
+      justify-content: center;
+      margin: 24px 0;
+    }
+    .phone-showcase-single .phone-frame {
+      width: 260px;
+    }
+
+    /* Side-by-side: phone + text */
+    .phone-text-row {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 32px;
+      align-items: start;
+      margin: 24px 0;
+    }
+    .phone-text-row .phone-frame { width: 100%; }
+
+    /* Demo video in phone frame */
+    .phone-frame video {
+      display: block;
+      width: 100%;
+      border-radius: 18px;
+    }
+
+    /* SG badges */
+    .sg-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      font-family: "JetBrains Mono", monospace;
+    }
+    .sg-pos { background: rgba(34,197,94,0.15); color: #22C55E; }
+    .sg-neg { background: rgba(239,68,68,0.15); color: #EF4444; }
+
+    /* Feature list */
+    .feature-list {
+      list-style: none;
+      margin: 12px 0 20px;
+    }
+    .feature-list li {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      line-height: 1.7;
+      padding-left: 20px;
+      position: relative;
+      margin-bottom: 6px;
+    }
+    .feature-list li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 9px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--teal);
+    }
+
+    /* Responsive */
+    @media (max-width: 680px) {
+      .phone-showcase .phone-frame { width: 160px; }
+      .phone-showcase-single .phone-frame { width: 220px; }
+      .phone-text-row {
+        grid-template-columns: 1fr;
+        justify-items: center;
+      }
+      .phone-text-row .phone-frame { width: 220px; }
+    }
+    @media (max-width: 480px) {
+      .phone-showcase { gap: 16px; }
+      .phone-showcase .phone-frame { width: 140px; }
+      .phone-showcase-single .phone-frame { width: 190px; }
+      .phone-frame { border-radius: 24px; padding: 14px 6px 10px; }
+      .phone-frame img { border-radius: 14px; }
+      .phone-frame video { border-radius: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="case-study">
+
+  <a href="../index.html#projects" class="back-link">
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    Back to Portfolio
+  </a>
+
+  <!-- HERO -->
+  <div class="project-hero">
+    <h1>Shots Gained Tracker</h1>
+    <p class="hero-desc">
+      A mobile-first PWA for tracking golf strokes gained in real-time on the course. Log shots hole-by-hole, get instant SG feedback against PGA Tour benchmarks, and view cumulative performance by category — Driving, Approach, Short Game, and Putting. Works offline with automatic sync.
+    </p>
+    <div class="hero-tags">
+      <span class="tag">React 19</span>
+      <span class="tag">TypeScript</span>
+      <span class="tag">Express</span>
+      <span class="tag">Azure SQL</span>
+      <span class="tag">Tailwind CSS</span>
+      <span class="tag">PWA</span>
+      <span class="tag">IndexedDB</span>
+    </div>
+    <a href="https://github.com/bbabbitt1/shots-gained-app" target="_blank" rel="noopener noreferrer" class="github-cta">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+      View on GitHub
+    </a>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- DASHBOARD -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="case-section">
+    <h2>Dashboard</h2>
+    <p>The home screen gives you a snapshot of your game at a glance — aggregate strokes gained broken out by category, key stats like scoring average, fairways in regulation, and greens in regulation, plus a list of recent rounds with their scores and total SG.</p>
+
+    <div class="phone-showcase-single">
+      <figure class="phone-frame">
+        <img src="../public/imgs/shots-gained/home-dash.png" alt="Dashboard showing aggregate strokes gained by category, scoring average, FIR, GIR, and recent rounds" loading="lazy">
+        <figcaption>Home Dashboard</figcaption>
+      </figure>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- LOGGING A HOLE -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="case-section">
+    <h2>Logging a Hole</h2>
+    <p>The core flow: tap through each shot from tee to green. After every shot, the app instantly calculates strokes gained against PGA Tour benchmarks so you know exactly where you're gaining or losing strokes — before you even walk to your next shot.</p>
+
+    <div class="phone-showcase">
+      <figure class="phone-frame">
+        <img src="../public/imgs/shots-gained/hole-summary-screenshot.png" alt="Hole completion view showing shot-by-shot strokes gained breakdown with birdie result" loading="lazy">
+        <figcaption>Hole Tracking</figcaption>
+      </figure>
+      <figure class="phone-frame">
+        <img src="../public/imgs/shots-gained/hole-detail-putting.png" alt="Shot entry form with putting details — break, severity, slope, speed" loading="lazy">
+        <figcaption>Shot Entry</figcaption>
+      </figure>
+    </div>
+
+    <p>Here's a full walkthrough of entering shots on a hole — from tee to green — with real-time SG calculations updating after each shot.</p>
+
+    <div class="phone-showcase-single">
+      <figure class="phone-frame">
+        <video controls preload="metadata" poster="../public/imgs/shots-gained/hole-summary-screenshot.png">
+          <source src="../public/imgs/shots-gained/hole-entry-demo.mp4" type="video/mp4">
+        </video>
+        <figcaption>Full Hole Entry Demo</figcaption>
+      </figure>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- SMART SHOT ENTRY — DOMAIN LOGIC -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="case-section">
+    <h2>Smart Shot Entry</h2>
+    <p>The form is designed to minimize taps on the course. Instead of manually filling every field, the app infers context from the previous shot and the current situation — so most of the time you're confirming defaults, not typing.</p>
+
+    <ul class="feature-list">
+      <li><strong>Auto-carried distances</strong> — the end position of your last shot becomes the start of your next. If your drive landed in the fairway at 150 yards, your approach shot pre-fills "Fairway, 150 yds".</li>
+      <li><strong>Dynamic club suggestion</strong> — based on the starting distance and surface, the app suggests a likely club. 150 yards from the fairway? Probably a 7-iron. 30 yards from rough? A sand wedge. The suggestion adapts to the situation so you only override when needed.</li>
+      <li><strong>Category auto-inference</strong> — the app determines shot category from surface, distance, par, and shot number. Tee shot on a par 4? Driving. On the green? Putting. 45 yards out? Short Game. No dropdown hunting required.</li>
+      <li><strong>Contextual detail panels</strong> — only relevant fields appear. Putting shows break direction, severity, slope, and green speed. Approach shows pin position and green firmness. Short game shows shot type. All optional, all collapsible.</li>
+    </ul>
+
+    <div class="code-block">
+      <div class="code-block-header"><span>useRound.ts</span><span>TypeScript</span></div>
+      <pre><span class="kw">const</span> <span class="fn">inferCategory</span> = (
+  surface: <span class="type">Surface</span>,
+  distance: <span class="type">number</span>,
+  par: <span class="type">number</span>,
+  shotNumber: <span class="type">number</span>
+): <span class="type">Category</span> => {
+  <span class="kw">if</span> (surface === <span class="str">'Green'</span>) <span class="kw">return</span> <span class="str">'Putting'</span>
+  <span class="kw">if</span> (surface === <span class="str">'Tee'</span> && par >= <span class="num">4</span>) <span class="kw">return</span> <span class="str">'Driving'</span>
+  <span class="kw">if</span> (distance <= <span class="num">50</span>) <span class="kw">return</span> <span class="str">'Short Game'</span>
+  <span class="kw">return</span> <span class="str">'Approach'</span>
+}</pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-block-header"><span>clubSuggestion.ts</span><span>TypeScript</span></div>
+      <pre><span class="kw">const</span> <span class="fn">suggestClub</span> = (
+  surface: <span class="type">Surface</span>,
+  distance: <span class="type">number</span>
+): <span class="type">string</span> => {
+  <span class="kw">if</span> (surface === <span class="str">'Green'</span>) <span class="kw">return</span> <span class="str">'Putter'</span>
+  <span class="kw">if</span> (surface === <span class="str">'Tee'</span> && distance > <span class="num">250</span>) <span class="kw">return</span> <span class="str">'Driver'</span>
+  <span class="kw">if</span> (distance > <span class="num">200</span>) <span class="kw">return</span> <span class="str">'3 Wood'</span>
+  <span class="kw">if</span> (distance > <span class="num">180</span>) <span class="kw">return</span> <span class="str">'4 Iron'</span>
+  <span class="kw">if</span> (distance > <span class="num">160</span>) <span class="kw">return</span> <span class="str">'6 Iron'</span>
+  <span class="kw">if</span> (distance > <span class="num">140</span>) <span class="kw">return</span> <span class="str">'7 Iron'</span>
+  <span class="kw">if</span> (distance > <span class="num">120</span>) <span class="kw">return</span> <span class="str">'8 Iron'</span>
+  <span class="kw">if</span> (distance > <span class="num">100</span>) <span class="kw">return</span> <span class="str">'9 Iron'</span>
+  <span class="kw">if</span> (distance > <span class="num">80</span>) <span class="kw">return</span> <span class="str">'PW'</span>
+  <span class="kw">if</span> (distance > <span class="num">50</span>) <span class="kw">return</span> <span class="str">'GW'</span>
+  <span class="kw">return</span> <span class="str">'SW'</span>
+}</pre>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- STROKES GAINED ENGINE -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="case-section">
+    <h2>Real-Time Strokes Gained</h2>
+    <p>Each shot is evaluated instantly against PGA Tour benchmarks. The formula compares your starting position's expected strokes-to-hole against your result — positive means you gained on the field, negative means you lost.</p>
+
+    <div class="case-callout">
+      <strong>SG = TourAvg(start_surface, start_distance) − (1 + TourAvg(end_surface, end_distance))</strong><br>
+      If holed out → end value = 0 &nbsp;|&nbsp; If penalty → SG − 1
+    </div>
+
+    <div class="code-block">
+      <div class="code-block-header"><span>sg-calculator.ts</span><span>TypeScript (shared)</span></div>
+      <pre><span class="kw">export const</span> <span class="fn">calculateStrokesGained</span> = (
+  startSurface: <span class="type">Surface</span>,
+  startDistance: <span class="type">number</span>,
+  endSurface: <span class="type">Surface</span>,
+  endDistance: <span class="type">number</span>,
+  penalty: <span class="type">boolean</span>,
+  benchmarks: <span class="type">Benchmark[]</span>
+): <span class="type">number</span> => {
+  <span class="kw">const</span> startAvg = <span class="fn">lookupBenchmark</span>(startSurface, startDistance, benchmarks)
+  <span class="kw">const</span> endAvg = endSurface === <span class="str">'Hole'</span>
+    ? <span class="num">0</span>
+    : <span class="fn">lookupBenchmark</span>(endSurface, endDistance, benchmarks)
+
+  <span class="kw">let</span> sg = startAvg - (<span class="num">1</span> + endAvg)
+  <span class="kw">if</span> (penalty) sg -= <span class="num">1</span>
+
+  <span class="kw">return</span> <span class="fn">Math.round</span>(sg * <span class="num">1000</span>) / <span class="num">1000</span>
+}</pre>
+    </div>
+    <p>The calculator is shared between client and server — the same module runs in the browser for instant feedback and on the backend for verified persistence.</p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- ROUND SUMMARY -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="case-section">
+    <h2>Round Summary</h2>
+    <p>After completing a round, the summary breaks down strokes gained by category with a diverging bar chart — green bars for shots gained, red for shots lost. One tap saves the round to the database or queues it for offline sync.</p>
+
+    <div class="phone-showcase-single">
+      <figure class="phone-frame">
+        <img src="../public/imgs/shots-gained/roundsummary.png" alt="Round summary showing 71 strokes (-1 under par), +0.28 total SG, with diverging bars for Driving, Approach, Short Game, and Putting" loading="lazy">
+        <figcaption>Round Summary</figcaption>
+      </figure>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- OFFLINE-FIRST -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="case-section">
+    <h2>Offline-First Architecture</h2>
+    <p>Designed for the golf course — spotty cell service is expected. PGA Tour benchmarks are cached in IndexedDB on first load, enabling full SG calculations without connectivity. Completed rounds queue locally and auto-sync when back online.</p>
+
+    <img src="../public/imgs/shots-gained/offline-mode.png" alt="Offline banner showing 1 round saved offline with Sync now button" class="case-image" loading="lazy" style="max-width: 480px;">
+
+    <div class="code-block">
+      <div class="code-block-header"><span>offline.ts</span><span>TypeScript</span></div>
+      <pre><span class="kw">export const</span> <span class="fn">cacheBenchmarks</span> = <span class="kw">async</span> (benchmarks: <span class="type">Benchmark[]</span>) => {
+  <span class="kw">await</span> <span class="fn">set</span>(<span class="str">'benchmarks'</span>, benchmarks)
+}
+
+<span class="kw">export const</span> <span class="fn">getCachedBenchmarks</span> = <span class="kw">async</span> (): <span class="type">Promise</span>&lt;<span class="type">Benchmark</span>[] | <span class="type">undefined</span>&gt; => {
+  <span class="kw">return await</span> <span class="fn">get</span>(<span class="str">'benchmarks'</span>)
+}
+
+<span class="kw">export const</span> <span class="fn">savePendingRound</span> = <span class="kw">async</span> (round: <span class="type">PendingRound</span>) => {
+  <span class="kw">const</span> pending = (<span class="kw">await</span> <span class="fn">get</span>(<span class="str">'pendingRounds'</span>)) || []
+  pending.push({ ...round, id: <span class="fn">crypto.randomUUID</span>() })
+  <span class="kw">await</span> <span class="fn">set</span>(<span class="str">'pendingRounds'</span>, pending)
+}</pre>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- ARCHITECTURE -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="case-section">
+    <h2>Architecture</h2>
+    <div class="architecture-diagram">
+      <svg viewBox="0 0 800 340" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#8FAFB0"/>
+          </marker>
+        </defs>
+
+        <!-- PWA Client -->
+        <rect x="20" y="40" width="160" height="120" rx="8" fill="rgba(111,183,173,0.12)" stroke="#6FB7AD" stroke-width="1.5"/>
+        <text x="100" y="66" fill="#6FB7AD" font-size="13" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">React PWA</text>
+        <text x="100" y="86" fill="#8FAFB0" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">Shot Entry + SG Calc</text>
+        <text x="100" y="100" fill="#8FAFB0" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">IndexedDB Cache</text>
+        <text x="100" y="114" fill="#8FAFB0" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">Workbox Service Worker</text>
+        <text x="100" y="128" fill="#8FAFB0" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">Offline Queue + Sync</text>
+
+        <!-- Arrow to Express -->
+        <line x1="180" y1="100" x2="260" y2="100" stroke="#8FAFB0" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <text x="220" y="92" fill="#8FAFB0" font-size="9" text-anchor="middle" font-family="Inter, sans-serif">REST</text>
+
+        <!-- Express API -->
+        <rect x="260" y="50" width="160" height="100" rx="8" fill="rgba(79,163,209,0.12)" stroke="#4FA3D1" stroke-width="1.5"/>
+        <text x="340" y="76" fill="#4FA3D1" font-size="13" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">Express API</text>
+        <text x="340" y="96" fill="#8FAFB0" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">JWT Auth + Zod</text>
+        <text x="340" y="110" fill="#8FAFB0" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">Rounds / Shots / Stats</text>
+        <text x="340" y="124" fill="#8FAFB0" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">Helmet + Rate Limiting</text>
+
+        <!-- Arrow to Azure SQL -->
+        <line x1="420" y1="100" x2="500" y2="100" stroke="#8FAFB0" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+        <!-- Azure SQL -->
+        <rect x="500" y="60" width="140" height="80" rx="8" fill="rgba(79,163,209,0.12)" stroke="#4FA3D1" stroke-width="1.5"/>
+        <text x="570" y="86" fill="#4FA3D1" font-size="13" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">Azure SQL</text>
+        <text x="570" y="106" fill="#8FAFB0" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">Star Schema</text>
+        <text x="570" y="120" fill="#8FAFB0" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">Fact + Dimension Tables</text>
+
+        <!-- Golf Course API -->
+        <rect x="260" y="200" width="160" height="50" rx="8" fill="rgba(217,255,246,0.08)" stroke="#D9FFF6" stroke-width="1" opacity="0.7"/>
+        <text x="340" y="222" fill="#D9FFF6" font-size="12" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600" opacity="0.8">Golf Course API</text>
+        <text x="340" y="238" fill="#8FAFB0" font-size="10" text-anchor="middle" font-family="Inter, sans-serif" opacity="0.6">Course search + tee data</text>
+
+        <!-- Arrow from API to Express -->
+        <line x1="340" y1="200" x2="340" y2="150" stroke="#8FAFB0" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+        <!-- PGA Benchmarks -->
+        <rect x="500" y="200" width="140" height="50" rx="8" fill="rgba(217,255,246,0.08)" stroke="#D9FFF6" stroke-width="1" opacity="0.7"/>
+        <text x="570" y="222" fill="#D9FFF6" font-size="12" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600" opacity="0.8">PGA Benchmarks</text>
+        <text x="570" y="238" fill="#8FAFB0" font-size="10" text-anchor="middle" font-family="Inter, sans-serif" opacity="0.6">~3,500 tour averages</text>
+
+        <!-- Arrow from benchmarks to SQL -->
+        <line x1="570" y1="200" x2="570" y2="140" stroke="#8FAFB0" stroke-width="1" stroke-dasharray="4 3" opacity="0.5"/>
+
+        <!-- Offline label on PWA -->
+        <rect x="30" y="170" width="140" height="30" rx="6" fill="rgba(245,158,11,0.12)" stroke="#F59E0B" stroke-width="1" opacity="0.7"/>
+        <text x="100" y="189" fill="#F59E0B" font-size="10" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">Works Fully Offline</text>
+      </svg>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- DATABASE SCHEMA -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="case-section">
+    <h2>Database Schema</h2>
+    <p>Azure SQL with a dimensional model — dimension tables for players, courses, and hole configurations, fact tables for individual shots and per-hole score rollups.</p>
+
+    <div class="code-block">
+      <div class="code-block-header"><span>001_initial.sql</span><span>Azure SQL</span></div>
+      <pre><span class="kw">CREATE TABLE</span> DimCourse (
+    CourseID      <span class="type">INT</span>           <span class="kw">IDENTITY PRIMARY KEY</span>,
+    ClubName      <span class="type">NVARCHAR(255)</span> <span class="kw">NOT NULL</span>,
+    CourseName    <span class="type">NVARCHAR(255)</span>,
+    APISourceID   <span class="type">NVARCHAR(100)</span>
+);
+
+<span class="kw">CREATE TABLE</span> FactShots (
+    ShotID          <span class="type">INT</span>       <span class="kw">IDENTITY PRIMARY KEY</span>,
+    PlayerID        <span class="type">INT</span>       <span class="kw">REFERENCES</span> DimPlayer,
+    RoundID         <span class="type">INT</span>       <span class="kw">REFERENCES</span> DimRound,
+    Hole            <span class="type">INT</span>,
+    Category        <span class="type">NVARCHAR(20)</span>,  <span class="cmt">-- Driving | Approach | Short Game | Putting</span>
+    SurfaceStart    <span class="type">NVARCHAR(20)</span>,
+    DistanceStart   <span class="type">INT</span>,
+    SurfaceEnd      <span class="type">NVARCHAR(20)</span>,
+    DistanceEnd     <span class="type">INT</span>,
+    ClubUsed        <span class="type">NVARCHAR(30)</span>,
+    StrokesGained   <span class="type">DECIMAL(6,3)</span>
+);
+
+<span class="kw">CREATE TABLE</span> FactHoleScores (
+    RoundID     <span class="type">INT</span> <span class="kw">REFERENCES</span> DimRound,
+    Hole        <span class="type">INT</span>,
+    Score       <span class="type">INT</span>,
+    GreenInReg  <span class="type">BIT</span>,
+    Putts       <span class="type">INT</span>,
+    SG_Driving  <span class="type">DECIMAL(6,3)</span>,
+    SG_Approach <span class="type">DECIMAL(6,3)</span>,
+    SG_Short    <span class="type">DECIMAL(6,3)</span>,
+    SG_Putting  <span class="type">DECIMAL(6,3)</span>,
+    <span class="kw">PRIMARY KEY</span> (RoundID, Hole)
+);</pre>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

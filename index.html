@@ -101,6 +101,8 @@
         <span class="skill-chip">DAX</span>
         <span class="skill-chip">SQL</span>
         <span class="skill-chip">Python</span>
+        <span class="skill-chip">TypeScript</span>
+        <span class="skill-chip">React</span>
         <span class="skill-chip">dbt</span>
         <span class="skill-chip">Snowflake</span>
         <span class="skill-chip">AWS</span>
@@ -125,12 +127,12 @@
           <div class="exp-date">2025 —<br>Present</div>
           <div>
             <h3 class="exp-role">Senior Data Analyst <span class="exp-company">· BNY</span></h3>
-            <p class="exp-location">Lake Mary, FL · Data Modeling &amp; Governance</p>
+            <p class="exp-location">Lake Mary, FL · Enterprise Data Modeling &amp; Governance</p>
             <ul class="exp-bullets">
-              <li>Architected a centralized metadata and data-dictionary platform integrating GitLab and SharePoint APIs, establishing a governed Power BI semantic model as the single source of truth across 15+ enterprise datasets and 2,000+ attributes.</li>
-              <li>Designed a relational metadata model linking datasets, attributes, schema versions, and certification status — enabling attribute-level lineage and schema impact analysis at enterprise scale.</li>
-              <li>Built and productionized a CI/CD pipeline that transforms structured data-entry forms into validated, version-controlled documentation artifacts, publishing approved outputs to SharePoint only upon final-branch promotion.</li>
-              <li>Reduced schema-change turnaround from days to hours while standardizing artifact promotion and improving governance controls across environments.</li>
+              <li>Architected a centralized metadata and data-dictionary platform using GitLab and SharePoint API integrations, establishing a single source of truth across 15+ enterprise datasets and 2,000+ attributes.</li>
+              <li>Designed relational metadata models linking datasets, attributes, schema versions, and certification status, enabling attribute-level lineage and schema impact analysis at enterprise scale.</li>
+              <li>Built a CI/CD pipeline using GitLab to validate, version-control, and promote documentation artifacts through environments, reducing schema-change turnaround from days to hours.</li>
+              <li>Stepped into a de facto technical lead role by driving task clarification, defining best practices, and providing implementation support across the team — accelerating onboarding and unblocking delivery.</li>
             </ul>
             <div class="exp-tags">
               <span class="tag">Data Governance</span>
@@ -143,23 +145,22 @@
           </div>
         </article>
 
-        <!-- Freelance -->
+        <!-- Contract Data Engineer -->
         <article class="exp-item">
           <div class="exp-date">2025</div>
           <div>
-            <h3 class="exp-role">Freelance Data Analyst &amp; Engineer <span class="exp-company">· Self Employed</span></h3>
+            <h3 class="exp-role">Contract Data Engineer <span class="exp-company">· Independent</span></h3>
             <p class="exp-location">Orlando, FL</p>
             <ul class="exp-bullets">
-              <li>Engineered a production data pipeline for Hubsteel by integrating Tekla PowerFab APIs (C#) with Python ETL workflows and AWS S3 storage, automating ingestion of fabrication metrics into SQL Server.</li>
-              <li>Delivered a Power BI dashboard on top of the pipeline, giving leadership historical context on daily production trends and improving resource allocation decisions.</li>
-              <li>Implemented a Type 2 SCD solution with dbt + Snowflake, capturing historical attribute changes across 2M+ records for compliance tracking and longitudinal analysis.</li>
+              <li>Engineered a production data pipeline using Tekla PowerFab APIs (C#), Python ETL, and AWS S3, automating ingestion of fabrication metrics into SQL Server and delivering a Power BI dashboard that gave leadership visibility into daily production trends.</li>
+              <li>Implemented Type 2 SCD tracking using dbt and Snowflake across 2M+ records, enabling compliance auditing and longitudinal analysis of historical attribute changes.</li>
             </ul>
             <div class="exp-tags">
               <span class="tag">Python</span>
+              <span class="tag">C#</span>
               <span class="tag">dbt</span>
               <span class="tag">AWS</span>
               <span class="tag">Snowflake</span>
-              <span class="tag">C#</span>
               <span class="tag">Power BI</span>
               <span class="tag">SCD2</span>
             </div>
@@ -173,10 +174,11 @@
             <h3 class="exp-role">Senior Data Analyst <span class="exp-company">· MasterCorp</span></h3>
             <p class="exp-location">Orlando, FL</p>
             <ul class="exp-bullets">
-              <li>Introduced and owned star-schema semantic models for finance, operations, HR, and legal — re-engineered core dimensions from Type 1 to Type 2 using surrogate keys and effective dating.</li>
-              <li>Designed and led the company's first enterprise HR analytics dashboard, formally defining turnover metrics across siloed departments — insights contributed to a 25% reduction in turnover through a cross-functional initiative.</li>
-              <li>Built an Operations Financial Overview dashboard evaluating 200+ sites on financial, operational, and merit-based KPIs, with automated bonus-calculation logic and real-time parameterization.</li>
-              <li>Engineered a real-time Overtime &amp; Scheduling dashboard for 5,000+ associates across 200 sites using advanced DAX, shifting overtime management from reactive to proactive.</li>
+              <li>Introduced and owned star-schema semantic models across finance, operations, HR, and legal using surrogate keys and effective dating (SCD2), enabling consistent cross-departmental reporting for the first time.</li>
+              <li>Designed the company's first enterprise HR analytics dashboard using Power BI and SQL, formally defining turnover metrics across siloed departments — informing a cross-functional initiative that reduced turnover 25%.</li>
+              <li>Built an Operations Financial Overview dashboard using advanced DAX and SQL, evaluating 200+ sites on financial, operational, and merit-based KPIs with automated bonus-calculation logic.</li>
+              <li>Engineered a real-time Overtime &amp; Scheduling dashboard using DAX for 5,000+ associates across 200 sites, shifting overtime management from reactive to proactive.</li>
+              <li>Mentored junior analysts through recurring lunch-and-learn sessions on Power Query, Power BI, and data best practices, building team capability across the analytics function.</li>
             </ul>
             <div class="exp-tags">
               <span class="tag">Power BI</span>
@@ -196,9 +198,9 @@
             <h3 class="exp-role">Financial Planning Analyst <span class="exp-company">· Raymond James</span></h3>
             <p class="exp-location">Orlando, FL</p>
             <ul class="exp-bullets">
-              <li>Integrated BlackRock's API with SQL-driven holdings data to automate capital gains exposure checks — uncovering $50M in avoidable distributions and directly supporting regulatory reporting.</li>
-              <li>Developed and implemented 600+ compliance-aligned financial plans, leveraging SQL to aggregate client data against internal standards and regulatory requirements.</li>
-              <li>Scaled manual compliance review into auditable, automated workflows providing advisors and compliance officers with transparent, real-time client exposure data.</li>
+              <li>Automated capital gains exposure monitoring using BlackRock's API integrated with SQL-driven holdings data, identifying and flagging $50M in avoidable distributions that directly informed distribution strategy.</li>
+              <li>Delivered 600+ regulatory-aligned financial plans using SQL to aggregate client holdings against compliance standards, serving as a data-driven planning partner to 100+ financial advisors.</li>
+              <li>Scaled manual compliance review into automated, auditable workflows using SQL and Excel automation, reducing review turnaround and strengthening regulatory exam readiness across the region.</li>
             </ul>
             <div class="exp-tags">
               <span class="tag">SQL</span>
@@ -216,8 +218,7 @@
             <h3 class="exp-role">Reporting Analyst <span class="exp-company">· Universal Property &amp; Casualty Insurance</span></h3>
             <p class="exp-location">Ft. Lauderdale, FL</p>
             <ul class="exp-bullets">
-              <li>Built SQL queries and stored procedures generating recurring operational reports on claims and underwriting performance for finance and compliance teams.</li>
-              <li>Automated report delivery and validated outputs against source systems, improving accuracy across regulatory submissions.</li>
+              <li>Automated regulatory reporting for claims and underwriting using SQL stored procedures, replacing manual workflows and improving accuracy and delivery cadence for finance and compliance teams.</li>
             </ul>
             <div class="exp-tags">
               <span class="tag">SQL</span>
@@ -234,8 +235,7 @@
             <h3 class="exp-role">Data Analyst &amp; Assistant Coach <span class="exp-company">· Rollins College</span></h3>
             <p class="exp-location">Orlando, FL</p>
             <ul class="exp-bullets">
-              <li>Built a SQL database centralizing player performance, TrackMan telemetry, and tournament data — enabling granular trend analysis across seasons.</li>
-              <li>Optimized practice schedules using linear programming, increasing attendance by 50%.</li>
+              <li>Built a SQL database centralizing player performance, TrackMan telemetry, and tournament data, and optimized practice schedules using linear programming — increasing attendance by 50%.</li>
             </ul>
             <div class="exp-tags">
               <span class="tag">SQL</span>
@@ -255,7 +255,7 @@
         <span class="cert-chip">DP-600 Fabric Analytics</span>
       </div>
 
-      <a href="resumes/general.docx" target="_blank" class="resume-link">
+      <a href="resumes/general.pdf" target="_blank" class="resume-link">
         View Full Resume
         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/>
@@ -266,6 +266,85 @@
     <!-- PROJECTS ────────────────────────────────────────────── -->
     <section id="projects" class="section">
       <h2 class="section-label">Projects</h2>
+
+      <!-- FEATURED ─────────────────────────────────────────── -->
+      <h3 class="featured-label">Featured</h3>
+      <div class="projects-grid featured-grid">
+
+        <!-- Blast Motion Putting Pipeline (Featured) -->
+        <a href="projects/blast-putting.html" class="project-card" aria-label="Blast Motion Putting Pipeline">
+          <div class="project-thumb">
+            <div class="thumb-viz" style="padding:6px 8px">
+              <svg viewBox="0 0 120 70" style="width:100%;height:100%">
+                <rect x="2" y="28" width="22" height="14" rx="2" fill="none" stroke="#4FA3D1" stroke-width="1.2"/>
+                <text x="13" y="37" fill="#4FA3D1" font-size="5" text-anchor="middle" font-family="monospace">API</text>
+                <line x1="24" y1="35" x2="32" y2="35" stroke="#8FAFB0" stroke-width="0.8"/>
+                <rect x="32" y="28" width="22" height="14" rx="2" fill="none" stroke="#6FB7AD" stroke-width="1.2"/>
+                <text x="43" y="37" fill="#6FB7AD" font-size="4" text-anchor="middle" font-family="monospace">Func</text>
+                <line x1="54" y1="35" x2="62" y2="35" stroke="#8FAFB0" stroke-width="0.8"/>
+                <rect x="62" y="28" width="22" height="14" rx="2" fill="none" stroke="#4FA3D1" stroke-width="1.2"/>
+                <text x="73" y="37" fill="#4FA3D1" font-size="4.5" text-anchor="middle" font-family="monospace">SQL</text>
+                <line x1="84" y1="35" x2="92" y2="35" stroke="#8FAFB0" stroke-width="0.8"/>
+                <rect x="92" y="28" width="24" height="14" rx="2" fill="none" stroke="#D9FFF6" stroke-width="1.2"/>
+                <text x="104" y="37" fill="#D9FFF6" font-size="4" text-anchor="middle" font-family="monospace">PBI</text>
+                <rect x="28" y="8" width="92" height="52" rx="4" fill="none" stroke="#8FAFB0" stroke-width="0.6" stroke-dasharray="3 2" opacity="0.4"/>
+                <text x="74" y="16" fill="#8FAFB0" font-size="4" text-anchor="middle" font-family="monospace" opacity="0.6">Azure</text>
+              </svg>
+            </div>
+          </div>
+          <div>
+            <p class="project-name">Blast Motion Putting Pipeline <span class="arrow-icon">↗</span></p>
+            <p class="project-desc">Serverless ETL pipeline: Azure Function extracts Blast Motion sensor data on schedule and on-demand, loads to Azure SQL, with Power Automate mobile trigger and Power BI refresh.</p>
+            <div class="project-tags">
+              <span class="tag">Python</span>
+              <span class="tag">Azure Functions</span>
+              <span class="tag">Azure SQL</span>
+              <span class="tag">Power Automate</span>
+              <span class="tag">Power BI</span>
+              <span class="tag">CI/CD</span>
+            </div>
+          </div>
+        </a>
+
+        <!-- Shots Gained Tracker (Featured) -->
+        <a href="projects/shots-gained-app.html" class="project-card" aria-label="Shots Gained Tracker">
+          <div class="project-thumb">
+            <div class="thumb-viz" style="padding:6px 8px">
+              <svg viewBox="0 0 120 70" style="width:100%;height:100%">
+                <rect x="38" y="2" width="44" height="66" rx="6" fill="none" stroke="#4FA3D1" stroke-width="0.8" opacity="0.5"/>
+                <rect x="42" y="10" width="16" height="8" rx="2" fill="#EF4444" opacity="0.5"/>
+                <text x="50" y="16" fill="#fff" font-size="3.5" text-anchor="middle" font-family="monospace">DRV</text>
+                <rect x="60" y="10" width="16" height="8" rx="2" fill="#EF4444" opacity="0.5"/>
+                <text x="68" y="16" fill="#fff" font-size="3.5" text-anchor="middle" font-family="monospace">APP</text>
+                <rect x="42" y="20" width="16" height="8" rx="2" fill="#22C55E" opacity="0.5"/>
+                <text x="50" y="26" fill="#fff" font-size="3.5" text-anchor="middle" font-family="monospace">SG</text>
+                <rect x="60" y="20" width="16" height="8" rx="2" fill="#22C55E" opacity="0.5"/>
+                <text x="68" y="26" fill="#fff" font-size="3.5" text-anchor="middle" font-family="monospace">PUT</text>
+                <rect x="42" y="32" width="16" height="12" rx="2" fill="rgba(143,175,176,0.1)" stroke="#8FAFB0" stroke-width="0.4"/>
+                <text x="50" y="38" fill="#D9FFF6" font-size="4" text-anchor="middle" font-family="monospace">71.0</text>
+                <text x="50" y="42" fill="#8FAFB0" font-size="2.5" text-anchor="middle" font-family="monospace">AVG</text>
+                <rect x="60" y="32" width="16" height="12" rx="2" fill="rgba(143,175,176,0.1)" stroke="#8FAFB0" stroke-width="0.4"/>
+                <text x="68" y="38" fill="#D9FFF6" font-size="4" text-anchor="middle" font-family="monospace">50%</text>
+                <text x="68" y="42" fill="#8FAFB0" font-size="2.5" text-anchor="middle" font-family="monospace">GIR</text>
+                <rect x="42" y="50" width="36" height="10" rx="3" fill="#3B82F6" opacity="0.6"/>
+                <text x="60" y="57" fill="#fff" font-size="4" text-anchor="middle" font-family="monospace">Log Round</text>
+              </svg>
+            </div>
+          </div>
+          <div>
+            <p class="project-name">Shots Gained Tracker <span class="arrow-icon">↗</span></p>
+            <p class="project-desc">Mobile-first PWA for real-time strokes gained tracking on the course — log shots, get instant SG feedback against PGA Tour benchmarks, and track performance by category. Offline-first with auto-sync.</p>
+            <div class="project-tags">
+              <span class="tag">React</span>
+              <span class="tag">TypeScript</span>
+              <span class="tag">Express</span>
+              <span class="tag">Azure SQL</span>
+              <span class="tag">PWA</span>
+            </div>
+          </div>
+        </a>
+
+      </div>
 
       <!-- DATA ENGINEERING ──────────────────────────────────── -->
       <h3 class="category-label">Data Engineering</h3>

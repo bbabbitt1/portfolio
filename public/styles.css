@@ -471,6 +471,19 @@ body {
 
 .category-label:first-of-type { margin-top: 0; }
 
+.featured-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--mint);
+  margin-bottom: 8px;
+  margin-top: 0;
+  letter-spacing: 0.04em;
+}
+
+.featured-grid .project-card {
+  border: 1px solid rgba(111,183,173,0.15);
+}
+
 .project-tags {
   display: flex;
   flex-wrap: wrap;
