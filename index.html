@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Barry Babbitt | Analytics &amp; Data Engineer</title>
-  <meta name="description" content="Barry Babbitt — analytics and data engineer. Semantic models, pipelines, and data apps. Raw in. Trusted out.">
+  <meta name="description" content="Barry Babbitt, analytics and data engineer. Semantic models, data pipelines, and analytics apps in Power BI, SQL, and Python.">
   <meta name="theme-color" content="#080C14">
   <meta property="og:title" content="Barry Babbitt | Analytics &amp; Data Engineer">
-  <meta property="og:description" content="Semantic models, pipelines, and data apps. Raw in. Trusted out.">
+  <meta property="og:description" content="Semantic models, data pipelines, and analytics apps in Power BI, SQL, and Python.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://bbabbitt1.github.io/portfolio/">
   <link rel="icon" href="public/imgs/mark.svg" type="image/svg+xml">
@@ -40,8 +40,7 @@
         </div>
         <h1 class="name">Barry Babbitt</h1>
         <p class="title-label">Analytics &amp; Data Engineer</p>
-        <p class="promise">Raw in.<br><em>Trusted</em> out.</p>
-        <p class="tagline">I build the data products, pipelines, and apps that make data trustworthy and actionable.</p>
+        <p class="tagline">I design semantic models and build the pipelines and apps that run on them.</p>
       </div>
 
       <nav class="sidebar-nav" aria-label="Sections">
@@ -92,27 +91,25 @@
       <h2 class="section-label">About</h2>
       <div class="prose">
         <p>
-          I'm an analytics and data engineer with a track record spanning enterprise data governance,
-          production pipeline engineering, and executive-grade Power BI. My work covers the full stack —
-          from architecting dimensional models and building ELT pipelines to shipping the apps and
-          dashboards that leaders actually use to make decisions.
+          I'm an analytics and data engineer. I design dimensional models, then build the pipelines
+          and apps on top of them. Most of my work runs on Power BI, SQL, and Python.
         </p>
         <p>
-          At <strong>Disney</strong>, I'm building a full-stack web app for
-          the analytics suite. Before that, at <strong>Transitions</strong>,
-          I led a full semantic-model redesign that cut refresh time <span class="metric">9s → 3s</span> and built a Python
-          reporting-automation platform, and at <strong>BNY</strong> I architected metadata
-          infrastructure governing <span class="metric">2,000+</span> attributes across 15+ datasets. At
-          <strong>MasterCorp</strong>, my Power BI semantic models across
-          200+ sites contributed to a <span class="metric">25%</span> reduction in employee turnover.
+          At <strong>Disney</strong> I'm building a full-stack web app for the analytics suite.
+          At <strong>Transitions</strong> I led a semantic-model redesign that cut refresh time from
+          <span class="metric">9s → 3s</span>, and I built a Python platform that runs 9+ manual data
+          pulls from one command. At <strong>BNY</strong> I designed metadata infrastructure covering
+          <span class="metric">2,000+</span> attributes across 15+ datasets. At <strong>MasterCorp</strong>
+          my Power BI models covered 200+ sites, and leadership used my turnover dashboard in an
+          initiative that cut turnover <span class="metric">25%</span>.
         </p>
         <p>
-          On the engineering side, I build Python data pipelines with dbt, Snowflake, Azure, and
-          AWS — including Type 2 SCD implementations, REST API integrations, and CI/CD workflows.
+          On the engineering side, I build Python pipelines with dbt, Snowflake, Azure, and AWS,
+          including Type 2 SCD tracking and CI/CD.
         </p>
         <p>
-          Outside of work, I build side projects for fun — like a golf strokes gained calculator
-          and full-stack web apps — to keep learning new tools and frameworks.
+          Outside work I build golf analytics tools, like a strokes gained calculator and a PWA
+          I use on the course.
         </p>
       </div>
 
@@ -146,13 +143,13 @@
 
         <!-- Disney -->
         <article class="exp-item">
-          <div class="exp-date">2026 —<br>Present</div>
+          <div class="exp-date">2026 –<br>Present</div>
           <div>
             <h3 class="exp-role">Data <span class="exp-company">@ Disney</span></h3>
             <p class="exp-location">Orlando, FL · Analytics Suite Engineering</p>
             <ul class="exp-bullets">
-              <li>Building a full-stack web application that unifies the internal analytics suite into a single product experience for business users.</li>
-              <li>Turning recurring BI and reporting workflows into self-service product features, bridging analytics requirements and software delivery.</li>
+              <li>Building a full-stack web app that brings the internal analytics suite into one product for business users.</li>
+              <li>Turning recurring BI and reporting requests into self-service features in the app.</li>
             </ul>
             <div class="exp-tags">
               <span class="tag">TypeScript</span>
@@ -170,11 +167,11 @@
             <h3 class="exp-role">Senior Data Analyst <span class="exp-company">· Transitions</span></h3>
             <p class="exp-location">Orlando, FL · Reporting Automation &amp; Data Governance</p>
             <ul class="exp-bullets">
-              <li>Led a full redesign of the Power BI semantic model, improving data quality and cutting refresh time from <span class="metric">9s → 3s</span> (3× faster).</li>
-              <li>Built and owned a Python reporting-automation platform that consolidated 9+ manual data pulls behind one command with validation, logging, and a report-freshness dashboard — replacing a multi-hour weekly routine.</li>
-              <li>Extracted a 115-tab, 22MB trended-P&amp;L workbook into a tidy, self-reconciling budget fact table, validating every line item against the workbook's own subtotals and eliminating monthly manual re-keying.</li>
-              <li>Automated per-site report distribution for 11 site leaders via the Power BI REST API and generated PowerPoint decks, eliminating hours of manual assembly every pay period.</li>
-              <li>Established data governance: per-table data dictionaries with a controlled key vocabulary, a cross-warehouse type/length canon that surfaces drift, and a published metric glossary.</li>
+              <li>Led a full redesign of the Power BI semantic model, improving data quality and cutting refresh time from <span class="metric">9s → 3s</span>.</li>
+              <li>Built and owned a Python reporting platform that runs 9+ manual data pulls from one command, with validation, logging, and a report-freshness dashboard. It replaced a multi-hour weekly routine.</li>
+              <li>Extracted a 115-tab, 22MB trended P&amp;L workbook into a self-reconciling budget fact table, checking each line item against the workbook's subtotals and ending monthly manual re-keying.</li>
+              <li>Automated per-site report distribution for 11 site leaders via the Power BI REST API and generated PowerPoint decks, cutting hours of manual assembly each pay period.</li>
+              <li>Set up data governance: per-table data dictionaries with a controlled key vocabulary, a type/length canon across warehouses for spotting drift, and a published metric glossary.</li>
             </ul>
             <div class="exp-tags">
               <span class="tag">Data Modeling</span>
@@ -190,15 +187,15 @@
 
         <!-- BNY -->
         <article class="exp-item">
-          <div class="exp-date">2025 —<br>2026</div>
+          <div class="exp-date">2025 –<br>2026</div>
           <div>
             <h3 class="exp-role">Senior Data Analyst <span class="exp-company">· BNY</span></h3>
             <p class="exp-location">Lake Mary, FL · Enterprise Data Modeling &amp; Governance</p>
             <ul class="exp-bullets">
-              <li>Architected a centralized metadata and data-dictionary platform using GitLab and SharePoint API integrations, establishing a single source of truth across 15+ enterprise datasets and 2,000+ attributes.</li>
-              <li>Designed relational metadata models linking datasets, attributes, schema versions, and certification status, enabling attribute-level lineage and schema impact analysis at enterprise scale.</li>
-              <li>Built a CI/CD pipeline using GitLab to validate, version-control, and promote documentation artifacts through environments, reducing schema-change turnaround from days to hours.</li>
-              <li>Stepped into a de facto technical lead role by driving task clarification, defining best practices, and providing implementation support across the team — accelerating onboarding and unblocking delivery.</li>
+              <li>Architected a metadata and data-dictionary platform with GitLab and SharePoint API integrations, documenting 15+ enterprise datasets and 2,000+ attributes in one place.</li>
+              <li>Designed relational metadata models linking datasets, attributes, schema versions, and certification status, so analysts could trace lineage and schema impact for each attribute.</li>
+              <li>Built a GitLab CI/CD pipeline that validates, versions, and promotes documentation through environments, cutting schema-change turnaround from days to hours.</li>
+              <li>Acted as the team's de facto technical lead: clarified tasks, set best practices, and helped teammates through implementation, which sped up onboarding.</li>
             </ul>
             <div class="exp-tags">
               <span class="tag">Data Governance</span>
@@ -218,8 +215,8 @@
             <h3 class="exp-role">Contract Data Engineer <span class="exp-company">· Independent</span></h3>
             <p class="exp-location">Orlando, FL</p>
             <ul class="exp-bullets">
-              <li>Engineered a production data pipeline using Tekla PowerFab APIs (C#), Python ETL, and AWS S3, automating ingestion of fabrication metrics into SQL Server and delivering a Power BI dashboard that gave leadership visibility into daily production trends.</li>
-              <li>Implemented Type 2 SCD tracking using dbt and Snowflake across 2M+ records, enabling compliance auditing and longitudinal analysis of historical attribute changes.</li>
+              <li>Engineered a production data pipeline using Tekla PowerFab APIs (C#), Python ETL, and AWS S3, automating ingestion of fabrication metrics into SQL Server and delivering a Power BI dashboard leadership uses to track daily production.</li>
+              <li>Implemented Type 2 SCD tracking using dbt and Snowflake across 2M+ records, so the business could audit compliance and see how attributes changed over time.</li>
             </ul>
             <div class="exp-tags">
               <span class="tag">Python</span>
@@ -235,16 +232,16 @@
 
         <!-- MasterCorp -->
         <article class="exp-item">
-          <div class="exp-date">2023 —<br>2025</div>
+          <div class="exp-date">2023 –<br>2025</div>
           <div>
             <h3 class="exp-role">Senior Data Analyst <span class="exp-company">· MasterCorp</span></h3>
             <p class="exp-location">Orlando, FL</p>
             <ul class="exp-bullets">
-              <li>Introduced and owned star-schema semantic models across finance, operations, HR, and legal using surrogate keys and effective dating (SCD2), enabling consistent cross-departmental reporting for the first time.</li>
-              <li>Designed the company's first enterprise HR analytics dashboard using Power BI and SQL, formally defining turnover metrics across siloed departments — informing a cross-functional initiative that reduced turnover <span class="metric">25%</span>.</li>
+              <li>Introduced and owned star-schema semantic models across finance, operations, HR, and legal using surrogate keys and effective dating (SCD2), giving the company its first consistent cross-department reporting.</li>
+              <li>Designed the company's first enterprise HR analytics dashboard in Power BI and SQL and defined turnover metrics across siloed departments. Leadership used it in a cross-functional initiative that cut turnover <span class="metric">25%</span>.</li>
               <li>Built an Operations Financial Overview dashboard using advanced DAX and SQL, evaluating 200+ sites on financial, operational, and merit-based KPIs with automated bonus-calculation logic.</li>
-              <li>Engineered a real-time Overtime &amp; Scheduling dashboard using DAX for 5,000+ associates across 200 sites, shifting overtime management from reactive to proactive.</li>
-              <li>Mentored junior analysts through recurring lunch-and-learn sessions on Power Query, Power BI, and data best practices, building team capability across the analytics function.</li>
+              <li>Engineered a real-time Overtime &amp; Scheduling dashboard in DAX for 5,000+ associates across 200 sites, so managers could see overtime as it accrued.</li>
+              <li>Ran recurring lunch-and-learn sessions for junior analysts on Power Query, Power BI, and data best practices.</li>
             </ul>
             <div class="exp-tags">
               <span class="tag">Power BI</span>
@@ -259,14 +256,14 @@
 
         <!-- Raymond James -->
         <article class="exp-item">
-          <div class="exp-date">2022 —<br>2023</div>
+          <div class="exp-date">2022 –<br>2023</div>
           <div>
             <h3 class="exp-role">Financial Planning Analyst <span class="exp-company">· Raymond James</span></h3>
             <p class="exp-location">Orlando, FL</p>
             <ul class="exp-bullets">
-              <li>Automated capital gains exposure monitoring using BlackRock's API integrated with SQL-driven holdings data, identifying and flagging <span class="metric">$50M</span> in avoidable distributions that directly informed distribution strategy.</li>
-              <li>Delivered 600+ regulatory-aligned financial plans using SQL to aggregate client holdings against compliance standards, serving as a data-driven planning partner to 100+ financial advisors.</li>
-              <li>Scaled manual compliance review into automated, auditable workflows using SQL and Excel automation, reducing review turnaround and strengthening regulatory exam readiness across the region.</li>
+              <li>Automated capital gains exposure monitoring using BlackRock's API integrated with SQL-driven holdings data, identifying and flagging <span class="metric">$50M</span> in avoidable distributions and shaping distribution strategy.</li>
+              <li>Delivered 600+ regulatory-aligned financial plans for 100+ financial advisors, using SQL to check client holdings against compliance standards.</li>
+              <li>Replaced manual compliance review with auditable SQL and Excel workflows, shortening review turnaround and preparing the region for regulatory exams.</li>
             </ul>
             <div class="exp-tags">
               <span class="tag">SQL</span>
@@ -279,12 +276,12 @@
 
         <!-- Universal P&C -->
         <article class="exp-item">
-          <div class="exp-date">2021 —<br>2022</div>
+          <div class="exp-date">2021 –<br>2022</div>
           <div>
             <h3 class="exp-role">Reporting Analyst <span class="exp-company">· Universal Property &amp; Casualty Insurance</span></h3>
             <p class="exp-location">Ft. Lauderdale, FL</p>
             <ul class="exp-bullets">
-              <li>Automated regulatory reporting for claims and underwriting using SQL stored procedures, replacing manual workflows and improving accuracy and delivery cadence for finance and compliance teams.</li>
+              <li>Replaced manual regulatory reporting for claims and underwriting with SQL stored procedures, giving finance and compliance faster, more accurate reports.</li>
             </ul>
             <div class="exp-tags">
               <span class="tag">SQL</span>
@@ -296,12 +293,12 @@
 
         <!-- Rollins College -->
         <article class="exp-item">
-          <div class="exp-date">2018 —<br>2022</div>
+          <div class="exp-date">2018 –<br>2022</div>
           <div>
             <h3 class="exp-role">Data Analyst &amp; Assistant Coach <span class="exp-company">· Rollins College</span></h3>
             <p class="exp-location">Orlando, FL</p>
             <ul class="exp-bullets">
-              <li>Built a SQL database centralizing player performance, TrackMan telemetry, and tournament data, and optimized practice schedules using linear programming — increasing attendance by 50%.</li>
+              <li>Built a SQL database centralizing player performance, TrackMan telemetry, and tournament data, and optimized practice schedules with linear programming, which raised attendance 50%.</li>
             </ul>
             <div class="exp-tags">
               <span class="tag">SQL</span>
@@ -399,7 +396,7 @@
           </div>
           <div>
             <p class="project-name">Shots Gained Tracker <span class="arrow-icon">↗</span></p>
-            <p class="project-desc">Mobile-first PWA for real-time strokes gained tracking on the course — log shots, get instant SG feedback against PGA Tour benchmarks, and track performance by category. Offline-first with auto-sync.</p>
+            <p class="project-desc">Mobile-first PWA for live strokes gained tracking on the course. Log shots, get instant SG feedback against PGA Tour benchmarks, and track performance by category. Works offline and syncs when you reconnect.</p>
             <div class="project-tags">
               <span class="tag">React</span>
               <span class="tag">TypeScript</span>
@@ -479,7 +476,7 @@
           </div>
           <div>
             <p class="project-name">Replicon Timesheet MERGE Pipeline <span class="arrow-icon">↗</span></p>
-            <p class="project-desc">SQL Server MERGE scripts for staging-to-production timesheet loads — upsert logic on TimeEntryId with data cleansing and ActivityCode parsing.</p>
+            <p class="project-desc">SQL Server MERGE scripts for staging-to-production timesheet loads: upsert logic on TimeEntryId with data cleansing and ActivityCode parsing.</p>
             <div class="project-tags">
               <span class="tag">SQL Server</span>
               <span class="tag">MERGE</span>
@@ -523,7 +520,7 @@
           </div>
           <div>
             <p class="project-name">PDF Folder ETL Walkthrough <span class="arrow-icon">↗</span></p>
-            <p class="project-desc">Optimized M-Query pipeline for ingesting PDF pay stubs — direct page access, row-level filtering before expand, and single-pass typing.</p>
+            <p class="project-desc">Optimized M-Query pipeline for ingesting PDF pay stubs: direct page access, row-level filtering before expand, and single-pass typing.</p>
             <div class="project-tags">
               <span class="tag">Power Query</span>
               <span class="tag">M Language</span>
@@ -627,7 +624,7 @@
           </div>
           <div>
             <p class="project-name">Snake <span class="arrow-icon">↗</span></p>
-            <p class="project-desc">Snake game with food spawning, growing tail, boundary and self-collision detection, and score tracking — built with Python Turtle.</p>
+            <p class="project-desc">Snake game with food spawning, growing tail, boundary and self-collision detection, and score tracking, built with Python Turtle.</p>
             <div class="project-tags">
               <span class="tag">Python</span>
               <span class="tag">Turtle</span>
@@ -662,7 +659,7 @@
           </div>
           <div>
             <p class="project-name">AWS Study Guide & Flashcards <span class="arrow-icon">↗</span></p>
-            <p class="project-desc">Interactive study tool for AWS Solutions Architect Associate — 24 topic pages and a flashcard engine with 57 Q&A pairs. Try it live.</p>
+            <p class="project-desc">Interactive study tool for AWS Solutions Architect Associate: 24 topic pages and a flashcard engine with 57 Q&A pairs. Try it live.</p>
             <div class="project-tags">
               <span class="tag">JavaScript</span>
               <span class="tag">HTML/CSS</span>
@@ -696,8 +693,8 @@
             </div>
           </div>
           <div>
-            <p class="project-name">Gleesh's Corner — Blog App</p>
-            <p class="project-desc">Full CRUD blog application with Express and EJS templating — create, edit, and delete posts through a REST API with a responsive UI.</p>
+            <p class="project-name">Gleesh's Corner: Blog App</p>
+            <p class="project-desc">Full CRUD blog app built with Express and EJS. Create, edit, and delete posts through a REST API.</p>
             <div class="project-tags">
               <span class="tag">Node.js</span>
               <span class="tag">Express</span>
@@ -728,7 +725,7 @@
           </div>
           <div>
             <p class="project-name">Putting Analytics Dashboard <span class="arrow-icon">↗</span></p>
-            <p class="project-desc">Real-time putting stroke analytics from Blast Motion sensors — tracking 9 key metrics with trend lines, target ranges, and configurable putt windows.</p>
+            <p class="project-desc">Putting stroke analytics from Blast Motion sensors: 9 metrics with trend lines, target ranges, and configurable putt windows.</p>
           </div>
         </a>
 
@@ -825,8 +822,8 @@
             </div>
           </div>
           <div>
-            <p class="project-name">Dual Measure Highlight — NFL <span class="arrow-icon">↗</span></p>
-            <p class="project-desc">Conditional line highlighting via layered measures — correlating offensive metrics with cumulative wins across seasons.</p>
+            <p class="project-name">Dual Measure Highlight: NFL <span class="arrow-icon">↗</span></p>
+            <p class="project-desc">Conditional line highlighting with layered measures, correlating offensive metrics with cumulative wins by season.</p>
           </div>
         </a>
 
@@ -856,7 +853,7 @@
     <footer class="page-footer">
       <svg class="mark" width="28" height="28" aria-hidden="true"><use href="#mark"/></svg>
       <p>
-        <strong>Raw in. Trusted out.</strong> Designed &amp; built by Barry Babbitt ·
+        Designed &amp; built by Barry Babbitt ·
         <a href="https://www.linkedin.com/in/barrybabbitt1/" target="_blank" rel="noopener noreferrer">Connect on LinkedIn</a>
       </p>
     </footer>

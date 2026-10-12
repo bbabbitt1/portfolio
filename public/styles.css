@@ -1,5 +1,5 @@
 /* Barry Babbitt — Portfolio
-   Brand: "Raw in. Trusted out." — see brand/index.html for the board.
+   Brand board: brand/index.html
    Ink #080C14 · Signal #4FA3D1 · Teal #6FB7AD · Mint #D9FFF6 · Coral #E8836B (metrics only)
    Type: Geist (display/body) · Geist Mono (labels, data) */
 
@@ -151,16 +151,6 @@ body::before {
   margin-bottom: 28px;
   line-height: 1.6;
 }
-
-.promise {
-  font-size: 1.55rem;
-  font-weight: 500;
-  line-height: 1.05;
-  letter-spacing: -0.03em;
-  color: var(--mint);
-  margin-bottom: 12px;
-}
-.promise em { font-style: normal; color: var(--accent); }
 
 .tagline {
   font-size: 0.86rem;
@@ -915,7 +905,6 @@ body::before {
   .sidebar { padding: 36px 0 20px; }
   .name { font-size: 1.9rem; }
   .avatar-wrap { width: 80px; height: 80px; border-radius: 18px; margin-bottom: 18px; }
-  .promise { font-size: 1.35rem; }
   .tagline { font-size: 0.82rem; margin-bottom: 28px; }
 
   .sidebar-nav { gap: 16px; margin-bottom: 12px; }
