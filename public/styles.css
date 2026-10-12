@@ -611,6 +611,8 @@ body::before {
 
 .featured-label { color: var(--coral); margin-top: 0; }
 
+.category-label { scroll-margin-top: 72px; }
+
 /* Featured — big cards, image-led, cursor spotlight border */
 
 .featured-grid {
@@ -627,7 +629,8 @@ body::before {
   box-shadow: inset 0 0 0 1px var(--border);
 }
 
-.featured-grid .project-card::before {
+.featured-grid .project-card::before,
+.path::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -643,7 +646,8 @@ body::before {
 }
 
 .featured-grid .project-card:hover { transform: translateY(-3px); background: #101925; }
-.featured-grid .project-card:hover::before { opacity: 1; }
+.featured-grid .project-card:hover::before,
+.path:hover::before { opacity: 1; }
 .featured-grid .project-card:active { transform: translateY(-1px) scale(0.995); }
 
 .featured-grid .project-thumb { width: 100%; height: 150px; }
@@ -859,9 +863,197 @@ body::before {
 
 .page-footer a:hover { color: var(--accent); }
 
+/* ── HERO ─────────────────────────────────────────────────── */
+
+.hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 100dvh;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 80px 64px 56px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 64px;
+}
+
+.hero-contours {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  opacity: 0.6;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to right, transparent 25%, #000 65%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 25%, #000 65%, transparent 100%);
+}
+
+.hero-inner {
+  display: grid;
+  grid-template-columns: 1.55fr 1fr;
+  gap: 72px;
+  align-items: end;
+}
+
+.hero-id {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  margin-bottom: 32px;
+}
+
+.hero-photo {
+  width: 132px;
+  height: 132px;
+  flex-shrink: 0;
+  border-radius: 30px;
+  object-fit: cover;
+  object-position: center 15%;
+  outline: 1px solid var(--border);
+  outline-offset: -1px;
+  box-shadow: 0 24px 60px rgba(2,8,16,0.75);
+}
+
+.hero-kicker {
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  color: var(--teal);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.hero-name {
+  font-size: clamp(3rem, 7vw, 5.6rem);
+  font-weight: 600;
+  color: var(--mint);
+  letter-spacing: -0.045em;
+  line-height: 0.92;
+}
+
+.hero-lede {
+  max-width: 44ch;
+  font-size: clamp(1.1rem, 1.6vw, 1.35rem);
+  line-height: 1.55;
+  color: var(--text);
+  letter-spacing: -0.01em;
+  margin-bottom: 28px;
+  text-wrap: pretty;
+}
+
+.hero-social { display: flex; flex-wrap: wrap; gap: 8px 24px; }
+
+.hero-social a {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--muted);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: color var(--ease), border-color var(--ease);
+}
+
+.hero-social a:hover { color: var(--mint); border-color: var(--coral); }
+
+.hero-metrics { border-left: 1px solid var(--border); }
+
+.hero-metrics div {
+  padding: 18px 0 18px 28px;
+  border-bottom: 1px solid var(--border);
+}
+
+.hero-metrics div:last-child { border-bottom: none; }
+
+.hero-metrics dt {
+  display: block;
+  font-size: clamp(2rem, 3.4vw, 2.8rem);
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.hero-metrics dd {
+  margin-top: 8px;
+  font-size: 0.84rem;
+  color: var(--text-dim);
+}
+
+.hero-metrics dd span {
+  display: block;
+  margin-top: 2px;
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  color: var(--muted);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* Paths — four ways into the page */
+
+.hero-paths {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.path {
+  --mx: 50%;
+  --my: 50%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 156px;
+  padding: 20px 20px 22px;
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--border);
+  text-decoration: none;
+  transition: transform var(--ease), background var(--ease);
+}
+
+.path:hover { transform: translateY(-4px); background: #101925; }
+.path:active { transform: translateY(-1px) scale(0.99); }
+
+.path-n { font-family: var(--mono); font-size: 0.7rem; color: var(--accent); }
+
+.path-title {
+  margin-top: auto;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--mint);
+  letter-spacing: -0.02em;
+}
+
+.path-sub { min-height: 3em; font-size: 0.78rem; line-height: 1.5; color: var(--text-dim); text-wrap: pretty; }
+
+.path-arrow {
+  position: absolute;
+  top: 18px;
+  right: 20px;
+  color: var(--muted);
+  transition: transform var(--ease), color var(--ease);
+}
+
+.path:hover .path-arrow { color: var(--coral); transform: translate(0, 3px); }
+
+/* Load-in for hero pieces */
+
+.js .rise { animation: rise 0.8s cubic-bezier(.2,.7,.2,1) both; animation-delay: var(--d, 0ms); }
+
+@keyframes rise { from { opacity: 0; transform: translateY(18px); } }
+
 /* ── RESPONSIVE ───────────────────────────────────────────── */
 
 @media (max-width: 920px) {
+  .hero { min-height: auto; padding: 56px 24px 40px; gap: 44px; }
+  .hero-inner { grid-template-columns: 1fr; gap: 36px; }
+  .hero-metrics { display: grid; grid-template-columns: repeat(3, 1fr); border-left: none; border-top: 1px solid var(--border); }
+  .hero-metrics div { padding: 16px 12px 0 0; border-bottom: none; }
+  .hero-paths { grid-template-columns: 1fr 1fr; }
+  .sidebar-intro { display: none; }
+
   .layout { flex-direction: column; padding: 0 24px; }
 
   .sidebar {
@@ -900,6 +1092,17 @@ body::before {
 }
 
 @media (max-width: 480px) {
+  .hero { padding: 40px 16px 32px; gap: 36px; }
+  .hero-id { gap: 18px; margin-bottom: 24px; }
+  .hero-photo { width: 84px; height: 84px; border-radius: 20px; }
+  .hero-metrics dt { font-size: 1.45rem; }
+  .hero-metrics dd { font-size: 0.72rem; }
+  .hero-metrics dd span { font-size: 0.6rem; letter-spacing: 0.08em; }
+  .hero-paths { gap: 8px; }
+  .path { min-height: 132px; padding: 16px; }
+  .path-title { font-size: 1.05rem; }
+  .path-sub { font-size: 0.74rem; }
+
   .layout { padding: 0 16px; }
 
   .sidebar { padding: 36px 0 20px; }

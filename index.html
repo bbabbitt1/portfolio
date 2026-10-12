@@ -28,17 +28,85 @@
   </symbol>
 </svg>
 
+<!-- ── HERO ──────────────────────────────────────────────── -->
+<header class="hero" id="top">
+  <svg class="hero-contours" viewBox="0 0 600 400" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">
+    <g fill="none" stroke="#6FB7AD" stroke-width=".8">
+      <path d="M-20 360 C120 260 280 380 420 280 S600 160 640 220" opacity=".5"/>
+      <path d="M-20 320 C120 220 280 340 420 240 S600 120 640 180" opacity=".42"/>
+      <path d="M-20 280 C120 180 280 300 420 200 S600 80 640 140" opacity=".34"/>
+      <path d="M-20 240 C120 140 280 260 420 160 S600 40 640 100" opacity=".26"/>
+      <path d="M-20 200 C120 100 280 220 420 120 S600 0 640 60" opacity=".18"/>
+      <path d="M-20 160 C120 60 280 180 420 80 S600 -40 640 20" opacity=".1"/>
+    </g>
+  </svg>
+
+  <div class="hero-inner">
+    <div class="hero-main">
+      <div class="hero-id rise">
+        <img src="public/imgs/Headshot.jpg" alt="Barry Babbitt" class="hero-photo">
+        <div>
+          <p class="hero-kicker">Analytics &amp; Data Engineer</p>
+          <h1 class="hero-name">Barry Babbitt</h1>
+        </div>
+      </div>
+      <p class="hero-lede rise" style="--d:80ms">
+        I design semantic models and build the pipelines and apps that run on them.
+        Right now I'm building the analytics suite web app at Disney.
+      </p>
+      <div class="hero-social rise" style="--d:140ms">
+        <a href="https://www.linkedin.com/in/barrybabbitt1/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+        <a href="https://github.com/bbabbitt1" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="mailto:babbitt.barry@gmail.com">babbitt.barry@gmail.com</a>
+      </div>
+    </div>
+
+    <dl class="hero-metrics rise" style="--d:200ms">
+      <div><dt class="metric">9s → 3s</dt><dd>Semantic model refresh<span>Transitions</span></dd></div>
+      <div><dt class="metric">25%</dt><dd>Turnover reduction<span>MasterCorp</span></dd></div>
+      <div><dt class="metric">2,000+</dt><dd>Attributes governed<span>BNY</span></dd></div>
+    </dl>
+  </div>
+
+  <nav class="hero-paths" aria-label="Choose what to see">
+    <a href="#experience" class="path rise" style="--d:260ms">
+      <span class="path-n">01</span>
+      <span class="path-title">Experience</span>
+      <span class="path-sub">Disney, Transitions, BNY, and 5 more roles since 2018</span>
+      <span class="path-arrow" aria-hidden="true">↓</span>
+    </a>
+    <a href="#projects" class="path rise" style="--d:320ms">
+      <span class="path-n">02</span>
+      <span class="path-title">Projects</span>
+      <span class="path-sub">Pipelines on Azure, AWS, and Snowflake, plus golf analytics apps</span>
+      <span class="path-arrow" aria-hidden="true">↓</span>
+    </a>
+    <a href="#power-bi" class="path rise" style="--d:380ms">
+      <span class="path-n">03</span>
+      <span class="path-title">Power BI</span>
+      <span class="path-sub">7 live dashboards you can click through</span>
+      <span class="path-arrow" aria-hidden="true">↓</span>
+    </a>
+    <a href="resumes/general.pdf" target="_blank" class="path rise" style="--d:440ms">
+      <span class="path-n">04</span>
+      <span class="path-title">Resume</span>
+      <span class="path-sub">Two pages, PDF</span>
+      <span class="path-arrow" aria-hidden="true">↗</span>
+    </a>
+  </nav>
+</header>
+
 <div class="layout">
 
   <!-- ── SIDEBAR ──────────────────────────────────────────── -->
   <aside class="sidebar">
     <div class="sidebar-inner">
 
-      <div>
+      <div class="sidebar-intro">
         <div class="avatar-wrap">
           <img src="public/imgs/Headshot.jpg" alt="Barry Babbitt" class="avatar">
         </div>
-        <h1 class="name">Barry Babbitt</h1>
+        <p class="name">Barry Babbitt</p>
         <p class="title-label">Analytics &amp; Data Engineer</p>
         <p class="tagline">I design semantic models and build the pipelines and apps that run on them.</p>
       </div>
@@ -707,7 +775,7 @@
       </div>
 
       <!-- POWER BI ──────────────────────────────────────────── -->
-      <h3 class="category-label">Power BI</h3>
+      <h3 class="category-label" id="power-bi">Power BI</h3>
       <div class="projects-grid">
 
         <!-- Putting Analytics Dashboard -->
@@ -890,7 +958,7 @@
   });
 
   // Cursor spotlight on featured cards
-  document.querySelectorAll('.featured-grid .project-card').forEach(card =>
+  document.querySelectorAll('.featured-grid .project-card, .path').forEach(card =>
     card.addEventListener('pointermove', e => {
       const r = card.getBoundingClientRect();
       card.style.setProperty('--mx', `${e.clientX - r.left}px`);
