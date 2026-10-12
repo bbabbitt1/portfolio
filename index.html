@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Barry Babbitt | Senior Data Analyst &amp; Engineer</title>
+  <title>Barry Babbitt | Analytics &amp; Data Engineer</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="public/styles.css">
@@ -21,8 +21,8 @@
           <img src="public/imgs/Headshot.jpg" alt="Barry Babbitt" class="avatar">
         </div>
         <h1 class="name">Barry Babbitt</h1>
-        <p class="title-label">Senior Data Analyst<br>&amp; Data Engineer</p>
-        <p class="tagline">I build the models, pipelines, and dashboards that make data trustworthy and actionable.</p>
+        <p class="title-label">Analytics<br>&amp; Data Engineer</p>
+        <p class="tagline">I build the data products, pipelines, and apps that make data trustworthy and actionable.</p>
       </div>
 
       <nav class="sidebar-nav" aria-label="Sections">
@@ -73,22 +73,23 @@
       <h2 class="section-label">About</h2>
       <div class="prose">
         <p>
-          I'm a senior data analyst and engineer with a track record spanning enterprise data governance,
+          I'm an analytics and data engineer with a track record spanning enterprise data governance,
           production pipeline engineering, and executive-grade Power BI. My work covers the full stack —
-          from architecting dimensional models and building ELT pipelines to designing dashboards that
-          leaders actually use to make decisions.
+          from architecting dimensional models and building ELT pipelines to shipping the apps and
+          dashboards that leaders actually use to make decisions.
         </p>
         <p>
-          At <strong style="color:var(--text)">BNY</strong>, I'm building enterprise metadata and
-          data-dictionary infrastructure that governs 15+ datasets and 2,000+ attributes. Previously
-          at <strong style="color:var(--text)">MasterCorp</strong>, I introduced and owned semantic
-          models for operational and executive performance across 200+ sites and 5,000+ associates —
-          Power BI work that contributed to a 25% reduction in employee turnover.
+          At <strong style="color:var(--text)">Disney</strong>, I'm building a full-stack web app for
+          the analytics suite. Before that, at <strong style="color:var(--text)">Transitions</strong>,
+          I led a full semantic-model redesign that cut refresh time 3× and built a Python
+          reporting-automation platform, and at <strong style="color:var(--text)">BNY</strong> I architected metadata
+          infrastructure governing 15+ datasets and 2,000+ attributes. At
+          <strong style="color:var(--text)">MasterCorp</strong>, my Power BI semantic models across
+          200+ sites contributed to a 25% reduction in employee turnover.
         </p>
         <p>
-          On the engineering side, I build Python data pipelines with tools like dbt, Snowflake, and
-          AWS S3 — including Type 2 SCD implementations and CI/CD workflows. It's an area I'm
-          actively growing in and genuinely enjoy working on.
+          On the engineering side, I build Python data pipelines with dbt, Snowflake, Azure, and
+          AWS — including Type 2 SCD implementations, REST API integrations, and CI/CD workflows.
         </p>
         <p>
           Outside of work, I build side projects for fun — like a golf strokes gained calculator
@@ -113,6 +114,8 @@
         <span class="skill-chip">C#</span>
         <span class="skill-chip">CI/CD</span>
         <span class="skill-chip">Power Automate</span>
+        <span class="skill-chip">Power BI REST API</span>
+        <span class="skill-chip">Data Governance</span>
       </div>
     </section>
 
@@ -122,9 +125,53 @@
 
       <div class="exp-list">
 
+        <!-- Disney -->
+        <article class="exp-item">
+          <div class="exp-date">2026 —<br>Present</div>
+          <div>
+            <h3 class="exp-role">Data <span class="exp-company">@ Disney</span></h3>
+            <p class="exp-location">Orlando, FL · Analytics Suite Engineering</p>
+            <ul class="exp-bullets">
+              <li>Building a full-stack web application that unifies the internal analytics suite into a single product experience for business users.</li>
+              <li>Turning recurring BI and reporting workflows into self-service product features, bridging analytics requirements and software delivery.</li>
+            </ul>
+            <div class="exp-tags">
+              <span class="tag">TypeScript</span>
+              <span class="tag">React</span>
+              <span class="tag">SQL</span>
+              <span class="tag">Web App</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Transitions -->
+        <article class="exp-item">
+          <div class="exp-date">2026</div>
+          <div>
+            <h3 class="exp-role">Senior Data Analyst <span class="exp-company">· Transitions</span></h3>
+            <p class="exp-location">Orlando, FL · Reporting Automation &amp; Data Governance</p>
+            <ul class="exp-bullets">
+              <li>Led a full redesign of the Power BI semantic model, improving data quality and cutting refresh time from 9s to 3s (3× faster).</li>
+              <li>Built and owned a Python reporting-automation platform that consolidated 9+ manual data pulls behind one command with validation, logging, and a report-freshness dashboard — replacing a multi-hour weekly routine.</li>
+              <li>Extracted a 115-tab, 22MB trended-P&amp;L workbook into a tidy, self-reconciling budget fact table, validating every line item against the workbook's own subtotals and eliminating monthly manual re-keying.</li>
+              <li>Automated per-site report distribution for 11 site leaders via the Power BI REST API and generated PowerPoint decks, eliminating hours of manual assembly every pay period.</li>
+              <li>Established data governance: per-table data dictionaries with a controlled key vocabulary, a cross-warehouse type/length canon that surfaces drift, and a published metric glossary.</li>
+            </ul>
+            <div class="exp-tags">
+              <span class="tag">Data Modeling</span>
+              <span class="tag">Python</span>
+              <span class="tag">Power BI REST API</span>
+              <span class="tag">DAX</span>
+              <span class="tag">Data Governance</span>
+              <span class="tag">Automation</span>
+              <span class="tag">IBCS</span>
+            </div>
+          </div>
+        </article>
+
         <!-- BNY -->
         <article class="exp-item">
-          <div class="exp-date">2025 —<br>Present</div>
+          <div class="exp-date">2025 —<br>2026</div>
           <div>
             <h3 class="exp-role">Senior Data Analyst <span class="exp-company">· BNY</span></h3>
             <p class="exp-location">Lake Mary, FL · Enterprise Data Modeling &amp; Governance</p>
