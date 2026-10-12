@@ -4,11 +4,29 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Barry Babbitt | Analytics &amp; Data Engineer</title>
+  <meta name="description" content="Barry Babbitt — analytics and data engineer. Semantic models, pipelines, and data apps. Raw in. Trusted out.">
+  <meta name="theme-color" content="#080C14">
+  <meta property="og:title" content="Barry Babbitt | Analytics &amp; Data Engineer">
+  <meta property="og:description" content="Semantic models, pipelines, and data apps. Raw in. Trusted out.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://bbabbitt1.github.io/portfolio/">
+  <link rel="icon" href="public/imgs/mark.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="public/styles.css">
+  <script>document.documentElement.classList.add('js')</script>
 </head>
 <body>
+
+<a href="#content" class="skip-link">Skip to content</a>
+
+<!-- Brand mark: a "B" drawn as one lineage path — source · model · serve -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="mark" viewBox="0 0 48 48">
+    <path d="M14 8 V40 M14 8 H26 A8 8 0 0 1 26 24 H14 M14 24 H29 A8 8 0 0 1 29 40 H14" fill="none" stroke="#D9FFF6" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="14" cy="8" r="3.6" fill="#4FA3D1"/><circle cx="14" cy="24" r="3.6" fill="#E8836B"/><circle cx="14" cy="40" r="3.6" fill="#4FA3D1"/>
+  </symbol>
+</svg>
 
 <div class="layout">
 
@@ -21,7 +39,8 @@
           <img src="public/imgs/Headshot.jpg" alt="Barry Babbitt" class="avatar">
         </div>
         <h1 class="name">Barry Babbitt</h1>
-        <p class="title-label">Analytics<br>&amp; Data Engineer</p>
+        <p class="title-label">Analytics &amp; Data Engineer</p>
+        <p class="promise">Raw in.<br><em>Trusted</em> out.</p>
         <p class="tagline">I build the data products, pipelines, and apps that make data trustworthy and actionable.</p>
       </div>
 
@@ -66,7 +85,7 @@
   </aside>
 
   <!-- ── MAIN CONTENT ──────────────────────────────────────── -->
-  <main class="content">
+  <main class="content" id="content">
 
     <!-- ABOUT ──────────────────────────────────────────────── -->
     <section id="about" class="section">
@@ -79,13 +98,13 @@
           dashboards that leaders actually use to make decisions.
         </p>
         <p>
-          At <strong style="color:var(--text)">Disney</strong>, I'm building a full-stack web app for
-          the analytics suite. Before that, at <strong style="color:var(--text)">Transitions</strong>,
-          I led a full semantic-model redesign that cut refresh time 3× and built a Python
-          reporting-automation platform, and at <strong style="color:var(--text)">BNY</strong> I architected metadata
-          infrastructure governing 15+ datasets and 2,000+ attributes. At
-          <strong style="color:var(--text)">MasterCorp</strong>, my Power BI semantic models across
-          200+ sites contributed to a 25% reduction in employee turnover.
+          At <strong>Disney</strong>, I'm building a full-stack web app for
+          the analytics suite. Before that, at <strong>Transitions</strong>,
+          I led a full semantic-model redesign that cut refresh time <span class="metric">9s → 3s</span> and built a Python
+          reporting-automation platform, and at <strong>BNY</strong> I architected metadata
+          infrastructure governing <span class="metric">2,000+</span> attributes across 15+ datasets. At
+          <strong>MasterCorp</strong>, my Power BI semantic models across
+          200+ sites contributed to a <span class="metric">25%</span> reduction in employee turnover.
         </p>
         <p>
           On the engineering side, I build Python data pipelines with dbt, Snowflake, Azure, and
@@ -151,7 +170,7 @@
             <h3 class="exp-role">Senior Data Analyst <span class="exp-company">· Transitions</span></h3>
             <p class="exp-location">Orlando, FL · Reporting Automation &amp; Data Governance</p>
             <ul class="exp-bullets">
-              <li>Led a full redesign of the Power BI semantic model, improving data quality and cutting refresh time from 9s to 3s (3× faster).</li>
+              <li>Led a full redesign of the Power BI semantic model, improving data quality and cutting refresh time from <span class="metric">9s → 3s</span> (3× faster).</li>
               <li>Built and owned a Python reporting-automation platform that consolidated 9+ manual data pulls behind one command with validation, logging, and a report-freshness dashboard — replacing a multi-hour weekly routine.</li>
               <li>Extracted a 115-tab, 22MB trended-P&amp;L workbook into a tidy, self-reconciling budget fact table, validating every line item against the workbook's own subtotals and eliminating monthly manual re-keying.</li>
               <li>Automated per-site report distribution for 11 site leaders via the Power BI REST API and generated PowerPoint decks, eliminating hours of manual assembly every pay period.</li>
@@ -222,7 +241,7 @@
             <p class="exp-location">Orlando, FL</p>
             <ul class="exp-bullets">
               <li>Introduced and owned star-schema semantic models across finance, operations, HR, and legal using surrogate keys and effective dating (SCD2), enabling consistent cross-departmental reporting for the first time.</li>
-              <li>Designed the company's first enterprise HR analytics dashboard using Power BI and SQL, formally defining turnover metrics across siloed departments — informing a cross-functional initiative that reduced turnover 25%.</li>
+              <li>Designed the company's first enterprise HR analytics dashboard using Power BI and SQL, formally defining turnover metrics across siloed departments — informing a cross-functional initiative that reduced turnover <span class="metric">25%</span>.</li>
               <li>Built an Operations Financial Overview dashboard using advanced DAX and SQL, evaluating 200+ sites on financial, operational, and merit-based KPIs with automated bonus-calculation logic.</li>
               <li>Engineered a real-time Overtime &amp; Scheduling dashboard using DAX for 5,000+ associates across 200 sites, shifting overtime management from reactive to proactive.</li>
               <li>Mentored junior analysts through recurring lunch-and-learn sessions on Power Query, Power BI, and data best practices, building team capability across the analytics function.</li>
@@ -245,7 +264,7 @@
             <h3 class="exp-role">Financial Planning Analyst <span class="exp-company">· Raymond James</span></h3>
             <p class="exp-location">Orlando, FL</p>
             <ul class="exp-bullets">
-              <li>Automated capital gains exposure monitoring using BlackRock's API integrated with SQL-driven holdings data, identifying and flagging $50M in avoidable distributions that directly informed distribution strategy.</li>
+              <li>Automated capital gains exposure monitoring using BlackRock's API integrated with SQL-driven holdings data, identifying and flagging <span class="metric">$50M</span> in avoidable distributions that directly informed distribution strategy.</li>
               <li>Delivered 600+ regulatory-aligned financial plans using SQL to aggregate client holdings against compliance standards, serving as a data-driven planning partner to 100+ financial advisors.</li>
               <li>Scaled manual compliance review into automated, auditable workflows using SQL and Excel automation, reducing review turnaround and strengthening regulatory exam readiness across the region.</li>
             </ul>
@@ -396,43 +415,6 @@
       <!-- DATA ENGINEERING ──────────────────────────────────── -->
       <h3 class="category-label">Data Engineering</h3>
       <div class="projects-grid">
-
-        <!-- Blast Motion Putting Pipeline -->
-        <a href="projects/blast-putting.html" class="project-card" aria-label="Blast Motion Putting Pipeline">
-          <div class="project-thumb">
-            <div class="thumb-viz" style="padding:6px 8px">
-              <svg viewBox="0 0 120 70" style="width:100%;height:100%">
-                <!-- Pipeline flow: Blast API → Azure Function → Azure SQL → Power BI -->
-                <rect x="2" y="28" width="22" height="14" rx="2" fill="none" stroke="#4FA3D1" stroke-width="1.2"/>
-                <text x="13" y="37" fill="#4FA3D1" font-size="5" text-anchor="middle" font-family="monospace">API</text>
-                <line x1="24" y1="35" x2="32" y2="35" stroke="#8FAFB0" stroke-width="0.8"/>
-                <rect x="32" y="28" width="22" height="14" rx="2" fill="none" stroke="#6FB7AD" stroke-width="1.2"/>
-                <text x="43" y="37" fill="#6FB7AD" font-size="4" text-anchor="middle" font-family="monospace">Func</text>
-                <line x1="54" y1="35" x2="62" y2="35" stroke="#8FAFB0" stroke-width="0.8"/>
-                <rect x="62" y="28" width="22" height="14" rx="2" fill="none" stroke="#4FA3D1" stroke-width="1.2"/>
-                <text x="73" y="37" fill="#4FA3D1" font-size="4.5" text-anchor="middle" font-family="monospace">SQL</text>
-                <line x1="84" y1="35" x2="92" y2="35" stroke="#8FAFB0" stroke-width="0.8"/>
-                <rect x="92" y="28" width="24" height="14" rx="2" fill="none" stroke="#D9FFF6" stroke-width="1.2"/>
-                <text x="104" y="37" fill="#D9FFF6" font-size="4" text-anchor="middle" font-family="monospace">PBI</text>
-                <!-- Azure wrapper -->
-                <rect x="28" y="8" width="92" height="52" rx="4" fill="none" stroke="#8FAFB0" stroke-width="0.6" stroke-dasharray="3 2" opacity="0.4"/>
-                <text x="74" y="16" fill="#8FAFB0" font-size="4" text-anchor="middle" font-family="monospace" opacity="0.6">Azure</text>
-              </svg>
-            </div>
-          </div>
-          <div>
-            <p class="project-name">Blast Motion Putting Pipeline <span class="arrow-icon">↗</span></p>
-            <p class="project-desc">Serverless ETL pipeline: Azure Function extracts Blast Motion sensor data on schedule and on-demand, loads to Azure SQL, with Power Automate mobile trigger and Power BI refresh.</p>
-            <div class="project-tags">
-              <span class="tag">Python</span>
-              <span class="tag">Azure Functions</span>
-              <span class="tag">Azure SQL</span>
-              <span class="tag">Power Automate</span>
-              <span class="tag">Power BI</span>
-              <span class="tag">CI/CD</span>
-            </div>
-          </div>
-        </a>
 
         <!-- AWS NFL Analytics -->
         <a href="projects/aws-nfl.html" class="project-card" aria-label="AWS NFL Analytics">
@@ -872,8 +854,9 @@
     </section>
 
     <footer class="page-footer">
+      <svg class="mark" width="28" height="28" aria-hidden="true"><use href="#mark"/></svg>
       <p>
-        Designed &amp; built by Barry Babbitt ·
+        <strong>Raw in. Trusted out.</strong> Designed &amp; built by Barry Babbitt ·
         <a href="https://www.linkedin.com/in/barrybabbitt1/" target="_blank" rel="noopener noreferrer">Connect on LinkedIn</a>
       </p>
     </footer>
@@ -897,6 +880,25 @@
   }, { rootMargin: '-20% 0px -60% 0px' });
 
   sections.forEach(s => observer.observe(s));
+
+  // Staggered reveal for content blocks
+  const reveals = document.querySelectorAll('.prose, .skills-grid, .exp-item, .cert-row, .project-card');
+  const revealer = new IntersectionObserver(entries => entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('in'); revealer.unobserve(e.target); }
+  }), { rootMargin: '0px 0px -8% 0px' });
+  reveals.forEach((el, i) => {
+    el.classList.add('reveal');
+    el.style.setProperty('--d', `${(i % 4) * 60}ms`);
+    revealer.observe(el);
+  });
+
+  // Cursor spotlight on featured cards
+  document.querySelectorAll('.featured-grid .project-card').forEach(card =>
+    card.addEventListener('pointermove', e => {
+      const r = card.getBoundingClientRect();
+      card.style.setProperty('--mx', `${e.clientX - r.left}px`);
+      card.style.setProperty('--my', `${e.clientY - r.top}px`);
+    }));
 </script>
 
 </body>

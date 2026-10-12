@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Barry Babbitt — Brand Board</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #080C14; --panel: #0E151F; --line: rgba(143,175,176,0.14);
+      --blue: #4FA3D1; --teal: #6FB7AD; --mint: #D9FFF6; --muted: #8FAFB0;
+      --text: #CBD5E1; --coral: #E8836B;
+      --sans: "Geist", system-ui, sans-serif; --mono: "Geist Mono", ui-monospace, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #05080D; color: var(--text); font-family: var(--sans); padding: 40px 16px; -webkit-font-smoothing: antialiased; }
+    .board { max-width: 1320px; margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .p { position: relative; background: var(--panel); border-radius: 10px; aspect-ratio: 16/10; overflow: hidden; padding: 28px; display: flex; flex-direction: column; }
+    .n { position: absolute; left: 28px; bottom: 20px; font: 500 10px/1 var(--mono); letter-spacing: .14em; color: var(--muted); opacity: .6; text-transform: uppercase; }
+    .n b { color: var(--blue); font-weight: 500; margin-right: 10px; }
+    .center { align-items: center; justify-content: center; }
+    h1 { font-weight: 600; font-size: 30px; letter-spacing: -.02em; color: var(--mint); }
+    .sub { font: 400 11px var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--teal); margin-top: 8px; }
+    /* 2 construction */
+    .grid-bg { background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px); background-size: 24px 24px; background-position: center; }
+    .lbl { font: 400 10px var(--mono); fill: var(--muted); letter-spacing: .1em; }
+    /* 3 browser */
+    .browser { width: 100%; height: 100%; border: 1px solid var(--line); border-radius: 8px; background: var(--ink); overflow: hidden; display: flex; flex-direction: column; }
+    .bar { display: flex; align-items: center; gap: 6px; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+    .bar i { width: 8px; height: 8px; border-radius: 50%; background: rgba(143,175,176,.25); }
+    .url { margin-left: 14px; flex: 1; font: 400 11px var(--mono); color: var(--muted); background: var(--panel); border-radius: 5px; padding: 5px 10px; }
+    .site { flex: 1; display: grid; grid-template-columns: 1fr 1.6fr; gap: 18px; padding: 22px; }
+    .site h4 { color: var(--mint); font-weight: 600; font-size: 17px; letter-spacing: -.01em; margin-top: 12px; }
+    .site small { display: block; font: 400 9px var(--mono); color: var(--teal); letter-spacing: .14em; text-transform: uppercase; margin-top: 4px; }
+    .rule { height: 6px; border-radius: 3px; background: rgba(143,175,176,.14); margin-bottom: 8px; }
+    .kpi { font: 500 22px var(--mono); color: var(--coral); margin: 10px 0 2px; }
+    /* 4 essence */
+    .tag { font-weight: 500; font-size: clamp(30px, 3.4vw, 50px); line-height: 1.02; letter-spacing: -.035em; color: var(--mint); }
+    .tag em { font-style: normal; color: var(--blue); }
+    /* 5 color */
+    .sw { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 8px; flex: 1; margin-bottom: 28px; }
+    .sw div { border-radius: 6px; display: flex; flex-direction: column; justify-content: flex-end; padding: 10px; font: 400 9.5px/1.5 var(--mono); }
+    /* 6 type */
+    .aa { font-size: clamp(64px, 7vw, 110px); font-weight: 600; letter-spacing: -.05em; color: var(--mint); line-height: .9; }
+    .spec { display: flex; justify-content: space-between; align-items: flex-end; margin-top: auto; margin-bottom: 26px; }
+    .spec p { font: 400 11px/1.7 var(--mono); color: var(--muted); text-align: right; }
+    /* 7 card */
+    .card { width: 72%; aspect-ratio: 1.75; border-radius: 6px; background: linear-gradient(160deg, #121C28, #0A1018); box-shadow: 0 24px 50px rgba(0,0,0,.5), inset 0 0 0 1px var(--line); padding: 16px; display: flex; flex-direction: column; justify-content: space-between; transform: rotate(-4deg); }
+    .card span { font: 400 8.5px/1.6 var(--mono); color: var(--muted); letter-spacing: .06em; }
+    /* 9 detail */
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip { font: 500 10px var(--mono); color: var(--blue); border: 1px solid rgba(79,163,209,.3); border-radius: 999px; padding: 4px 10px; }
+    .chip.hot { color: var(--coral); border-color: rgba(232,131,107,.35); }
+    .term { margin-top: 14px; background: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; font: 400 11px/1.8 var(--mono); color: var(--muted); }
+    .term .c { color: var(--teal); } .term .ok { color: var(--mint); }
+    .icons { display: flex; align-items: flex-end; gap: 14px; margin-top: 14px; }
+    .ico { background: var(--ink); border-radius: 22%; display: grid; place-items: center; box-shadow: inset 0 0 0 1px var(--line); }
+    @media (max-width: 1000px) { .board { grid-template-columns: 1fr; max-width: 560px; } }
+  </style>
+</head>
+<body>
+<!-- Mark: a "B" drawn as one lineage path; nodes = source · model · serve. 48-unit grid. -->
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="bb" viewBox="0 0 48 48">
+    <path d="M13 8 V40 M13 8 H25 A8 8 0 0 1 25 24 H13 M13 24 H28 A8 8 0 0 1 28 40 H13" fill="none" stroke="#D9FFF6" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="13" cy="8" r="3.4" fill="#4FA3D1"/><circle cx="13" cy="24" r="3.4" fill="#E8836B"/><circle cx="13" cy="40" r="3.4" fill="#4FA3D1"/>
+  </symbol>
+</svg>
+
+<main class="board">
+
+  <!-- 01 Cover -->
+  <section class="p center">
+    <svg class="mark" width="96" height="96"><use href="#bb"/></svg>
+    <h1 style="margin-top:18px">Barry Babbitt</h1>
+    <p class="sub">Analytics &amp; Data Engineer</p>
+    <span class="n"><b>01</b>Identity</span>
+  </section>
+
+  <!-- 02 Construction -->
+  <section class="p center grid-bg">
+    <svg viewBox="-30 -4 108 56" style="width:88%;height:auto">
+      <g opacity=".35" fill="none" stroke="#8FAFB0" stroke-width=".25" stroke-dasharray="1 1">
+        <circle cx="25" cy="16" r="8"/><circle cx="28" cy="32" r="8"/>
+        <line x1="13" y1="-2" x2="13" y2="50"/><line x1="0" y1="24" x2="48" y2="24"/>
+      </g>
+      <g class="mark"><use href="#bb" width="48" height="48"/></g>
+      <text class="lbl" x="7" y="9.2" text-anchor="end" style="font-size:3px">SOURCE</text>
+      <text class="lbl" x="7" y="25.2" text-anchor="end" style="font-size:3px;fill:#E8836B">MODEL</text>
+      <text class="lbl" x="7" y="41.2" text-anchor="end" style="font-size:3px">SERVE</text>
+      <text class="lbl" x="40" y="14" style="font-size:2.6px">r = 8</text>
+    </svg>
+    <span class="n"><b>02</b>One path, three nodes</span>
+  </section>
+
+  <!-- 03 Digital -->
+  <section class="p">
+    <div class="browser">
+      <div class="bar"><i></i><i></i><i></i><span class="url">bbabbitt1.github.io/portfolio</span></div>
+      <div class="site">
+        <div>
+          <svg class="mark" width="30" height="30"><use href="#bb"/></svg>
+          <h4>Barry Babbitt</h4><small>Analytics &amp; Data Engineer</small>
+        </div>
+        <div>
+          <small style="margin:0 0 12px">Transitions · Semantic model</small>
+          <div class="kpi">9s → 3s</div>
+          <small style="margin:0 0 14px;color:var(--muted)">refresh time</small>
+          <div class="rule" style="width:90%"></div><div class="rule" style="width:72%"></div><div class="rule" style="width:80%"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 Essence -->
+  <section class="p" style="justify-content:center">
+    <p class="tag">Raw in.<br><em>Trusted</em> out.</p>
+    <span class="n"><b>04</b>Promise</span>
+  </section>
+
+  <!-- 05 Color -->
+  <section class="p">
+    <div class="sw">
+      <div style="background:#080C14;box-shadow:inset 0 0 0 1px var(--line);color:var(--muted)">Ink<br>#080C14</div>
+      <div style="background:#4FA3D1;color:#06202E">Signal<br>#4FA3D1</div>
+      <div style="background:#6FB7AD;color:#0B2622">Teal<br>#6FB7AD</div>
+      <div style="background:#D9FFF6;color:#1F2A2A">Mint<br>#D9FFF6</div>
+      <div style="background:#E8836B;color:#2A100A">Coral<br>#E8836B</div>
+    </div>
+    <span class="n"><b>05</b>Coral = the one number that matters</span>
+  </section>
+
+  <!-- 06 Type -->
+  <section class="p">
+    <div class="aa">Aa</div>
+    <div class="spec">
+      <span style="font:400 13px var(--mono);color:var(--teal)">SELECT * FROM trust;</span>
+      <p>Geist — display &amp; body<br>Geist Mono — labels, data</p>
+    </div>
+    <span class="n"><b>06</b>Type</span>
+  </section>
+
+  <!-- 07 Physical -->
+  <section class="p center" style="background:radial-gradient(ellipse at 50% 30%, #142130, var(--panel))">
+    <div class="card">
+      <svg class="mark" width="26" height="26"><use href="#bb"/></svg>
+      <div>
+        <div style="color:var(--mint);font-weight:600;font-size:13px">Barry Babbitt</div>
+        <span>babbitt.barry@gmail.com · Orlando, FL</span>
+      </div>
+    </div>
+    <span class="n"><b>07</b>Card</span>
+  </section>
+
+  <!-- 08 Image direction: green-reading contours — the golf thread in his side projects -->
+  <section class="p" style="padding:0">
+    <svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%">
+      <rect width="320" height="200" fill="#0B121B"/>
+      <g fill="none" stroke="#6FB7AD" stroke-width=".7" opacity=".5">
+        <path d="M-10 170 C60 120 140 190 210 140 S300 80 340 110"/>
+        <path d="M-10 150 C60 100 140 170 210 120 S300 60 340 90" opacity=".85"/>
+        <path d="M-10 130 C60 80 140 150 210 100 S300 40 340 70" opacity=".7"/>
+        <path d="M-10 110 C60 60 140 130 210 80 S300 20 340 50" opacity=".55"/>
+        <path d="M-10 90 C60 40 140 110 210 60 S300 0 340 30" opacity=".4"/>
+        <path d="M-10 70 C60 20 140 90 210 40 S300 -20 340 10" opacity=".25"/>
+      </g>
+      <path d="M70 160 C120 150 180 120 236 74" fill="none" stroke="#D9FFF6" stroke-width="1" stroke-dasharray="2 3"/>
+      <circle cx="70" cy="160" r="3" fill="#4FA3D1"/>
+      <circle cx="240" cy="70" r="5" fill="#080C14" stroke="#E8836B" stroke-width="1.2"/>
+    </svg>
+    <span class="n"><b>08</b>Read the green · read the data</span>
+  </section>
+
+  <!-- 09 System detail -->
+  <section class="p">
+    <div class="chips">
+      <span class="chip">dbt</span><span class="chip">Snowflake</span><span class="chip">Power BI</span><span class="chip">Python</span><span class="chip hot">3× faster</span>
+    </div>
+    <div class="term">
+      <span class="c">$</span> dbt build --select mart_putting<br>
+      <span class="ok">✓</span> 14 models · 0 errors · <span style="color:var(--coral)">3.1s</span>
+    </div>
+    <div class="icons">
+      <div class="ico" style="width:56px;height:56px"><svg class="mark" width="40" height="40"><use href="#bb"/></svg></div>
+      <div class="ico" style="width:32px;height:32px"><svg class="mark" width="24" height="24"><use href="#bb"/></svg></div>
+      <div class="ico" style="width:18px;height:18px"><svg class="mark" width="16" height="16"><use href="#bb"/></svg></div>
+    </div>
+    <span class="n"><b>09</b>System</span>
+  </section>
+
+</main>
+</body>
+</html>
