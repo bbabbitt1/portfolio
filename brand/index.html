@@ -9,7 +9,7 @@
   <style>
     :root {
       --ink: #080C14; --panel: #0E151F; --line: rgba(143,175,176,0.14);
-      --blue: #4FA3D1; --teal: #6FB7AD; --mint: #D9FFF6; --muted: #8FAFB0;
+      --blue: #8B7CF6; --peach: #F6AF7C; --mint: #D9FFF6; --muted: #8FAFB0;
       --text: #CBD5E1; --coral: #E8836B;
       --sans: "Geist", system-ui, sans-serif; --mono: "Geist Mono", ui-monospace, monospace;
     }
@@ -21,7 +21,7 @@
     .n b { color: var(--blue); font-weight: 500; margin-right: 10px; }
     .center { align-items: center; justify-content: center; }
     h1 { font-weight: 600; font-size: 30px; letter-spacing: -.02em; color: var(--mint); }
-    .sub { font: 400 11px var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--teal); margin-top: 8px; }
+    .sub { font: 400 11px var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--peach); margin-top: 8px; }
     /* 2 construction */
     .grid-bg { background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px); background-size: 24px 24px; background-position: center; }
     .lbl { font: 400 10px var(--mono); fill: var(--muted); letter-spacing: .1em; }
@@ -32,7 +32,7 @@
     .url { margin-left: 14px; flex: 1; font: 400 11px var(--mono); color: var(--muted); background: var(--panel); border-radius: 5px; padding: 5px 10px; }
     .site { flex: 1; display: grid; grid-template-columns: 1fr 1.6fr; gap: 18px; padding: 22px; }
     .site h4 { color: var(--mint); font-weight: 600; font-size: 17px; letter-spacing: -.01em; margin-top: 12px; }
-    .site small { display: block; font: 400 9px var(--mono); color: var(--teal); letter-spacing: .14em; text-transform: uppercase; margin-top: 4px; }
+    .site small { display: block; font: 400 9px var(--mono); color: var(--peach); letter-spacing: .14em; text-transform: uppercase; margin-top: 4px; }
     .rule { height: 6px; border-radius: 3px; background: rgba(143,175,176,.14); margin-bottom: 8px; }
     .kpi { font: 500 22px var(--mono); color: var(--coral); margin: 10px 0 2px; }
     /* 4 essence */
@@ -50,10 +50,10 @@
     .card span { font: 400 8.5px/1.6 var(--mono); color: var(--muted); letter-spacing: .06em; }
     /* 9 detail */
     .chips { display: flex; flex-wrap: wrap; gap: 6px; }
-    .chip { font: 500 10px var(--mono); color: var(--blue); border: 1px solid rgba(79,163,209,.3); border-radius: 999px; padding: 4px 10px; }
+    .chip { font: 500 10px var(--mono); color: var(--blue); border: 1px solid rgba(139,124,246,.3); border-radius: 999px; padding: 4px 10px; }
     .chip.hot { color: var(--coral); border-color: rgba(232,131,107,.35); }
     .term { margin-top: 14px; background: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; font: 400 11px/1.8 var(--mono); color: var(--muted); }
-    .term .c { color: var(--teal); } .term .ok { color: var(--mint); }
+    .term .c { color: var(--peach); } .term .ok { color: var(--mint); }
     .icons { display: flex; align-items: flex-end; gap: 14px; margin-top: 14px; }
     .ico { background: var(--ink); border-radius: 22%; display: grid; place-items: center; box-shadow: inset 0 0 0 1px var(--line); }
     @media (max-width: 1000px) { .board { grid-template-columns: 1fr; max-width: 560px; } }
@@ -64,7 +64,7 @@
 <svg width="0" height="0" style="position:absolute">
   <symbol id="bb" viewBox="0 0 48 48">
     <path d="M13 8 V40 M13 8 H25 A8 8 0 0 1 25 24 H13 M13 24 H28 A8 8 0 0 1 28 40 H13" fill="none" stroke="#D9FFF6" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
-    <circle cx="13" cy="8" r="3.4" fill="#4FA3D1"/><circle cx="13" cy="24" r="3.4" fill="#E8836B"/><circle cx="13" cy="40" r="3.4" fill="#4FA3D1"/>
+    <circle cx="13" cy="8" r="3.4" fill="#8B7CF6"/><circle cx="13" cy="24" r="3.4" fill="#E8836B"/><circle cx="13" cy="40" r="3.4" fill="#8B7CF6"/>
   </symbol>
 </svg>
 
@@ -123,8 +123,8 @@
   <section class="p">
     <div class="sw">
       <div style="background:#080C14;box-shadow:inset 0 0 0 1px var(--line);color:var(--muted)">Ink<br>#080C14</div>
-      <div style="background:#4FA3D1;color:#06202E">Signal<br>#4FA3D1</div>
-      <div style="background:#6FB7AD;color:#0B2622">Teal<br>#6FB7AD</div>
+      <div style="background:#8B7CF6;color:#06202E">Violet<br>#8B7CF6</div>
+      <div style="background:#F6AF7C;color:#0B2622">Peach<br>#F6AF7C</div>
       <div style="background:#D9FFF6;color:#1F2A2A">Mint<br>#D9FFF6</div>
       <div style="background:#E8836B;color:#2A100A">Coral<br>#E8836B</div>
     </div>
@@ -135,7 +135,7 @@
   <section class="p">
     <div class="aa">Aa</div>
     <div class="spec">
-      <span style="font:400 13px var(--mono);color:var(--teal)">SELECT * FROM fact_putts;</span>
+      <span style="font:400 13px var(--mono);color:var(--peach)">SELECT * FROM fact_putts;</span>
       <p>Geist — display &amp; body<br>Geist Mono — labels, data</p>
     </div>
     <span class="n"><b>06</b>Type</span>
@@ -157,7 +157,7 @@
   <section class="p" style="padding:0">
     <svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%">
       <rect width="320" height="200" fill="#0B121B"/>
-      <g fill="none" stroke="#6FB7AD" stroke-width=".7" opacity=".5">
+      <g fill="none" stroke="#F6AF7C" stroke-width=".7" opacity=".5">
         <path d="M-10 170 C60 120 140 190 210 140 S300 80 340 110"/>
         <path d="M-10 150 C60 100 140 170 210 120 S300 60 340 90" opacity=".85"/>
         <path d="M-10 130 C60 80 140 150 210 100 S300 40 340 70" opacity=".7"/>
@@ -166,7 +166,7 @@
         <path d="M-10 70 C60 20 140 90 210 40 S300 -20 340 10" opacity=".25"/>
       </g>
       <path d="M70 160 C120 150 180 120 236 74" fill="none" stroke="#D9FFF6" stroke-width="1" stroke-dasharray="2 3"/>
-      <circle cx="70" cy="160" r="3" fill="#4FA3D1"/>
+      <circle cx="70" cy="160" r="3" fill="#8B7CF6"/>
       <circle cx="240" cy="70" r="5" fill="#080C14" stroke="#E8836B" stroke-width="1.2"/>
     </svg>
     <span class="n"><b>08</b>Image direction · green contours</span>

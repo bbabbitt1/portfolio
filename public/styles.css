@@ -1,6 +1,6 @@
 /* Barry Babbitt — Portfolio
    Brand board: brand/index.html
-   Ink #080C14 · Signal #4FA3D1 · Teal #6FB7AD · Mint #D9FFF6 · Coral #E8836B (metrics only)
+   Ink #080C14 · Violet #8B7CF6 · Violet Hi #8473FF · Peach #F6AF7C · Mint #D9FFF6 · Coral #E8836B (metrics only)
    Type: Geist (display/body) · Geist Mono (labels, data) */
 
 @import url("https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap");
@@ -10,19 +10,65 @@
   --surface:     #0E151F;
   --border:      rgba(143,175,176,0.12);
   --primary:     #2F4B4F;
-  --accent:      #4FA3D1;
+  --accent:      #8B7CF6;
+  --accent-hi:   #8473FF;
   --mint:        #D9FFF6;
-  --teal:        #6FB7AD;
+  --peach:       #F6AF7C;
   --coral:       #E8836B;
   --muted:       #8FAFB0;
   --text:        #CBD5E1;
   --text-dim:    rgba(203,213,225,0.68);
+  --panel-a:     #0F1824;
+  --panel-b:     #0A1019;
+  --hover:       #101925;
+  --shadow:      rgba(2,8,16,0.7);
+  --code-str:    #B9E4D6;
+  --code-cmt:    #5B7375;
+  --code-type:   #E8C07D;
   --radius:      8px;
   --ease:        0.25s cubic-bezier(.2,.7,.2,1);
   --sidebar-w:   320px;
   --sans:        "Geist", system-ui, -apple-system, "Helvetica Neue", sans-serif;
   --mono:        "Geist Mono", ui-monospace, "Consolas", monospace;
+  color-scheme: dark light;
 }
+
+/* Light mode follows the OS setting */
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg:          #F6F6FA;
+    --surface:     #FFFFFF;
+    --border:      rgba(30,36,56,0.12);
+    --primary:     #D6D9E6;
+    --accent:      #6A5AE0;
+    --accent-hi:   #5646D6;
+    --mint:        #10142A;
+    --peach:       #B5622B;
+    --coral:       #C2533A;
+    --muted:       #5B6576;
+    --text:        #283044;
+    --text-dim:    rgba(40,48,68,0.74);
+    --panel-a:     #FFFFFF;
+    --panel-b:     #F0F0F7;
+    --hover:       #F1EFFE;
+    --shadow:      rgba(30,36,56,0.14);
+    --code-str:    #1F7A5C;
+    --code-cmt:    #7A8494;
+    --code-type:   #A0640F;
+  }
+}
+
+/* Inline SVG brand colors follow the theme */
+[fill="#D9FFF6" i] { fill: var(--mint); }
+[stroke="#D9FFF6" i] { stroke: var(--mint); }
+[fill="#8FAFB0" i] { fill: var(--muted); }
+[stroke="#8FAFB0" i] { stroke: var(--muted); }
+[fill="#8B7CF6" i] { fill: var(--accent); }
+[stroke="#8B7CF6" i] { stroke: var(--accent); }
+[fill="#F6AF7C" i] { fill: var(--peach); }
+[stroke="#F6AF7C" i] { stroke: var(--peach); }
+[fill="#2F4B4F" i] { fill: var(--primary); }
+[stroke="#2F4B4F" i] { stroke: var(--primary); }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -32,8 +78,8 @@ body {
   font-family: var(--sans);
   background-color: var(--bg);
   background-image:
-    radial-gradient(ellipse 60% 40% at 85% -10%, rgba(111,183,173,0.09) 0%, transparent 60%),
-    radial-gradient(ellipse 45% 30% at 0% 105%, rgba(79,163,209,0.05) 0%, transparent 60%);
+    radial-gradient(ellipse 60% 40% at 85% -10%, rgba(246,175,124,0.09) 0%, transparent 60%),
+    radial-gradient(ellipse 45% 30% at 0% 105%, rgba(139,124,246,0.05) 0%, transparent 60%);
   background-attachment: fixed;
   color: var(--text);
   -webkit-font-smoothing: antialiased;
@@ -120,7 +166,7 @@ body::before {
   border-radius: 22px;
   overflow: hidden;
   margin-bottom: 26px;
-  box-shadow: inset 0 0 0 1px var(--border), 0 16px 40px rgba(2,8,16,0.7);
+  box-shadow: inset 0 0 0 1px var(--border), 0 16px 40px var(--shadow);
 }
 
 .avatar {
@@ -145,7 +191,7 @@ body::before {
   font-family: var(--mono);
   font-size: 0.72rem;
   font-weight: 400;
-  color: var(--teal);
+  color: var(--peach);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   margin-bottom: 28px;
@@ -303,11 +349,11 @@ body::before {
 .prose a {
   color: var(--accent);
   text-decoration: none;
-  border-bottom: 1px solid rgba(79,163,209,0.3);
+  border-bottom: 1px solid rgba(139,124,246,0.3);
   transition: border-color var(--ease);
 }
 
-.prose a:hover { border-color: var(--accent); }
+.prose a:hover { border-color: var(--accent-hi); }
 
 /* Skills */
 
@@ -321,8 +367,8 @@ body::before {
 .skill-chip {
   padding: 5px 11px;
   border-radius: 5px;
-  background: rgba(79,163,209,0.06);
-  border: 1px solid rgba(79,163,209,0.16);
+  background: rgba(139,124,246,0.06);
+  border: 1px solid rgba(139,124,246,0.16);
   color: var(--accent);
   font-family: var(--mono);
   font-size: 0.72rem;
@@ -330,7 +376,7 @@ body::before {
   transition: border-color var(--ease), color var(--ease);
 }
 
-.skill-chip:hover { border-color: rgba(79,163,209,0.5); color: var(--mint); }
+.skill-chip:hover { border-color: rgba(139,124,246,0.5); color: var(--mint); }
 
 /* ── EXPERIENCE — a lineage: one line, one node per role ─── */
 
@@ -347,7 +393,7 @@ body::before {
   top: 26px;
   bottom: 26px;
   width: 1px;
-  background: linear-gradient(to bottom, var(--coral), var(--accent) 18%, rgba(79,163,209,0.15));
+  background: linear-gradient(to bottom, var(--coral), var(--accent) 18%, rgba(139,124,246,0.15));
 }
 
 .exp-item {
@@ -379,14 +425,14 @@ body::before {
   box-shadow: 0 0 0 5px rgba(232,131,107,0.15);
 }
 
-.exp-item:hover { background: rgba(79,163,209,0.045); }
-.exp-item:hover::before { background: var(--accent); transform: scale(1.2); }
+.exp-item:hover { background: rgba(139,124,246,0.045); }
+.exp-item:hover::before { background: var(--accent-hi); transform: scale(1.2); }
 .exp-item:first-child:hover::before { background: var(--coral); }
 
 .exp-date {
   font-family: var(--mono);
   font-size: 0.7rem;
-  color: var(--teal);
+  color: var(--peach);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   padding-top: 3px;
@@ -432,7 +478,7 @@ body::before {
 .tag {
   padding: 3px 8px;
   border-radius: 4px;
-  background: rgba(79,163,209,0.08);
+  background: rgba(139,124,246,0.08);
   color: var(--accent);
   font-family: var(--mono);
   font-size: 0.66rem;
@@ -474,7 +520,7 @@ body::before {
   transition: gap var(--ease), background var(--ease), transform var(--ease);
 }
 
-.resume-link:hover { gap: 12px; background: #fff; }
+.resume-link:hover { gap: 12px; background: var(--accent-hi); }
 .resume-link:active { transform: translateY(1px) scale(0.98); }
 
 /* ── PROJECTS ─────────────────────────────────────────────── */
@@ -499,7 +545,7 @@ body::before {
   transition: background var(--ease), transform var(--ease);
 }
 
-.project-card:hover { background: rgba(79,163,209,0.045); }
+.project-card:hover { background: rgba(139,124,246,0.045); }
 
 /* Thumbnail */
 
@@ -519,7 +565,7 @@ body::before {
   background:
     linear-gradient(var(--border) 1px, transparent 1px) 0 0 / 12px 12px,
     linear-gradient(90deg, var(--border) 1px, transparent 1px) 0 0 / 12px 12px,
-    linear-gradient(160deg, #0F1824 0%, #0A1019 100%);
+    linear-gradient(160deg, var(--panel-a) 0%, var(--panel-b) 100%);
   position: relative;
   display: flex;
   align-items: center;
@@ -530,7 +576,7 @@ body::before {
 .scatter-dot {
   position: absolute;
   border-radius: 50%;
-  background: var(--teal);
+  background: var(--peach);
   opacity: 0.7;
   transform: translate(-50%, -50%);
 }
@@ -543,7 +589,7 @@ body::before {
   right: 8%;
   top: 68%;
   height: 1px;
-  background: linear-gradient(90deg, rgba(79,163,209,0.1), rgba(79,163,209,0.65));
+  background: linear-gradient(90deg, rgba(139,124,246,0.1), rgba(139,124,246,0.65));
   transform: rotate(-28deg);
   transform-origin: left center;
 }
@@ -556,7 +602,7 @@ body::before {
   width: 100%;
   height: 100%;
   padding: 10px 14px 8px;
-  background: linear-gradient(160deg, #0F1824 0%, #0A1019 100%);
+  background: linear-gradient(160deg, var(--panel-a) 0%, var(--panel-b) 100%);
 }
 
 .bar {
@@ -577,7 +623,7 @@ body::before {
   transition: color var(--ease);
 }
 
-.project-card:hover .project-name { color: var(--accent); }
+.project-card:hover .project-name { color: var(--accent-hi); }
 
 .arrow-icon {
   display: inline-block;
@@ -636,7 +682,7 @@ body::before {
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background: radial-gradient(240px circle at var(--mx) var(--my), rgba(111,183,173,0.7), transparent 70%);
+  background: radial-gradient(240px circle at var(--mx) var(--my), rgba(246,175,124,0.7), transparent 70%);
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -645,7 +691,7 @@ body::before {
   pointer-events: none;
 }
 
-.featured-grid .project-card:hover { transform: translateY(-3px); background: #101925; }
+.featured-grid .project-card:hover { transform: translateY(-3px); background: var(--hover); }
 .featured-grid .project-card:hover::before,
 .path:hover::before { opacity: 1; }
 .featured-grid .project-card:active { transform: translateY(-1px) scale(0.995); }
@@ -732,8 +778,8 @@ body::before {
   gap: 8px;
   padding: 9px 18px;
   border-radius: 6px;
-  background: rgba(79,163,209,0.12);
-  border: 1px solid rgba(79,163,209,0.25);
+  background: rgba(139,124,246,0.12);
+  border: 1px solid rgba(139,124,246,0.25);
   color: var(--accent);
   text-decoration: none;
   font-size: 0.82rem;
@@ -742,8 +788,8 @@ body::before {
 }
 
 .github-cta:hover {
-  background: rgba(79,163,209,0.2);
-  border-color: var(--accent);
+  background: rgba(139,124,246,0.2);
+  border-color: var(--accent-hi);
 }
 
 .github-cta:active { transform: translateY(1px) scale(0.98); }
@@ -768,7 +814,7 @@ body::before {
 }
 
 .architecture-diagram {
-  background: linear-gradient(160deg, #0F1824 0%, #0A1019 100%);
+  background: linear-gradient(160deg, var(--panel-a) 0%, var(--panel-b) 100%);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 24px;
@@ -783,7 +829,7 @@ body::before {
 }
 
 .code-block {
-  background: #0A1019;
+  background: var(--panel-b);
   border: 1px solid var(--border);
   border-radius: 6px;
   margin-bottom: 20px;
@@ -795,7 +841,7 @@ body::before {
   align-items: center;
   justify-content: space-between;
   padding: 8px 14px;
-  background: rgba(79,163,209,0.05);
+  background: rgba(139,124,246,0.05);
   border-bottom: 1px solid var(--border);
   font-family: var(--mono);
   font-size: 0.7rem;
@@ -815,13 +861,13 @@ body::before {
 }
 
 /* Syntax colors pulled into the brand palette */
-.code-block .kw { color: var(--teal); }
+.code-block .kw { color: var(--peach); }
 .code-block .fn { color: var(--accent); }
-.code-block .str { color: #B9E4D6; }
-.code-block .cmt { color: #5B7375; }
+.code-block .str { color: var(--code-str); }
+.code-block .cmt { color: var(--code-cmt); }
 .code-block .num { color: var(--coral); }
 .code-block .op { color: var(--muted); }
-.code-block .type { color: #E8C07D; }
+.code-block .type { color: var(--code-type); }
 
 .case-callout {
   padding: 14px 18px;
@@ -861,7 +907,7 @@ body::before {
   transition: color var(--ease);
 }
 
-.page-footer a:hover { color: var(--accent); }
+.page-footer a:hover { color: var(--accent-hi); }
 
 /* ── HERO ─────────────────────────────────────────────────── */
 
@@ -914,13 +960,13 @@ body::before {
   object-position: center 15%;
   outline: 1px solid var(--border);
   outline-offset: -1px;
-  box-shadow: 0 24px 60px rgba(2,8,16,0.75);
+  box-shadow: 0 24px 60px var(--shadow);
 }
 
 .hero-kicker {
   font-family: var(--mono);
   font-size: 0.74rem;
-  color: var(--teal);
+  color: var(--peach);
   letter-spacing: 0.16em;
   text-transform: uppercase;
   margin-bottom: 10px;
@@ -1013,7 +1059,7 @@ body::before {
   transition: transform var(--ease), background var(--ease);
 }
 
-.path:hover { transform: translateY(-4px); background: #101925; }
+.path:hover { transform: translateY(-4px); background: var(--hover); }
 .path:active { transform: translateY(-1px) scale(0.99); }
 
 .path-n { font-family: var(--mono); font-size: 0.7rem; color: var(--accent); }

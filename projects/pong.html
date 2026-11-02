@@ -19,7 +19,7 @@
       background: #000;
       border-radius: 8px;
       overflow: hidden;
-      border: 1px solid rgba(111,183,173,0.15);
+      border: 1px solid rgba(246,175,124,0.15);
       margin-bottom: 24px;
     }
 
@@ -38,7 +38,7 @@
 
     .control-box {
       background: rgba(47,75,79,0.3);
-      border: 1px solid rgba(111,183,173,0.12);
+      border: 1px solid rgba(246,175,124,0.12);
       border-radius: 8px;
       padding: 16px 20px;
     }
@@ -61,8 +61,8 @@
 
     kbd {
       display: inline-block;
-      background: rgba(79,163,209,0.12);
-      border: 1px solid rgba(79,163,209,0.25);
+      background: rgba(139,124,246,0.12);
+      border: 1px solid rgba(139,124,246,0.25);
       border-radius: 4px;
       padding: 2px 8px;
       font-family: 'Inter', monospace;
@@ -92,7 +92,7 @@
 
     .setting-group select {
       background: rgba(47,75,79,0.5);
-      border: 1px solid rgba(111,183,173,0.2);
+      border: 1px solid rgba(246,175,124,0.2);
       border-radius: 4px;
       padding: 4px 8px;
       color: var(--text);
@@ -334,9 +334,9 @@ const draw = () => {
   ctx.setLineDash([]);
 
   // Paddles
-  ctx.fillStyle = '#4FA3D1';
+  ctx.fillStyle = '#8B7CF6';
   ctx.fillRect(30 - PADDLE_W / 2, leftY - PADDLE_H / 2, PADDLE_W, PADDLE_H);
-  ctx.fillStyle = '#6FB7AD';
+  ctx.fillStyle = '#F6AF7C';
   ctx.fillRect(W - 30 - PADDLE_W / 2, rightY - PADDLE_H / 2, PADDLE_W, PADDLE_H);
 
   // Puck
@@ -354,7 +354,7 @@ const draw = () => {
 const endGame = (message) => {
   running = false;
   draw();
-  ctx.fillStyle = '#4FA3D1';
+  ctx.fillStyle = '#8B7CF6';
   ctx.font = 'bold 48px "Courier New", monospace';
   ctx.textAlign = 'center';
   ctx.fillText(message, W / 2, H / 2 + 16);

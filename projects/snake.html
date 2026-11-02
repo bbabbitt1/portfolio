@@ -19,7 +19,7 @@
       background: #000;
       border-radius: 8px;
       overflow: hidden;
-      border: 1px solid rgba(111,183,173,0.15);
+      border: 1px solid rgba(246,175,124,0.15);
       margin-bottom: 24px;
     }
 
@@ -31,7 +31,7 @@
 
     .controls-box {
       background: rgba(47,75,79,0.3);
-      border: 1px solid rgba(111,183,173,0.12);
+      border: 1px solid rgba(246,175,124,0.12);
       border-radius: 8px;
       padding: 16px 20px;
       margin-bottom: 24px;
@@ -60,8 +60,8 @@
 
     kbd {
       display: inline-block;
-      background: rgba(79,163,209,0.12);
-      border: 1px solid rgba(79,163,209,0.25);
+      background: rgba(139,124,246,0.12);
+      border: 1px solid rgba(139,124,246,0.25);
       border-radius: 4px;
       padding: 2px 8px;
       font-family: 'Inter', monospace;
@@ -92,7 +92,7 @@
 
     .setting-group select {
       background: rgba(47,75,79,0.5);
-      border: 1px solid rgba(111,183,173,0.2);
+      border: 1px solid rgba(246,175,124,0.2);
       border-radius: 4px;
       padding: 4px 8px;
       color: var(--text);
@@ -299,12 +299,12 @@ const draw = () => {
   // Snake
   snake.forEach((seg, i) => {
     const alpha = 1 - (i / snake.length) * 0.5;
-    ctx.fillStyle = i === 0 ? '#D9FFF6' : `rgba(111,183,173,${alpha})`;
+    ctx.fillStyle = i === 0 ? '#D9FFF6' : `rgba(246,175,124,${alpha})`;
     ctx.fillRect(seg.x * GRID + 1, seg.y * GRID + 1, GRID - 2, GRID - 2);
   });
 
   // Food
-  ctx.fillStyle = '#4FA3D1';
+  ctx.fillStyle = '#8B7CF6';
   ctx.beginPath();
   ctx.arc(food.x * GRID + GRID / 2, food.y * GRID + GRID / 2, GRID / 2 - 2, 0, Math.PI * 2);
   ctx.fill();
@@ -327,7 +327,7 @@ const endGame = () => {
   }
 
   draw();
-  ctx.fillStyle = '#4FA3D1';
+  ctx.fillStyle = '#8B7CF6';
   ctx.font = 'bold 36px "Courier New", monospace';
   ctx.textAlign = 'center';
   ctx.fillText('GAME OVER!', SIZE / 2, SIZE / 2 + 12);
