@@ -282,10 +282,11 @@ def build():
     add_section_header(doc, "EXPERIENCE")
 
     add_role(doc,
-        "Senior Business Analyst, Disney (Analytics Suite Engineering)",
+        "Senior Business Analyst, Disney",
         "Orlando, FL | September 2026 \u2013 Present")
-    add_bullet(doc, "Building a full-stack web app that brings the internal analytics suite into one product for business users.")
-    add_bullet(doc, "Turning recurring BI and reporting requests into self-service features in the app.")
+    add_bullet(doc, "Replaced hundreds of Excel extracts with a single semantic model, giving the operation one governed source for reporting.")
+    add_bullet(doc, "Built CI/CD validation checks on the model, thorough enough that the upstream team producing the data model now relies on them for its own quality checks.")
+    add_bullet(doc, "Built a web app for business users on top of the model, plus the Microsoft Fabric pipeline that feeds it.")
 
     add_role(doc,
         "Senior Data Analyst, Transitions (Reporting Automation & Data Governance)",
