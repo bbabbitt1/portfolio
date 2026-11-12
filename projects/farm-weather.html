@@ -207,6 +207,8 @@
   <div class="case-section">
     <h2>Front End</h2>
     <p>React 19, Vite and strict TypeScript, with one CSS file and self-hosted fonts. On a phone it's three tabs (Rain, Temp, Wind) under a sticky tab bar; at 1440px and up the tabs disappear and all three panels sit side by side.</p>
+
+    <img src="../public/imgs/farm-weather-phone.png" alt="Phone view in dark mode on the Temp tab: six stations with current temperature, 1h and 2h ago, dew point, and freeze hours with the low since noon." class="case-image" loading="lazy" width="1179" height="1720" style="max-width: 360px; height: auto;">
     <p><strong>Updates timed to the data.</strong> The page fetches 2.5 minutes past each 5-minute mark, about 90 seconds after ingest runs, and again whenever the phone or tab becomes visible. SignalR push was considered and rejected: the data only changes every 5 minutes, so push would add an Azure resource without making anything fresher.</p>
 
     <div class="code-block">
