@@ -4,3 +4,4 @@ resume-drafts/
 video-python-scripts/
 linkedin-putting-demo.mp4
 *.md
+.playwright-mcp/
