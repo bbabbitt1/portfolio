@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Farm Weather Dashboard | Barry Babbitt</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="icon" href="../public/imgs/mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../public/styles.css">
+</head>
+<body>
+
+<div class="case-study">
+
+  <a href="../index.html#projects" class="back-link">
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    Back to Portfolio
+  </a>
+
+  <!-- HERO -->
+  <div class="project-hero">
+    <h1>Farm Weather Dashboard</h1>
+    <p class="hero-desc">
+      Six field weather stations, one glanceable screen. Built for a Florida agricultural client who makes spray and freeze decisions from a truck cab, on a phone, in direct sun. An Azure Function pulls every station into Azure SQL every 5 minutes, and a mobile-first React app shows rain, freeze and spray-wind guidance that updates itself.
+    </p>
+    <div class="hero-tags">
+      <span class="tag">TypeScript</span>
+      <span class="tag">React</span>
+      <span class="tag">Azure Functions</span>
+      <span class="tag">Azure SQL</span>
+      <span class="tag">Static Web Apps</span>
+      <span class="tag">Key Vault</span>
+      <span class="tag">GitHub Actions</span>
+      <span class="tag">OIDC</span>
+      <span class="tag">Cloudflare</span>
+    </div>
+  </div>
+
+  <!-- AT A GLANCE -->
+  <div class="case-section">
+    <h2>At a Glance</h2>
+    <p><span class="metric">6</span> weather stations, <span class="metric">42</span> fields per reading, ingested every <span class="metric">5 min</span>.</p>
+    <p><span class="metric">~1.5 min</span> from a new reading landing to it showing on screen, with no page reload.</p>
+    <p><span class="metric">0</span> stored passwords: managed identity, Key Vault references and OIDC deploys.</p>
+    <p><span class="metric">~$25–30/mo</span> to run, with no servers to maintain.</p>
+  </div>
+
+  <!-- PROBLEM -->
+  <div class="case-section">
+    <h2>The Problem</h2>
+    <p>The client runs six Davis WeatherLink Pro stations across their groves. Spraying and frost protection come down to a few numbers: wind speed and direction (drift and inversion risk), hours below a freeze threshold, and rain totals. The WeatherLink app shows one station at a time and is built for hobbyists. They wanted all six side by side on a phone, readable outdoors, and current without a manual refresh.</p>
+    <p>The metrics were theirs: rain (today, yesterday, 7 and 30 days), temperature (now, 1h and 2h ago, dew point, low, freeze hours since noon) and wind (now, direction, 1h average, high/low).</p>
+  </div>
+
+  <!-- ARCHITECTURE -->
+  <div class="case-section">
+    <h2>Architecture</h2>
+    <div class="architecture-diagram">
+      <svg viewBox="0 0 800 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="WeatherLink API feeds an Azure Function on a 5-minute timer, which writes to Azure SQL. A Static Web App proxies browser requests to the Function's dashboard endpoint, which reads from SQL. Key Vault holds the API credentials; GitHub Actions deploys via OIDC.">
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#8FAFB0"/>
+          </marker>
+        </defs>
+
+        <!-- Azure wrapper -->
+        <rect x="180" y="20" width="415" height="285" rx="12" fill="none" stroke="#8FAFB0" stroke-width="1.5" stroke-dasharray="8 4" opacity="0.35"/>
+        <text x="200" y="48" fill="#8FAFB0" font-size="13" font-family="Inter, sans-serif" font-weight="600" opacity="0.6">Azure</text>
+
+        <!-- WeatherLink -->
+        <rect x="20" y="115" width="130" height="60" rx="8" fill="rgba(139,124,246,0.12)" stroke="#8B7CF6" stroke-width="1.5"/>
+        <text x="85" y="141" fill="#8B7CF6" font-size="13" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">WeatherLink v2</text>
+        <text x="85" y="159" fill="#8FAFB0" font-size="11" text-anchor="middle" font-family="Inter, sans-serif">6 stations</text>
+        <text x="175" y="137" fill="#E8836B" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">5 min</text>
+        <line x1="150" y1="145" x2="200" y2="145" stroke="#8FAFB0" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+        <!-- Function App -->
+        <rect x="200" y="100" width="160" height="90" rx="8" fill="rgba(246,175,124,0.12)" stroke="#F6AF7C" stroke-width="1.5"/>
+        <text x="280" y="125" fill="#F6AF7C" font-size="13" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">Function App</text>
+        <text x="280" y="145" fill="#8FAFB0" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">ingest · timer trigger</text>
+        <text x="280" y="159" fill="#8FAFB0" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">dashboard · HTTP, read-only</text>
+        <text x="280" y="173" fill="#8FAFB0" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">Flex Consumption · Node 24</text>
+
+        <!-- Write / read paths to SQL -->
+        <line x1="360" y1="130" x2="420" y2="130" stroke="#8FAFB0" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <line x1="420" y1="160" x2="360" y2="160" stroke="#8FAFB0" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
+
+        <!-- Azure SQL -->
+        <rect x="420" y="105" width="150" height="70" rx="8" fill="rgba(139,124,246,0.12)" stroke="#8B7CF6" stroke-width="1.5"/>
+        <text x="495" y="131" fill="#8B7CF6" font-size="13" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">Azure SQL (S0)</text>
+        <text x="495" y="149" fill="#8FAFB0" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">station_obs</text>
+        <text x="495" y="163" fill="#8FAFB0" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">fn_dashboard()</text>
+
+        <!-- Key Vault -->
+        <rect x="200" y="235" width="160" height="50" rx="8" fill="rgba(217,255,246,0.08)" stroke="#D9FFF6" stroke-width="1" opacity="0.8"/>
+        <text x="280" y="257" fill="#D9FFF6" font-size="12" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">Key Vault</text>
+        <text x="280" y="273" fill="#8FAFB0" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">API key via references</text>
+        <line x1="280" y1="235" x2="280" y2="190" stroke="#8FAFB0" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+        <!-- Static Web App -->
+        <rect x="420" y="235" width="150" height="50" rx="8" fill="rgba(217,255,246,0.08)" stroke="#D9FFF6" stroke-width="1.5"/>
+        <text x="495" y="257" fill="#D9FFF6" font-size="12" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">Static Web App</text>
+        <text x="495" y="273" fill="#8FAFB0" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">React 19 · /api/* proxy</text>
+        <line x1="440" y1="235" x2="345" y2="190" stroke="#8FAFB0" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+        <!-- Phone -->
+        <rect x="640" y="235" width="140" height="50" rx="8" fill="rgba(139,124,246,0.12)" stroke="#8B7CF6" stroke-width="1.5"/>
+        <text x="710" y="257" fill="#8B7CF6" font-size="12" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">Phone</text>
+        <text x="710" y="273" fill="#8FAFB0" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">polls :02:30 past each 5</text>
+        <line x1="640" y1="260" x2="570" y2="260" stroke="#8FAFB0" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+        <!-- GitHub Actions -->
+        <rect x="20" y="235" width="130" height="50" rx="8" fill="rgba(217,255,246,0.08)" stroke="#D9FFF6" stroke-width="1" opacity="0.7"/>
+        <text x="85" y="257" fill="#D9FFF6" font-size="12" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600" opacity="0.8">GitHub Actions</text>
+        <text x="85" y="273" fill="#8FAFB0" font-size="10" text-anchor="middle" font-family="Inter, sans-serif" opacity="0.6">OIDC deploy</text>
+        <line x1="150" y1="245" x2="215" y2="190" stroke="#8FAFB0" stroke-width="1" stroke-dasharray="4 3" opacity="0.5"/>
+      </svg>
+    </div>
+    <p>Two paths, kept apart on purpose. The <strong>write path</strong> is a timer function that pulls WeatherLink into SQL every 5 minutes; no user ever triggers it. The <strong>read path</strong> is one HTTP endpoint that runs one SQL query and returns a row per station with every number already calculated. The browser never touches the database, and the Function App only answers requests that come through the Static Web App. Direct calls get a 401.</p>
+  </div>
+
+  <!-- INGEST -->
+  <div class="case-section">
+    <h2>Ingest Pipeline</h2>
+    <p>The timer fires 1 minute after each 5-minute reading closes, so the record has landed at WeatherLink. Each station resumes from its own watermark, so a run that's down for hours heals on the next one. After a 6-hour gap, the first run loaded 70 readings per station; every run since has added 1. One bad station doesn't stop the rest.</p>
+
+    <div class="code-block">
+      <div class="code-block-header"><span>api/src/functions/ingest.ts</span><span>TypeScript</span></div>
+      <pre>app.<span class="fn">timer</span>(<span class="str">'ingest'</span>, {
+  schedule: <span class="str">'0 1-59/5 * * * *'</span>,
+  handler: <span class="kw">async</span> (_timer, ctx) <span class="op">=></span> {
+    <span class="kw">const</span> end = Math.<span class="fn">floor</span>(Date.<span class="fn">now</span>() / <span class="num">1000</span>);
+    <span class="kw">const</span> stations = <span class="kw">await</span> <span class="fn">stationWatermarks</span>();
+    <span class="kw">const</span> results = <span class="kw">await</span> Promise.<span class="fn">allSettled</span>(stations.<span class="fn">map</span>((s) <span class="op">=></span>
+      <span class="fn">syncStation</span>(s.station_id, <span class="fn">syncStart</span>(s.last_ts, end), end)));
+    <span class="kw">if</span> (results.<span class="fn">every</span>((r) <span class="op">=></span> r.status === <span class="str">'rejected'</span>)) <span class="kw">throw new</span> <span class="type">Error</span>(<span class="str">'All stations failed'</span>);
+  },
+});</pre>
+    </div>
+
+    <p>Each fetch re-reads 10 minutes before the watermark so late records are never missed, and catch-up is capped at 7 days per run. WeatherLink's <code>/historic</code> endpoint only accepts 24-hour ranges, so longer gaps are split into windows.</p>
+
+    <div class="code-block">
+      <div class="code-block-header"><span>api/src/sync.ts</span><span>TypeScript</span></div>
+      <pre><span class="kw">export const</span> OVERLAP = <span class="num">600</span>;      <span class="cmt">// re-read 10 min; duplicates are ignored by the PK</span>
+<span class="kw">export const</span> MAX_CATCHUP = <span class="num">7</span> * DAY;
+
+<span class="kw">export const</span> <span class="fn">syncStart</span> = (lastTs: <span class="type">number</span> | <span class="type">null</span>, now: <span class="type">number</span>): <span class="type">number</span> <span class="op">=></span>
+  Math.<span class="fn">max</span>(now - MAX_CATCHUP, (lastTs ?? <span class="num">0</span>) - OVERLAP);
+
+<span class="cmt">// Split [start, end) into the ≤24h windows /historic accepts.</span>
+<span class="kw">export const</span> <span class="fn">windows</span> = (start: <span class="type">number</span>, end: <span class="type">number</span>): [<span class="type">number</span>, <span class="type">number</span>][] <span class="op">=></span> {
+  <span class="kw">const</span> out: [<span class="type">number</span>, <span class="type">number</span>][] = [];
+  <span class="kw">for</span> (<span class="kw">let</span> s = start; s < end; s += DAY) out.<span class="fn">push</span>([s, Math.<span class="fn">min</span>(s + DAY, end)]);
+  <span class="kw">return</span> out;
+};</pre>
+    </div>
+
+    <p>Network errors, 429s and 5xx responses retry with exponential backoff (1s, 2s, 4s). A bad key fails at once, and error messages never include the request URL, because it carries the API key.</p>
+  </div>
+
+  <!-- IDEMPOTENT STORAGE -->
+  <div class="case-section">
+    <h2>Idempotent, Atomic Storage</h2>
+    <p>The function hands the raw WeatherLink JSON to a stored procedure, which shreds it with <code>OPENJSON</code> in a single <code>INSERT</code>: either the whole window is stored or none of it. Overlapping re-reads are safe because the primary key silently drops duplicates, so re-running anything is always a no-op.</p>
+
+    <div class="code-block">
+      <div class="code-block-header"><span>sql/schema.sql</span><span>Azure SQL</span></div>
+      <pre><span class="cmt">-- Re-loading existing rows (overlap, retries, concurrent runs) is a silent no-op.</span>
+<span class="kw">CONSTRAINT</span> pk_station_obs <span class="kw">PRIMARY KEY</span> (station_id, ts) <span class="kw">WITH</span> (IGNORE_DUP_KEY = <span class="kw">ON</span>)
+
+<span class="kw">CREATE OR ALTER PROCEDURE</span> dbo.ingest_historic <span class="op">@</span>station_id <span class="type">INT</span>, <span class="op">@</span>payload <span class="type">NVARCHAR(MAX)</span> <span class="kw">AS</span>
+  <span class="kw">INSERT</span> dbo.station_obs (station_id, ts, temp_out, wind_speed_avg, rainfall_in, <span class="cmt">/* +39 */</span> raw)
+  <span class="kw">SELECT</span> <span class="op">@</span>station_id, <span class="fn">DATEADD</span>(SECOND, r.ts, <span class="str">'1970-01-01'</span>), r.temp_out, <span class="cmt">/* … */</span> d.value
+  <span class="kw">FROM</span> <span class="fn">OPENJSON</span>(<span class="op">@</span>payload, <span class="str">'$.sensors'</span>) s
+  <span class="kw">CROSS APPLY</span> <span class="fn">OPENJSON</span>(s.value, <span class="str">'$.data'</span>) d
+  <span class="kw">CROSS APPLY</span> <span class="fn">OPENJSON</span>(d.value) <span class="kw">WITH</span> (ts <span class="type">INT</span>, temp_out <span class="type">REAL</span>, <span class="cmt">/* … */</span>) r
+  <span class="kw">WHERE</span> <span class="fn">JSON_PATH_EXISTS</span>(d.value, <span class="str">'$.temp_out'</span>) = <span class="num">1</span>;</pre>
+    </div>
+  </div>
+
+  <!-- SERVING -->
+  <div class="case-section">
+    <h2>Serving: One Query, All the Math in SQL</h2>
+    <p>The only endpoint is <code>GET /api/dashboard?freeze=28</code>. It validates the threshold and calls a table-valued function that does every calculation. Rain windows are local calendar days using <code>AT TIME ZONE</code> per station, so midnight is midnight in Florida, not UTC. Freeze hours count from the most recent local noon against a threshold each user picks.</p>
+
+    <div class="code-block">
+      <div class="code-block-header"><span>api/src/functions/dashboard.ts</span><span>TypeScript</span></div>
+      <pre>app.<span class="fn">http</span>(<span class="str">'dashboard'</span>, {
+  methods: [<span class="str">'GET'</span>],
+  authLevel: <span class="str">'anonymous'</span>, <span class="cmt">// read-only; reachable only through the linked Static Web App</span>
+  handler: <span class="kw">async</span> (req) <span class="op">=></span> {
+    <span class="kw">const</span> freeze = <span class="fn">Number</span>(req.query.<span class="fn">get</span>(<span class="str">'freeze'</span>) ?? <span class="num">28</span>);
+    <span class="kw">if</span> (!Number.<span class="fn">isFinite</span>(freeze) || freeze < <span class="num">0</span> || freeze > <span class="num">50</span>)
+      <span class="kw">return</span> { status: <span class="num">400</span>, jsonBody: { error: <span class="str">'freeze must be a number between 0 and 50'</span> } };
+    <span class="kw">const</span> r = <span class="kw">await</span> (<span class="kw">await</span> <span class="fn">db</span>()).<span class="fn">request</span>().<span class="fn">input</span>(<span class="str">'f'</span>, sql.Real, freeze)
+      .<span class="fn">query</span>(<span class="str">'SELECT * FROM dbo.fn_dashboard(@f) ORDER BY sort_order'</span>);
+    <span class="kw">return</span> { jsonBody: r.recordset };
+  },
+});</pre>
+    </div>
+  </div>
+
+  <!-- FRONT END -->
+  <div class="case-section">
+    <h2>Front End</h2>
+    <p>React 19, Vite and strict TypeScript, with one CSS file and self-hosted fonts. On a phone it's three tabs (Rain, Temp, Wind) under a sticky tab bar; at 1440px and up the tabs disappear and all three panels sit side by side.</p>
+    <p><strong>Updates timed to the data.</strong> The page fetches 2.5 minutes past each 5-minute mark, about 90 seconds after ingest runs, and again whenever the phone or tab becomes visible. SignalR push was considered and rejected: the data only changes every 5 minutes, so push would add an Azure resource without making anything fresher.</p>
+
+    <div class="code-block">
+      <div class="code-block-header"><span>web/src/format.ts</span><span>TypeScript</span></div>
+      <pre><span class="cmt">// Ingest runs at :01, :06, :11… — fetch 90s after each run lands.</span>
+<span class="kw">const</span> SYNC_MS = <span class="num">5</span> * <span class="num">60_000</span>;
+<span class="kw">const</span> SYNC_OFFSET_MS = <span class="num">150_000</span>; <span class="cmt">// 2.5 min past each 5-min mark</span>
+<span class="kw">export const</span> <span class="fn">msToNextSync</span> = (now: <span class="type">number</span>) <span class="op">=></span> SYNC_MS - ((now - SYNC_OFFSET_MS) % SYNC_MS);
+
+<span class="cmt">// Spray guidance from current wind (mph). Thresholds live here only.</span>
+<span class="kw">export const</span> <span class="fn">spray</span> = (mph: <span class="type">number</span>): <span class="type">Spray</span> <span class="op">=></span>
+  mph < <span class="num">3</span>   ? { level: <span class="str">'caution'</span>, label: <span class="str">'Calm: inversion risk'</span> }
+  : mph <= <span class="num">10</span> ? { level: <span class="str">'ok'</span>,      label: <span class="str">'OK to spray'</span> }
+  : mph <= <span class="num">15</span> ? { level: <span class="str">'caution'</span>, label: <span class="str">'Gusty: drift risk'</span> }
+  : { level: <span class="str">'bad'</span>, label: <span class="str">"Don't spray"</span> };</pre>
+    </div>
+
+    <div class="case-callout">
+      A reading more than 15 minutes old turns its spray chip grey, so the app never shows a go/no-go call on stale data.
+    </div>
+
+    <p><strong>Built for the field.</strong> At least 12px header text, tabular figures, high contrast, and a dark mode that follows the device with no white flash on load. It respects the iPhone notch and home bar (<code>viewport-fit=cover</code> with <code>env(safe-area-inset-*)</code>), keeps 16pt side margins to clear case lips, and ships a manifest for Add to Home Screen. ARIA tabs support arrow-key and Home/End navigation, spray chips have screen-reader labels, tap targets are 44px, and reduced motion is respected. The display logic (formatting, spray thresholds, freeze counting, the refresh scheduler) is pure functions with <code>node --test</code> unit tests.</p>
+  </div>
+
+  <!-- SECURITY -->
+  <div class="case-section">
+    <h2>Security &amp; Identity</h2>
+    <p><strong>No stored secrets.</strong> SQL accepts only Entra sign-ins, and the Function connects as its managed identity. The WeatherLink credentials live in Key Vault and app settings reference them. GitHub deploys to Azure through OIDC workload identity federation, so there's no publish profile or client secret to leak.</p>
+    <p><strong>Least privilege.</strong> The deploy identity has Website Contributor on one Function App, and only the <code>main</code> branch of one repo can use it. Its federated subject uses GitHub's immutable-ID format, so a deleted and recreated repo with the same name can't take it over.</p>
+    <p><strong>Supply chain.</strong> Every GitHub Action is pinned to a full commit SHA, and Dependabot moves the pins monthly. Installs run <code>npm ci --ignore-scripts</code>. The build job has no secrets; only the built files reach the deploy job.</p>
+  </div>
+
+  <!-- CI/CD -->
+  <div class="case-section">
+    <h2>CI/CD &amp; Domain</h2>
+    <p>One repo (<code>web/</code>, <code>api/</code>, <code>sql/</code>) with two path-filtered workflows, so a CSS change doesn't redeploy the API. The web workflow builds, tests and deploys to the Static Web App, and every pull request gets its own preview URL that the client can try on their phone before it goes live. The API workflow builds, tests, prunes dev dependencies and deploys via OIDC.</p>
+    <p>The domain is registered at Cloudflare (at cost) after Azure refused the purchase for the subscription type. The root is served through a flattened CNAME, with Cloudflare's proxy off so Azure can verify the domain and issue its free managed TLS certificate.</p>
+  </div>
+
+  <!-- DECISIONS -->
+  <div class="case-section">
+    <h2>Decisions &amp; Trade-offs</h2>
+    <div class="case-table">
+      <table>
+        <thead><tr><th>Decision</th><th>Chosen</th><th>Rejected</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td>Live updates</td><td>Polling timed to ingest</td><td>SignalR push; 60s polling</td><td>Data changes every 5 min; push adds cost for no freshness</td></tr>
+          <tr><td>Access</td><td>Public, read-only</td><td>Invite-only login</td><td>25-user invite cap, login friction in the field, low-sensitivity data</td></tr>
+          <tr><td>Compute</td><td>Separate Function App</td><td>SWA managed functions</td><td>Managed functions are HTTP-only; ingest needs a timer</td></tr>
+          <tr><td>DB tier</td><td>SQL S0</td><td>Serverless</td><td>5-min writes mean serverless never auto-pauses, so it costs more</td></tr>
+          <tr><td>Repo layout</td><td>One repo, two workflows</td><td>Repo per service</td><td>Features cross web, api and sql; one PR each</td></tr>
+          <tr><td>Domain</td><td>Cloudflare</td><td>Azure App Service Domain</td><td>Azure refused the purchase; Cloudflare sells at cost</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ENGINEERING NOTES -->
+  <div class="case-section">
+    <h2>Engineering Notes</h2>
+    <p><strong>Cross-platform lockfile bug.</strong> npm 11.6.2 on Windows quietly dropped Linux-only optional dependencies from <code>package-lock.json</code>, so <code>npm ci</code> failed on GitHub's Linux runners. I reproduced it by running Linux Node in WSL against both lockfiles, confirmed npm 11.19.1 keeps the entries, and kept a strict <code>npm ci</code> with a correct lockfile instead of loosening CI.</p>
+    <p><strong>Azure CLI bug.</strong> <code>az staticwebapp backends link</code> returned a bogus "Not Found". The underlying REST <code>PUT …/linkedBackends</code> call worked, so I linked the backend that way and confirmed it by calling the Function directly and getting a 401.</p>
+    <p><strong>OIDC subject mismatch.</strong> GitHub now issues tokens with immutable IDs in the subject claim. I rewrote the federated credential to match, which is also the safer form.</p>
+    <p><strong>A bug report that was a screenshot.</strong> The client reported the header clipped by the Dynamic Island. Their photo was a full-screen screenshot of an old build viewed in the Photos app, not the live site. The real needs behind it still got fixed: home-screen safe areas, white status-bar text on the header, and wider phone margins.</p>
+  </div>
+
+  <!-- COST -->
+  <div class="case-section">
+    <h2>Running Cost</h2>
+    <div class="case-table">
+      <table>
+        <thead><tr><th>Item</th><th>≈ / month</th></tr></thead>
+        <tbody>
+          <tr><td>Azure SQL S0</td><td><span class="metric">~$15</span></td></tr>
+          <tr><td>Static Web App Standard (needed for a linked backend)</td><td><span class="metric">~$9</span></td></tr>
+          <tr><td>Function App, Flex Consumption (~8.6k timer runs + page loads)</td><td><span class="metric">~$0–2</span></td></tr>
+          <tr><td>Key Vault, Application Insights</td><td><span class="metric">&lt;$1</span></td></tr>
+          <tr><td>Domain</td><td><span class="metric">~$1</span></td></tr>
+          <tr><td><strong>Total</strong></td><td><span class="metric">≈ $25–30</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
